@@ -29,6 +29,7 @@ void httpd_handler(struct evhttp_request *req, void *arg) {
     //获取客户端请求的URI(使用evhttp_request_uri或直接req->uri)
     const char *uri;
     uri = evhttp_request_uri(req);
+    printf("http request uri=%s\n", uri);
     sprintf(tmp, "uri=%s\n", uri);
     strcat(output, tmp);
 
@@ -90,7 +91,7 @@ static void signall_cb(long long fd, short event, void *arg)
 }
 
 static void timer_cb(long long fd, short event, void *arg) {
-    printf("%s: got timeout %ld\n", __func__, time(NULL));
+    printf("%s: got timeout with unix time: %lld\n", __func__, time(NULL));
 }
 
 
@@ -98,7 +99,7 @@ static void timer_cb(long long fd, short event, void *arg) {
 // param *data is int port
 void* magt(void *arg) {
 
-    int64_t port = ((int64_t)arg);
+    int port = (*(int*)arg);
 
 // link with -lwsock32
 #ifdef _WIN32
@@ -140,6 +141,7 @@ void* magt(void *arg) {
 
     evhttp_set_gencb(httpd, httpd_handler, NULL);
 
+    printf("http listen port %d, start event loop\n", port);
     event_base_dispatch(base);
     printf("END evloop\n");
 
