@@ -91,7 +91,7 @@ static void signall_cb(long long fd, short event, void *arg)
 }
 
 static void timer_cb(long long fd, short event, void *arg) {
-    printf("%s: got timeout with unix time: %lld\n", __func__, time(NULL));
+    // printf("%s: got timeout with unix time: %lld\n", __func__, time(NULL));
 }
 
 

@@ -11,9 +11,9 @@ LDLIBS = -lm
 	$(CC) $(CFLAGS) -c $<
 
 
-all: apptpl
+all: sndmsg
 
-apptpl: main.o magt.o inputer.o worker.o cchan_pthread.o
+sndmsg: sndmsg.o
 	$(CC) $(LDFLAGS) $^ -levent -lzmq -lwsock32 -o $@
 
 cchan_pthread.o: ../cchan-0.1/cchan_pthread.c
@@ -21,7 +21,7 @@ cchan_pthread.o: ../cchan-0.1/cchan_pthread.c
 
 clean:
 	rm -f *.o
-	rm -f apptpl
+	rm -f sndmsg
 
 install:
 

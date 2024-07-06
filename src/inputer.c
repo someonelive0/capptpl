@@ -1,14 +1,20 @@
 #include <zmq.h>
 #include <unistd.h>
+#include <stdlib.h>
+
+#include "cchan_pthread.h"
+
 #include <assert.h>
 #include "inputer.h"
 
 
 void *context;
 void *puller;
+int puller_port;
 
 int inputer_init(int port) {
     char addr[16] = {0};
+    puller_port = port;
 
     context = zmq_ctx_new();
     puller = zmq_socket (context, ZMQ_PULL);
@@ -23,25 +29,33 @@ int inputer_init(int port) {
 
 int inputer_stop() {
     zmq_close (puller);
-    zmq_term (context);
+    zmq_ctx_term (context);
     return 0;
 }
 
 void* inputer(void *arg) {
-    int port = (*(int*)arg);
+    cchan_t *chan_msg = ((cchan_t*)arg);
     int rc;
 
-    printf("inputer listen port %d, start zmq loop\n", port);
-    char buffer [100];
+    printf("inputer listen port %d, start zmq loop\n", puller_port);
+    // char buffer [100];
+    zmq_msg_t *msg = NULL;
     while (1) {
-        rc = zmq_recv (puller, buffer, sizeof(buffer), 0);
+        msg = (zmq_msg_t *)malloc(sizeof(zmq_msg_t));
+        if ((rc = zmq_msg_init (msg)) != 0) {
+            printf("zmq zmq_msg_init failed: %d, %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
+            continue;
+        }
+        
+        // rc = zmq_recv (puller, buffer, sizeof(buffer), 0);
+        rc = zmq_msg_recv (msg, puller, 0);
         if (rc == -1) {
             printf("zmq recv failed: %d, %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
             break;
         }
-        printf ("Received Hello\n");
-        sleep (1);          //  Do some 'work'
-        // zmq_send (responder, "World", 5, 0);
+        // printf("inputer rcv msg %lld: [%s]\n", zmq_msg_size (msg), (char*)zmq_msg_data (msg));
+
+        cchan_send(chan_msg, &msg);
     }
     printf("END zmq loop\n");
 

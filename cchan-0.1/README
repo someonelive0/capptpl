@@ -1,0 +1,67 @@
+cchan is a small library that implements a "channel" construct for inter-thread
+communication in C programs.
+
+Each channel is a FIFO of fixed-length messages.
+
+The FIFO will grow to make space for unread messages; the write operation will
+never block.
+
+Multiple threads can write into one channel at once.
+
+Multiple threads can read from one channel at once - but each message is
+received only once. If there are multiple parallel readers, a random reader
+will get each message.
+
+There are two versions of the cchan library (with the same API): one for
+pthread, and one for SDL.
+
+Copyright (C) 2010 Máté Nagy <mnagy@port70.net>
+This code is in the public domain.
+
+Home page: http://repo.hu/projects/cchan
+
+
+
+The cchan API:
+
+#include "cchan_pthread.h"
+(or)
+#include "cchan_sdl.h"
+
+
+cchan_t * cchan_new(int valuesize);
+/* This call creates a new channel.
+ * valuesize specifies the message size that the channel will use.
+ */
+
+void cchan_free(cchan_t *chan);
+/* Destroys the given channel.
+ * This call is not thread-safe.
+ */
+
+void cchan_send(cchan_t *chan, void *value);
+/* Writes the given message to the channel.
+ * The message is copied from the given pointer - as many bytes as specified
+ * in the parameter of cchan_new.
+ */
+
+int cchan_recv(cchan_t *chan, void *output);
+/* Tries to receive a message from a channel.
+ * This call doesn't block.
+ * If no message is available, it returns 0.
+ * If a message is available, it is taken from the FIFO and copied to *output;
+ * the call returns nonzero.
+ */
+
+void cchan_wait(cchan_t *chan, void *output);
+/* Receives a message from a channel.
+ * This call blocks indefinitely until a message is available.
+ * The message is copied to *output.
+ */
+
+int cchan_waittime(cchan_t *chan, void *output, int ms);
+/* This call waits up to ms milliseconds for a message to arrive on the channel.
+ * If a message arrives, it is copied to *output and the call returns nonzero.
+ * If no message arrives, the call returns zero after at least ms milliseconds
+ * have elapsed.
+ */

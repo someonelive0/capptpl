@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>cchan</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#303030" text="#ffffff" link="#87ff87" vlink="#ffafaf" alink="#ffafaf"><font face="monospace">
+<h3>cchan</h3>
+
+This is a small library that implements a &quot;channel&quot; construct for inter-thread
+communication in C programs.
+
+<p>
+Each channel is a FIFO of fixed-length messages.
+
+<p>
+The FIFO will grow to make space for unread messages; the write operation will
+never block.
+
+<p>
+Multiple threads can write into one channel at once.
+
+<p>
+Multiple threads can read from one channel at once - but each message is
+received only once. If there are multiple parallel readers, a random reader
+will get each message.
+
+<p>
+There are two versions of the cchan library (with the same API): one for
+<u>pthread</u>, and one for <u>SDL</u>.
+
+<h3>License</h3>
+Copyright (C) 2010 Máté Nagy &lt;mnagy@port70.net&gt;<br>
+This code is in the <u>public domain</u>.<br>
+
+<h3>Downloads</h3>
+You can download the current version of <u>cchan</u> from the Subversion repository:
+<font color="#ffd787"><pre>
+$ svn co svn://repo.hu/cchan
+</pre></font>
+
+<p>
+There may be some <a href="releases/">packaged releases</a> as well.
+
+<h3>API</h3>
+#include &quot;cchan_pthread.h&quot;<br>
+<font color="#87d7d7">(or)</font><br>
+#include &quot;cchan_sdl.h&quot;<br>
+<br>
+<br>
+cchan_t * cchan_new(int valuesize);<br>
+<font color="#87d7d7">/* This call creates a new channel.</font><br>
+<font color="#87d7d7">&nbsp;* valuesize specifies the message size that the channel will use.</font><br>
+<font color="#87d7d7">&nbsp;*/</font><br>
+<br>
+void cchan_free(cchan_t *chan);<br>
+<font color="#87d7d7">/* Destroys the given channel.</font><br>
+<font color="#87d7d7">&nbsp;* This call is not thread-safe.</font><br>
+<font color="#87d7d7">&nbsp;*/</font><br>
+<br>
+void cchan_send(cchan_t *chan, void *value);<br>
+<font color="#87d7d7">/* Writes the given message to the channel.</font><br>
+<font color="#87d7d7">&nbsp;* The message is copied from the given pointer - as many bytes as specified</font><br>
+<font color="#87d7d7">&nbsp;* in the parameter of cchan_new.</font><br>
+<font color="#87d7d7">&nbsp;*/</font><br>
+<br>
+int cchan_recv(cchan_t *chan, void *output);<br>
+<font color="#87d7d7">/* Tries to receive a message from a channel.</font><br>
+<font color="#87d7d7">&nbsp;* This call doesn't block.</font><br>
+<font color="#87d7d7">&nbsp;* If no message is available, it returns 0.</font><br>
+<font color="#87d7d7">&nbsp;* If a message is available, it is taken from the FIFO and copied to *output;</font><br>
+<font color="#87d7d7">&nbsp;* the call returns nonzero.</font><br>
+<font color="#87d7d7">&nbsp;*/</font><br>
+<br>
+void cchan_wait(cchan_t *chan, void *output);<br>
+<font color="#87d7d7">/* Receives a message from a channel.</font><br>
+<font color="#87d7d7">&nbsp;* This call blocks indefinitely until a message is available.</font><br>
+<font color="#87d7d7">&nbsp;* The message is copied to *output.</font><br>
+<font color="#87d7d7">&nbsp;*/</font><br>
+<br>
+int cchan_waittime(cchan_t *chan, void *output, int ms);<br>
+<font color="#87d7d7">/* This call waits up to ms milliseconds for a message to arrive on the channel.</font><br>
+<font color="#87d7d7">&nbsp;* If a message arrives, it is copied to *output and the call returns nonzero.</font><br>
+<font color="#87d7d7">&nbsp;* If no message arrives, the call returns zero after at least ms milliseconds</font><br>
+<font color="#87d7d7">&nbsp;* have elapsed.</font><br>
+<font color="#87d7d7">&nbsp;*/</font><br>
+</font></body>
+</html>
