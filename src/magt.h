@@ -8,4 +8,4 @@
 // param *data is int port
 void* magt(void *arg);
 
-#endif
+#endif // MAGT_H

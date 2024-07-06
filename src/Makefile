@@ -13,8 +13,8 @@ LDLIBS = -lm
 
 all: apptpl
 
-apptpl: main.o magt.o
-	$(CC) $(LDFLAGS) $^ -levent -lwsock32 -o $@
+apptpl: main.o magt.o inputer.o
+	$(CC) $(LDFLAGS) $^ -levent -lzmq -lwsock32 -o $@
 
 
 clean:
