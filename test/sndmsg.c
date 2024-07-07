@@ -2,11 +2,30 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "logger.h"
+
+
+int init_log() {
+    logger_initConsoleLogger(NULL);
+    logger_initFileLogger("sndmsg.log", 1024*1024, 5);
+    LOG_INFO("multi logging");
+    logger_setLevel(LogLevel_DEBUG);
+    // if (logger_isEnabled(LogLevel_DEBUG)) {
+    //     for (int i = 0; i < 8; i++) {
+    //         LOG_DEBUG("%d", i);
+    //         sleep(1);
+    //     }
+    // }
+    return 0 ;
+}
+
 int main(int argc, char** argv)
 {
     char addr[24] = {0};
     int port = 3001;
     int rc, count = 0;
+
+    init_log();
 
     void *context = zmq_ctx_new();
     void *pusher = zmq_socket (context, ZMQ_PUSH);
@@ -30,7 +49,9 @@ int main(int argc, char** argv)
 
         count ++;
         if ((count % 10000) == 0) {
-            printf("send msg count %d, len %lld: [%s]\n",
+            // printf("send msg count %d, len %lld: [%s]\n",
+            //     count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
+            LOG_DEBUG("send msg count %d, len %lld: [%s]",
                 count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
         }
 

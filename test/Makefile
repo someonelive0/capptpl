@@ -2,7 +2,7 @@
 .SUFFIXES:
 
 CC     = gcc
-CFLAGS = -D_WIN32 -Wall -ggdb -O -I../cchan-0.1
+CFLAGS = -D_WIN32 -Wall -ggdb -O -I../cchan-0.1 -I../c-logger-0.4.1
 LDFLAGS = -ggdb -O
 LDLIBS = -lm
 
@@ -13,10 +13,10 @@ LDLIBS = -lm
 
 all: sndmsg
 
-sndmsg: sndmsg.o
+sndmsg: sndmsg.o logger.o
 	$(CC) $(LDFLAGS) $^ -levent -lzmq -lwsock32 -o $@
 
-cchan_pthread.o: ../cchan-0.1/cchan_pthread.c
+logger.o: ../c-logger-0.4.1/logger.c
 	$(CC) $(CFLAGS) -c $<
 
 clean:
