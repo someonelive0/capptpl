@@ -2,10 +2,11 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "ini.h"
 #include "logger.h"
 
 
-int init_log() {
+static int init_log() {
     logger_initConsoleLogger(NULL);
     logger_initFileLogger("sndmsg.log", 1024*1024, 5);
     LOG_INFO("multi logging");
@@ -19,11 +20,36 @@ int init_log() {
     return 0 ;
 }
 
+static int ini_cb(void* arg, const char* section, const char* name,
+                   const char* value)
+{
+    // configuration* pconfig = (configuration*)arg;
+
+    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
+    if (MATCH("global", "version")) {
+        printf("ini global %s, name %s, value %s\n", section, name, value);
+        // pconfig->version = atoi(value);
+    } else if (MATCH("user", "name")) {
+        // pconfig->name = strdup(value);
+    } else if (MATCH("user", "email")) {
+        // pconfig->email = strdup(value);
+    } else {
+        printf("ini section %s, name %s, value %s\n", section, name, value);
+        // return 0;  /* unknown section/name, error */
+    }
+    return 1;
+}
+
 int main(int argc, char** argv)
 {
     char addr[24] = {0};
     int port = 3001;
     int rc, count = 0;
+
+    if (ini_parse("sndmsg.ini", ini_cb, NULL) < 0) {
+        printf("Can't load 'sndmsg.ini'\n");
+        exit(1);
+    }
 
     init_log();
 
@@ -32,7 +58,7 @@ int main(int argc, char** argv)
     snprintf(addr, sizeof(addr)-1, "tcp://localhost:%d", port);
     if(zmq_connect(pusher, addr) == -1) {
         printf("E: connect %s failed: %s\n", addr,  zmq_strerror(zmq_errno()));
-        return -1;
+        exit(1);
     }
 
     zmq_msg_t msg;
