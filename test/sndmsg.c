@@ -29,7 +29,7 @@ int main(int argc, char** argv)
         }
 
         count ++;
-        if ((count % 1000) == 0) {
+        if ((count % 10000) == 0) {
             printf("send msg count %d, len %lld: [%s]\n",
                 count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
         }

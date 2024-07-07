@@ -37,11 +37,15 @@ void* inputer(void *arg) {
     cchan_t *chan_msg = ((cchan_t*)arg);
     int rc;
 
-    printf("inputer listen port %d, start zmq loop\n", puller_port);
+    printf("inputer listen port %d, start zmq loop, zmq_msg size %lld\n",
+        puller_port, sizeof(zmq_msg_t));
     // char buffer [100];
     zmq_msg_t *msg = NULL;
     while (1) {
-        msg = (zmq_msg_t *)malloc(sizeof(zmq_msg_t));
+        if (NULL == (msg = (zmq_msg_t *)malloc(sizeof(zmq_msg_t)))) {
+            printf("malloc zmq_msg_t failed\n");
+            break;
+        }
         if ((rc = zmq_msg_init (msg)) != 0) {
             printf("zmq zmq_msg_init failed: %d, %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
             continue;
@@ -56,6 +60,12 @@ void* inputer(void *arg) {
         // printf("inputer rcv msg %lld: [%s]\n", zmq_msg_size (msg), (char*)zmq_msg_data (msg));
 
         cchan_send(chan_msg, &msg);
+
+        // to limit channel of msg size
+        if (chan_msg->used >= 16384) {
+            //printf("chan_msg used size: %d, %d\n", chan_msg->used, chan_msg->size);
+            usleep(100);
+        }
     }
     printf("END zmq loop\n");
 

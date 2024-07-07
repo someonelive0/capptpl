@@ -42,5 +42,7 @@ int main(int argc, char** argv)
     pthread_join(tid_worker, NULL);
     printf("join thread worker with tid %lld\n", tid_worker);
 
+    cchan_free(chan_msg);
+
     exit(0);
 }
