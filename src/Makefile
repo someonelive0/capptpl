@@ -14,9 +14,9 @@ LDLIBS = -lm
 
 all: apptpl
 
-apptpl: main.o init_log.o magt.o inputer.o worker.o \
+apptpl: main.o init_log.o magt.o inputer.o worker.o capture.o \
 	cchan_pthread.o logger.o ini.o
-	$(CC) $(LDFLAGS) $^ -levent -lzmq -lwsock32 -o $@
+	$(CC) $(LDFLAGS) $^ -levent -lzmq -lpcap -lwsock32 -o $@
 
 cchan_pthread.o: ../cchan-0.1/cchan_pthread.c
 	$(CC) $(CFLAGS) -c $<

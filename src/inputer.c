@@ -37,7 +37,7 @@ void* inputer(void *arg) {
     cchan_t *chan_msg = ((cchan_t*)arg);
     int rc;
 
-    LOG_INFO ("inputer listen port %d, start zmq loop, zmq_msg size %lld",
+    LOG_INFO ("inputer listen port %d, start zmq loop, zmq_msg_t size %lld",
         puller_port, sizeof(zmq_msg_t));
     // char buffer [100];
     zmq_msg_t *msg = NULL;
