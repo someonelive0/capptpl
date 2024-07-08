@@ -1,0 +1,38 @@
+.POSIX:
+.SUFFIXES:
+
+CC     = gcc
+CFLAGS = -Wall -ggdb -O \
+	-I../cchan-0.1 -I../c-logger-0.4.1 -I../inih-r58 \
+	-I/usr/local/libevent-2.1.12/include \
+	-I/usr/local/zeromq-4.3.5/include
+LDFLAGS = -ggdb -O
+LDLIBS = -lm
+
+.SUFFIXES: .c .o
+.c.o:
+	$(CC) $(CFLAGS) -c $<
+
+
+all: sndmsg
+
+sndmsg: sndmsg.o logger.o ini.o
+	$(CC) $(LDFLAGS) $^ \
+	/usr/local/libevent-2.1.12/lib/libevent.a \
+	/usr/local/zeromq-4.3.5/lib/libzmq.a \
+	/usr/local/gcc-7.4.0/lib64/libstdc++.a \
+	-lpthread -ldl -lunwind -o $@
+
+logger.o: ../c-logger-0.4.1/logger.c
+	$(CC) $(CFLAGS) -c $<
+
+ini.o: ../inih-r58/ini.c
+	$(CC) $(CFLAGS) -c $<
+
+
+clean:
+	rm -f *.o
+	rm -f sndmsg
+
+install:
+

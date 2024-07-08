@@ -1,0 +1,34 @@
+.POSIX:
+.SUFFIXES:
+
+CC     = gcc
+#CFLAGS = -D_WIN32 -Wall -ggdb -O -I../cchan-0.1
+CFLAGS = -Wall -ggdb -O -I../cchan-0.1 \
+	-I/usr/local/libevent-2.1.12/include \
+	-I/usr/local/zeromq-4.3.5/include
+LDFLAGS = -ggdb -O
+LDLIBS = -lm
+
+.SUFFIXES: .c .o
+.c.o:
+	$(CC) $(CFLAGS) -c $<
+
+
+all: apptpl
+
+apptpl: main.o magt.o inputer.o worker.o cchan_pthread.o
+	$(CC) $(LDFLAGS) $^ \
+	/usr/local/libevent-2.1.12/lib/libevent.a \
+	/usr/local/zeromq-4.3.5/lib/libzmq.a \
+	/usr/local/gcc-7.4.0/lib64/libstdc++.a \
+	-lpthread -ldl -lunwind -o $@
+
+cchan_pthread.o: ../cchan-0.1/cchan_pthread.c
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	rm -f *.o
+	rm -f apptpl
+
+install:
+
