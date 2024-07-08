@@ -20,8 +20,7 @@ static int init_log() {
     return 0 ;
 }
 
-static int ini_cb(void* arg, const char* section, const char* name,
-                   const char* value)
+static int ini_cb(void* arg, const char* section, const char* name, const char* value)
 {
     // configuration* pconfig = (configuration*)arg;
 
@@ -40,14 +39,53 @@ static int ini_cb(void* arg, const char* section, const char* name,
     return 1;
 }
 
+int copy(const char* in_path, const char* out_path){
+    size_t n;
+    FILE* in=NULL, * out=NULL;
+    char buf[64];
+    
+    if((in = fopen(in_path, "rb")) && (out = fopen(out_path, "wb")))
+        while((n = fread(buf, 1, sizeof(buf), in)) && fwrite(buf, 1, n, out));
+    else return -1;
+
+    if(in) fclose(in);
+    if(out) fclose(out);
+    return 0;
+}
+
+static int load_config(const char* filename) {
+    char* tpl_filename;
+    int rc;
+
+    rc = access(filename, F_OK);
+    if (0 != rc) {
+        printf("ini file '%s' not exists\n", filename);
+        tpl_filename = malloc(strlen(filename) + 4);
+        strcpy(tpl_filename, filename);
+        strcat(tpl_filename, ".tpl");
+        rc = copy(tpl_filename, filename);
+        free(tpl_filename);
+        if (0 != rc) {
+            printf("copy ini tpl file '%s.tpl' to ini '%s' failed\n", filename, filename);
+            return -1;
+        }
+    }
+
+    if (ini_parse(filename, ini_cb, NULL) < 0) {
+        printf("parse ini file failed '%s'\n", filename);
+        return -1;
+    }
+
+    return 0;
+}
+
 int main(int argc, char** argv)
 {
     char addr[24] = {0};
     int port = 3001;
     int rc, count = 0;
 
-    if (ini_parse("sndmsg.ini", ini_cb, NULL) < 0) {
-        printf("Can't load 'sndmsg.ini'\n");
+    if (load_config("sndmsg.ini") < 0) {
         exit(1);
     }
 

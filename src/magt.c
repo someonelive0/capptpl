@@ -19,6 +19,8 @@
 // #include <event2/timer.h>
 #include <signal.h>
 
+#include "logger.h"
+
 #include "magt.h"
 
 
@@ -29,35 +31,35 @@ void httpd_handler(struct evhttp_request *req, void *arg) {
     //获取客户端请求的URI(使用evhttp_request_uri或直接req->uri)
     const char *uri;
     uri = evhttp_request_uri(req);
-    printf("http request uri=%s\n", uri);
-    sprintf(tmp, "uri=%s\n", uri);
-    strcat(output, tmp);
+    LOG_DEBUG ("http request uri=%s", uri);
+    snprintf(tmp, sizeof(tmp)-1, "uri=%s\n", uri);
+    strncat(output, tmp, sizeof(tmp)-1);
 
-    sprintf(tmp, "uri=%s\n", req->uri);
-    strcat(output, tmp);
+    snprintf(tmp, sizeof(tmp)-1, "uri=%s\n", req->uri);
+    strncat(output, tmp, sizeof(tmp)-1);
     //decoded uri
     char *decoded_uri;
     decoded_uri = evhttp_decode_uri(uri);
-    sprintf(tmp, "decoded_uri=%s\n", decoded_uri);
-    strcat(output, tmp);
+    snprintf(tmp, sizeof(tmp)-1, "decoded_uri=%s", decoded_uri);
+    strncat(output, tmp, sizeof(tmp)-1);
 
     //解析URI的参数(即GET方法的参数)
     struct evkeyvalq params;
     //将URL数据封装成key-value格式,q=value1, s=value2
     evhttp_parse_query(decoded_uri, &params);
     //得到q所对应的value
-    sprintf(tmp, "q=%s\n", evhttp_find_header(&params, "q"));
-    strcat(output, tmp);
+    snprintf(tmp, sizeof(tmp)-1, "q=%s\n", evhttp_find_header(&params, "q"));
+    strncat(output, tmp, sizeof(tmp)-1);
     //得到s所对应的value
-    sprintf(tmp, "s=%s\n", evhttp_find_header(&params, "s"));
-    strcat(output, tmp);
+    snprintf(tmp, sizeof(tmp)-1, "s=%s\n", evhttp_find_header(&params, "s"));
+    strncat(output, tmp, sizeof(tmp)-1);
 
     free(decoded_uri);
 
     //获取POST方法的数据
     char *post_data = (char *) EVBUFFER_DATA(req->input_buffer);
-    sprintf(tmp, "post_data=%s\n", post_data);
-    strcat(output, tmp);
+    snprintf(tmp, sizeof(tmp)-1, "post_data=%s\n", post_data);
+    strncat(output, tmp, sizeof(tmp)-1);
 
     /*
        具体的：可以根据GET/POST的参数执行相应操作，然后将结果输出
@@ -83,7 +85,7 @@ int called = 0;
 static void signall_cb(long long fd, short event, void *arg)
 {
     struct event *signal = arg;
-    printf("%s: got signal %d\n", __func__, EVENT_SIGNAL(signal));
+    LOG_INFO ("%s: got signal %d", __func__, EVENT_SIGNAL(signal));
     event_base_loopbreak(arg);  //终止侦听event_dispatch()的事件侦听循环，执行之后的代码
     if (called >= 2)
         evsignal_del(signal);
@@ -91,7 +93,7 @@ static void signall_cb(long long fd, short event, void *arg)
 }
 
 static void timer_cb(long long fd, short event, void *arg) {
-    // printf("%s: got timeout with unix time: %lld\n", __func__, time(NULL));
+    // LOG_TRACE ("%s: got timeout with unix time: %lld\n", __func__, time(NULL));
 }
 
 
@@ -110,7 +112,7 @@ void* magt(void *arg) {
     struct event_base* base = event_base_new();
     if (!base)
     {
-        printf("create event_base failed!\n");
+        LOG_ERROR ("create event_base failed!");
         return ((void*)1);
     }
 
@@ -129,21 +131,21 @@ void* magt(void *arg) {
     struct evhttp* httpd = evhttp_new(base);
     if (!httpd)
     {
-        printf("create evhttp failed!\n");
+        LOG_ERROR ("create evhttp failed!");
         return ((void*)1);
     }
 
     if (evhttp_bind_socket(httpd, "0.0.0.0", port) != 0)
     {
-        printf("bind socket failed! port:%d\n", port);
+        LOG_ERROR ("bind socket failed! port:%d", port);
         return ((void*)1);
     }
 
     evhttp_set_gencb(httpd, httpd_handler, NULL);
 
-    printf("http listen port %d, start event loop\n", port);
+    LOG_INFO ("http listen port %d, start event loop", port);
     event_base_dispatch(base);
-    printf("END evloop\n");
+    LOG_INFO ("END event loop");
 
     evhttp_free(httpd);
     evsignal_del(signal_int);

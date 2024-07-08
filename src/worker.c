@@ -3,6 +3,7 @@
 #include <unistd.h>
 
 #include "cchan_pthread.h"
+#include "logger.h"
 
 
 int worker_shutdown;
@@ -14,7 +15,7 @@ void* worker(void *arg) {
     int wait_ms = 200;
     int count = 0;
 
-    printf("worker loop\n");
+    LOG_INFO ("worker loop");
     worker_shutdown = 0;
     while (!worker_shutdown) {
         if (0 == cchan_waittime(chan_msg, &msg, wait_ms)) { // 0 means timeout
@@ -25,19 +26,19 @@ void* worker(void *arg) {
             continue;
         }
 
-        // printf("worker rcv msg %lld: [%s]\n", zmq_msg_size (msg), (char*)zmq_msg_data (msg));
+        // LOG_TRACE ("worker rcv msg %lld: [%s]\n", zmq_msg_size (msg), (char*)zmq_msg_data (msg));
         count ++;
         if ((count % 10000) == 0) {
-            printf("worker rcv count times %d, len %lld: [%s]\n",
+            LOG_DEBUG ("worker rcv count times %d, len %lld: [%s]",
                 count, zmq_msg_size (msg), (char*)zmq_msg_data (msg));
         }
 
         if ((rc = zmq_msg_close(msg)) != 0) {
-            printf("zmq_msg_close msg failed: %d, %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
+            LOG_ERROR ("zmq_msg_close msg failed: %d, %s", zmq_errno(), zmq_strerror(zmq_errno()));
         }
         free(msg);
     }
-    printf("END worker loop\n");
+    LOG_INFO ("END worker loop");
 
     return ((void*)0);
 }
