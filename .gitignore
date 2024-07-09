@@ -4,4 +4,5 @@
 *.log.*
 *.ini
 src/apptpl
+src/obj
 test/sndmsg
