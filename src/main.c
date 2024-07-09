@@ -45,7 +45,7 @@ int ini_callback(void* arg, const char* section, const char* name, const char* v
 
 int main(int argc, char** argv)
 {
-    pthread_t tid_magt, tid_inputer, tid_worker;
+    pthread_t tid_magt, tid_inputer, tid_worker, tid_capture;
     cchan_t *chan_msg = cchan_new(sizeof(void*));    /* producers -> consumers */
 
     init_log("apptpl.log", 1024*1024, 5);
@@ -55,15 +55,16 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-
+    // init something
     if (0 != inputer_init(myconfig.zmq_port)) {
         exit(1);
     }
 
-    // live packet capture not supported on this system, windows.
-    // if (0 != capture_open_device("\\Device\\NPF_{27B6BF90-838D-43F0-AB4C-AAA823EF3285}")) {
-    //     exit(1);
-    // }
+    // don't use mingw64 libpcap-devel, use npcap-sdk-1.13 to link -lwpcap.
+    list_devices();
+    if (0 != capture_open_device("\\Device\\NPF_{27B6BF90-838D-43F0-AB4C-AAA823EF3285}")) {
+        exit(1);
+    }
 
     pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig.http_port));
     LOG_INFO ("start thread magt with tid %lld", tid_magt);
@@ -74,8 +75,8 @@ int main(int argc, char** argv)
     pthread_create(&tid_inputer, NULL, inputer, ((void *)chan_msg));
     LOG_INFO ("start thread inputer with tid %lld", tid_inputer);
 
-    // pthread_create(&tid_capture, NULL, capture, ((void *)chan_msg));
-    // LOG_INFO ("start thread capture with tid %lld", tid_capture);
+    pthread_create(&tid_capture, NULL, capture, ((void *)chan_msg));
+    LOG_INFO ("start thread capture with tid %lld", tid_capture);
 
     // brok here to wait
     pthread_join(tid_magt, NULL);
@@ -84,6 +85,10 @@ int main(int argc, char** argv)
     inputer_stop();
     pthread_join(tid_inputer, NULL);
     LOG_INFO ("join thread inputer with tid %lld", tid_inputer);
+
+    capture_shutdown = 1;
+    pthread_join(tid_capture, NULL);
+    LOG_INFO ("join thread capture with tid %lld", tid_capture);
 
     worker_shutdown = 1;
     pthread_join(tid_worker, NULL);
