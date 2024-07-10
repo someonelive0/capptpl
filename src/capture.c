@@ -1,5 +1,6 @@
-
-
+/*
+ * Wrapper libpcap or npcap on windows
+ */
 #include <pcap.h>
 
 // struct ether_header in /usr/include/sys/ethernet.h

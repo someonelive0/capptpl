@@ -17,12 +17,12 @@ endif
 
 ifeq ($(DEBUG), 1)
 $(warning compile mode is debug)
-CFLAGS = -Wall -ggdb
-LDFLAGS = -ggdb -O
+CFLAGS = -Wall -ggdb -std=c11
+LDFLAGS = -ggdb -std=c11
 else
 $(warning compile mode is release)
-CFLAGS = -W -Wall -O2
-LDFLAGS = -O2
+CFLAGS = -W -Wall -O2 -std=c11
+LDFLAGS = -O2 -std=c11
 endif
 
 CC     = gcc
