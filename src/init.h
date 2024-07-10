@@ -42,7 +42,7 @@ const char *const usages[] = {
     NULL,
 };
 
-int parse_args(int argc, const char** argv, int* debug, char** config_filename) {
+int parse_args(int argc, const char** argv, int* debug, const char** config_filename) {
     int version = 0;
     int list = 0;
     // int debug = 0;

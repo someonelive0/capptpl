@@ -1,30 +1,21 @@
 
-// #ifdef _WIN32
-// pragma comment(lib, "ws2_32.lib")
-// #endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>     //for getopt, fork
-#include <string.h>     //for strcat
-//for struct evkeyvalq
-// #include <sys/queue.h>
-//#undef EVENT__HAVE_NETDB_H
+/*
+ * management of http services.
+ */
+#include <signal.h>
 #include <event.h>
-//for http
 #include <event2/http.h>
 #include <event2/http_struct.h>
 #include <event2/http_compat.h>
-// #include <event2/util.h>
-// #include <event2/timer.h>
-#include <signal.h>
 
 #include "logger.h"
 
 #include "magt.h"
 
 
+#define UNUSED(x) (void)(x)
 void httpd_handler(struct evhttp_request *req, void *arg) {
+    UNUSED(arg);
     char output[2048] = "\0";
     char tmp[1024];
 
@@ -82,8 +73,9 @@ void httpd_handler(struct evhttp_request *req, void *arg) {
 }
 
 int called = 0;
-static void signall_cb(long long fd, short event, void *arg)
-{
+static void signall_cb(long long fd, short event, void *arg) {
+    UNUSED(fd);
+    UNUSED(event);
     struct event *signal = arg;
     LOG_INFO ("%s: got signal %d", __func__, EVENT_SIGNAL(signal));
     event_base_loopbreak(arg);  //终止侦听event_dispatch()的事件侦听循环，执行之后的代码
@@ -93,6 +85,9 @@ static void signall_cb(long long fd, short event, void *arg)
 }
 
 static void timer_cb(long long fd, short event, void *arg) {
+    UNUSED(fd);
+    UNUSED(event);
+    UNUSED(arg);
     // LOG_TRACE ("%s: got timeout with unix time: %lld\n", __func__, time(NULL));
 }
 

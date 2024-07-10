@@ -1,8 +1,8 @@
-
+/*
+ * main.c for apptpl
+ */
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 #include <pthread.h>
 
 #include "cchan_pthread.h"
@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 {
     time_t begin_time = time(NULL);
     int debug = 0;
-    char *config_filename = NULL; 
+    const char *config_filename = NULL; 
     if (0 != parse_args(argc, (const char**)argv, &debug, &config_filename)) {
         exit(1);
     }

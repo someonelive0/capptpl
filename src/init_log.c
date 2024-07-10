@@ -1,9 +1,7 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 
-// #include "ini.h"
 #include "logger.h"
 
 #include "init_log.h"
@@ -21,8 +19,9 @@ int init_log(const char* filename, int debug, int filesize, int filenumber) {
     return 0 ;
 }
 
-int ini_cb(void* arg, const char* section, const char* name, const char* value)
-{
+#define UNUSED(x) (void)(x)
+int ini_cb(void* arg, const char* section, const char* name, const char* value) {
+    UNUSED(arg);
     // configuration* pconfig = (configuration*)arg;
 
     #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0

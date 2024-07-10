@@ -123,10 +123,13 @@ int capture_close() {
     return 0;
 }
 
+#define UNUSED(x) (void)(x)
 void capture_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata) {
+    UNUSED(arg);
     // PcapCapturer *cap = (PcapCapturer *)arg;
     // cap->ProcessPcapPacket(packet_header, packet_content);
-    printf("capture_cb: %d/%d\n", pkthdr->caplen, pkthdr->len);
+    printf("capture_cb: %d/%d,\tdata addr: %p\n",
+        pkthdr->caplen, pkthdr->len, &pktdata);
 }
 
 void* capture(void *arg) {

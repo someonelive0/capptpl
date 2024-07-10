@@ -21,7 +21,7 @@ CFLAGS = -Wall -ggdb
 LDFLAGS = -ggdb -O
 else
 $(warning compile mode is release)
-CFLAGS = -Wall -O2
+CFLAGS = -W -Wall -O2
 LDFLAGS = -O2
 endif
 
