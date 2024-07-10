@@ -6,8 +6,9 @@
 #include <pthread.h>
 
 #include "cchan_pthread.h"
-#include "logger.h"
 
+#include "version.h"
+#include "init.h"
 #include "init_log.h"
 #include "magt.h"
 #include "inputer.h"
@@ -15,45 +16,27 @@
 #include "capture.h"
 
 
-struct config {
-    char version[8];
-    int http_port;
-    int zmq_port;
-};
-
-int ini_callback(void* arg, const char* section, const char* name, const char* value)
-{
-    struct config* pconfig = (struct config*)arg;
-
-    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
-    if (MATCH("global", "version")) {
-        LOG_DEBUG ("ini global %s, name %s, value %s", section, name, value);
-        strncpy(pconfig->version, value, sizeof(pconfig->version)-1);
-    } else if (MATCH("http", "port")) {
-        LOG_DEBUG ("ini section %s, name %s, value %s", section, name, value);
-        pconfig->http_port = atoi(value);
-    } else if (MATCH("zmq", "port")) {
-        LOG_DEBUG ("ini section %s, name %s, value %s", section, name, value);
-        pconfig->zmq_port = atoi(value);
-    } else {
-        LOG_ERROR ("unknown ini section %s, name %s, value %s", section, name, value);
-        return 0;  /* unknown section/name, error */
-    }
-    return 1;
-}
-
-
 int main(int argc, char** argv)
 {
-    pthread_t tid_magt, tid_inputer, tid_worker, tid_capture;
-    cchan_t *chan_msg = cchan_new(sizeof(void*));    /* producers -> consumers */
-
-    init_log("apptpl.log", 1024*1024, 5);
-
-    struct config myconfig = {{0}, 0, 0};
-    if (load_config("apptpl.ini", ini_callback, &myconfig) < 0) {
+    time_t begin_time = time(NULL);
+    int debug = 0;
+    char *config_filename = NULL; 
+    if (0 != parse_args(argc, (const char**)argv, &debug, &config_filename)) {
         exit(1);
     }
+    if (NULL == config_filename) config_filename = DEFAULT_CONFIG_FILE;
+
+    if (0 != init_log("apptpl.log", debug, 1024*1024, 5)) {
+        exit(1);
+    }
+
+    struct config myconfig = {{0}, 0, 0};
+    if (load_config(config_filename, ini_callback, &myconfig) < 0) {
+        exit(1);
+    }
+    LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, zmq_port=%d",
+        asctime(localtime( &begin_time )), // ctime(&begin_time),
+        config_filename, myconfig.version, myconfig.http_port, myconfig.zmq_port);
 
     // init something
     if (0 != inputer_init(myconfig.zmq_port)) {
@@ -61,10 +44,12 @@ int main(int argc, char** argv)
     }
 
     // don't use mingw64 libpcap-devel, use npcap-sdk-1.13 to link -lwpcap.
-    list_devices();
     if (0 != capture_open_device("\\Device\\NPF_{27B6BF90-838D-43F0-AB4C-AAA823EF3285}")) {
         exit(1);
     }
+
+    pthread_t tid_magt, tid_inputer, tid_worker, tid_capture;
+    cchan_t *chan_msg = cchan_new(sizeof(void*));    /* producers -> consumers */
 
     pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig.http_port));
     LOG_INFO ("start thread magt with tid %lld", tid_magt);
@@ -96,5 +81,8 @@ int main(int argc, char** argv)
 
     cchan_free(chan_msg);
 
+    time_t end_time = time(NULL);
+    LOG_INFO ("END at %s\tprogram is totally running time of seconds %f",
+        asctime(localtime( &end_time )), difftime(end_time, begin_time));
     exit(0);
 }

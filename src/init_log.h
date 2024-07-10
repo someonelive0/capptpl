@@ -4,7 +4,7 @@
 #include "ini.h"
 
 
-int init_log(const char* filename, int filesize, int filenumber);
+int init_log(const char* filename, int debug, int filesize, int filenumber);
 
 // config ini functions.
 int ini_cb(void* arg, const char* section, const char* name, const char* value);

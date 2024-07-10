@@ -158,13 +158,13 @@ int list_devices() {
     struct in_addr inaddr; /* Used for both ip & subnet */
 
     if (pcap_findalldevs(&alldevs, errbuf) == -1) {
-        LOG_ERROR ("pcap_findalldevs failed. error=%s", errbuf);
+        printf ("pcap_findalldevs failed. error=%s\n", errbuf);
         return -1;
     }
 
     /* Scan the list printing every entry */
     for (d = alldevs; d; d = d->next) {
-        LOG_INFO ("net device name %s", d->name);
+        // printf ("net device name %s", d->name);
 
         /* Get device info */
         rc = pcap_lookupnet(
@@ -174,7 +174,7 @@ int list_devices() {
             errbuf
         );
         if (rc == -1) {
-            printf("pcap_lookupnet of device %s failed: %s\n", d->name, errbuf);
+            printf ("pcap_lookupnet of device %s failed: %s\n", d->name, errbuf);
             return -1;
         }
 
@@ -182,7 +182,7 @@ int list_devices() {
         inaddr.s_addr = ip_raw;
         char* p = inet_ntoa(inaddr);
         if (p == NULL) {
-            LOG_ERROR ("inet_ntoa ip failed, %d %s", errno, strerror(errno));
+            printf ("inet_ntoa ip failed, %d %s\n", errno, strerror(errno));
             return -1;
         }
         strncpy(ip, p, sizeof(ip)-1);
@@ -190,14 +190,13 @@ int list_devices() {
         /* Get subnet mask in human readable form */
         inaddr.s_addr = subnet_mask_raw;
         if ((p = inet_ntoa(inaddr)) == NULL) {
-            LOG_ERROR ("inet_ntoa netmask failed, %d %s", errno, strerror(errno));
+            printf ("inet_ntoa netmask failed, %d %s\n", errno, strerror(errno));
             return -1;
         }
         strncpy(subnet_mask, p, sizeof(subnet_mask)-1);
 
-        printf("Device: %s\n", d->name);
-        printf("IP address: %s\n", ip);
-        printf("Subnet mask: %s\n", subnet_mask);
+        printf("device: %s\n", d->name);
+        printf("        ip: %s    netmask: %s\n", ip, subnet_mask);
     }
 
     pcap_freealldevs(alldevs);

@@ -1,3 +1,8 @@
+# Makefile for apptpl
+# run 'make' to build release mode
+# run 'make DEBUG=1' to build debug mode
+#
+
 .POSIX:
 .SUFFIXES:
 
@@ -10,16 +15,25 @@ else
     detected_OS := $(patsubst MINGW%,MSYS,$(detected_OS))
 endif
 
+ifeq ($(DEBUG), 1)
+$(warning compile mode is debug)
+CFLAGS = -Wall -ggdb
+LDFLAGS = -ggdb -O
+else
+$(warning compile mode is release)
+CFLAGS = -Wall -O2
+LDFLAGS = -O2
+endif
+
 CC     = gcc
-CFLAGS = -Wall -ggdb -O \
-		-I../cchan-0.1 -I../c-logger-0.4.1 -I../inih-r58
+CFLAGS += -I../cchan-0.1 -I../c-logger-0.4.1 -I../inih-r58
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 \
 		-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
 endif
 # CFLAGS += -fprofile-arcs -ftest-coverage
 
-LDFLAGS = -ggdb -O
+
 ifeq ($(detected_OS),MSYS)
 LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
 endif
@@ -33,7 +47,7 @@ vpath %.c ../cchan-0.1 ../c-logger-0.4.1 ../inih-r58
 apptpl_srcs = main.c init_log.c magt.c inputer.c worker.c capture.c \
 	cchan_pthread.c \
 	logger.c \
-	ini.c
+	ini.c argparse.c
 apptpl_objs = $(apptpl_srcs:%.c=$(OBJDIR)/%.o)
 
 
@@ -56,9 +70,9 @@ install:
 
 
 diag:
-	@echo $(detected_OS)
-	@echo $(apptpl_srcs)
-	@echo $(apptpl_objs)
+	@echo "OS is $(detected_OS)"
+	@echo "apptpl_srcs: $(apptpl_srcs)"
+	@echo "apptpl_objs: $(apptpl_objs)"
 
 # .SUFFIXES: .c .o
 # .c.o:

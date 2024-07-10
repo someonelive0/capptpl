@@ -9,11 +9,15 @@
 #include "init_log.h"
 
 
-int init_log(const char* filename, int filesize, int filenumber) {
+int init_log(const char* filename, int debug, int filesize, int filenumber) {
     logger_initConsoleLogger(NULL);
     logger_initFileLogger(filename, filesize, filenumber);
-    LOG_INFO("multi logging");
-    logger_setLevel(LogLevel_DEBUG);
+    if (debug) {
+        logger_setLevel(LogLevel_DEBUG);
+        LOG_DEBUG("set log level to DEBUG");
+    } else {
+        logger_setLevel(LogLevel_INFO);
+    }
     return 0 ;
 }
 
@@ -42,20 +46,20 @@ int load_config(const char* filename, ini_handler ini_callback, void* arg) {
 
     rc = access(filename, F_OK);
     if (0 != rc) {
-        printf("ini file '%s' not exists\n", filename);
+        printf("load_config ini file '%s' not exists\n", filename);
         tpl_filename = malloc(strlen(filename) + 4);
         strcpy(tpl_filename, filename);
         strcat(tpl_filename, ".tpl");
         rc = copy_file(tpl_filename, filename);
         free(tpl_filename);
         if (0 != rc) {
-            printf("copy ini tpl file '%s.tpl' to ini '%s' failed\n", filename, filename);
+            printf("load_config copy ini tpl file '%s.tpl' to ini '%s' failed\n", filename, filename);
             return -1;
         }
     }
 
     if (ini_parse(filename, ini_callback, arg) < 0) {
-        printf("parse ini file failed '%s'\n", filename);
+        printf("load_config parse ini file failed '%s'\n", filename);
         return -1;
     }
 
