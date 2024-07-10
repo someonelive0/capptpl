@@ -12,6 +12,7 @@ struct config {
     char version[8];
     int http_port;
     int zmq_port;
+    char pcap_device[128];
 };
 
 int ini_callback(void* arg, const char* section, const char* name, const char* value)
@@ -28,6 +29,9 @@ int ini_callback(void* arg, const char* section, const char* name, const char* v
     } else if (MATCH("zmq", "port")) {
         LOG_DEBUG ("ini section %s, name %s, value %s", section, name, value);
         pconfig->zmq_port = atoi(value);
+    }if (MATCH("pcap", "device")) {
+        LOG_DEBUG ("ini section %s, name %s, value %s", section, name, value);
+        strncpy(pconfig->pcap_device, value, sizeof(pconfig->pcap_device)-1);
     } else {
         LOG_ERROR ("unknown ini section %s, name %s, value %s", section, name, value);
         return 0;  /* unknown section/name, error */

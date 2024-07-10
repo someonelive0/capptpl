@@ -30,13 +30,13 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    struct config myconfig = {{0}, 0, 0};
+    struct config myconfig = {{0}, 0, 0, {0}};
     if (load_config(config_filename, ini_callback, &myconfig) < 0) {
         exit(1);
     }
-    LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, zmq_port=%d",
+    LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, zmq_port=%d, pcap_device=%s",
         asctime(localtime( &begin_time )), // ctime(&begin_time),
-        config_filename, myconfig.version, myconfig.http_port, myconfig.zmq_port);
+        config_filename, myconfig.version, myconfig.http_port, myconfig.zmq_port, myconfig.pcap_device);
 
     // init something
     if (0 != inputer_init(myconfig.zmq_port)) {
@@ -44,7 +44,7 @@ int main(int argc, char** argv)
     }
 
     // don't use mingw64 libpcap-devel, use npcap-sdk-1.13 to link -lwpcap.
-    if (0 != capture_open_device("\\Device\\NPF_{27B6BF90-838D-43F0-AB4C-AAA823EF3285}")) {
+    if (0 != capture_open_device(myconfig.pcap_device)) {
         exit(1);
     }
 

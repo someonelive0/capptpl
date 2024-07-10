@@ -1,6 +1,7 @@
 /*
  * Wrapper libpcap or npcap on windows
  */
+#include <errno.h>
 #include <pcap.h>
 
 // struct ether_header in /usr/include/sys/ethernet.h
@@ -82,10 +83,12 @@ int capture_open_device(const char *device) {
     }
 
     // WIN32 必须在设备activate后设置pcap_setbuff，否则失败
+    #ifdef _WIN32
     rc = pcap_setmintocopy(handle, 16000);
     if (rc < 0) {
         LOG_WARN ("pcap_setmintocopy %d failed:%s", 16000, pcap_geterr(handle));
     }
+    #endif
 
     // step2 获取MAC地址
     if (pcap_lookupnet(device, &net_ip, &net_mask, errbuf) < 0) {
@@ -168,7 +171,7 @@ int list_devices() {
 
     /* Scan the list printing every entry */
     for (d = alldevs; d; d = d->next) {
-        // printf ("net device name %s", d->name);
+        printf("device: %s\n", d->name);
 
         /* Get device info */
         rc = pcap_lookupnet(
@@ -178,8 +181,8 @@ int list_devices() {
             errbuf
         );
         if (rc == -1) {
-            printf ("pcap_lookupnet of device %s failed: %s\n", d->name, errbuf);
-            return -1;
+            printf ("\tpcap_lookupnet of device %s failed: %s\n", d->name, errbuf);
+            continue;
         }
 
         /* Get ip in human readable form */
@@ -199,8 +202,7 @@ int list_devices() {
         }
         strncpy(subnet_mask, p, sizeof(subnet_mask)-1);
 
-        printf("device: %s\n", d->name);
-        printf("        ip: %s    netmask: %s\n", ip, subnet_mask);
+        printf("\tip: %s\tnetmask: %s\n", ip, subnet_mask);
     }
 
     pcap_freealldevs(alldevs);

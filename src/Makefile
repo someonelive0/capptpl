@@ -30,16 +30,23 @@ CFLAGS += -I../cchan-0.1 -I../c-logger-0.4.1 -I../inih-r58
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 \
 		-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
-endif
-# CFLAGS += -fprofile-arcs -ftest-coverage
-
-
-ifeq ($(detected_OS),MSYS)
 LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
+LDLIBS = -levent -lzmq -lwsock32 -lwpcap
+else
+CFLAGS += -D_BSD_SOURCE \
+		-I/usr/local/libevent-2.1.12/include \
+		-I/usr/local/zeromq-4.3.5/include \
+		-I/usr/local/libpcap-1.10.4/include
+#LDFLAGS += 
+LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
+	/usr/local/zeromq-4.3.5/lib/libzmq.a \
+	/usr/local/libpcap-1.10.4/lib/libpcap.a \
+	/usr/local/gcc-7.4.0/lib64/libstdc++.a \
+	-lpthread -ldl -lunwind
 endif
-# LDFLAGS += -lgcov --coverage
 
-LDLIBS = -lm
+# CFLAGS += -fprofile-arcs -ftest-coverage
+# LDFLAGS += -lgcov --coverage
 
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 OBJDIR = obj
@@ -56,7 +63,7 @@ all: apptpl
 # apptpl: main.o init_log.o magt.o inputer.o worker.o capture.o \
 # 	cchan_pthread.o logger.o ini.o
 apptpl: $(apptpl_objs)
-	$(CC) $(LDFLAGS) $^ -levent -lzmq -lwsock32 -lwpcap -o $@
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 $(apptpl_objs): $(OBJDIR)/%.o : %.c
 	@mkdir -p $(OBJDIR)

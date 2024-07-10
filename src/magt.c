@@ -2,6 +2,7 @@
 /*
  * management of http services.
  */
+#include <stdlib.h>
 #include <signal.h>
 #include <event.h>
 #include <event2/http.h>
@@ -73,7 +74,11 @@ void httpd_handler(struct evhttp_request *req, void *arg) {
 }
 
 int called = 0;
+#ifdef _WIN32
 static void signall_cb(long long fd, short event, void *arg) {
+#else
+static void signall_cb(int fd, short event, void *arg) {
+#endif
     UNUSED(fd);
     UNUSED(event);
     struct event *signal = arg;
@@ -84,7 +89,11 @@ static void signall_cb(long long fd, short event, void *arg) {
      called++;
 }
 
+#ifdef _WIN32
 static void timer_cb(long long fd, short event, void *arg) {
+#else
+static void timer_cb(int fd, short event, void *arg) {
+#endif
     UNUSED(fd);
     UNUSED(event);
     UNUSED(arg);
