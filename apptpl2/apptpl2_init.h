@@ -3,16 +3,13 @@
 
 #include "logger.h"
 #include "argparse.h"
-#include "capture.h"
 
-#define DEFAULT_CONFIG_FILE "apptpl.ini"
+#define DEFAULT_CONFIG_FILE "apptpl2.ini"
 
 
 struct config {
     char version[8];
     int http_port;
-    int zmq_port;
-    char pcap_device[128];
 };
 
 int ini_callback(void* arg, const char* section, const char* name, const char* value)
@@ -26,12 +23,6 @@ int ini_callback(void* arg, const char* section, const char* name, const char* v
     } else if (MATCH("http", "port")) {
         LOG_DEBUG ("ini section %s, name %s, value %s", section, name, value);
         pconfig->http_port = atoi(value);
-    } else if (MATCH("zmq", "port")) {
-        LOG_DEBUG ("ini section %s, name %s, value %s", section, name, value);
-        pconfig->zmq_port = atoi(value);
-    }if (MATCH("pcap", "device")) {
-        LOG_DEBUG ("ini section %s, name %s, value %s", section, name, value);
-        strncpy(pconfig->pcap_device, value, sizeof(pconfig->pcap_device)-1);
     } else {
         LOG_ERROR ("unknown ini section %s, name %s, value %s", section, name, value);
         return 0;  /* unknown section/name, error */
@@ -41,8 +32,8 @@ int ini_callback(void* arg, const char* section, const char* name, const char* v
 
 
 const char *const usages[] = {
-    "appctl [options] [[--] args]",
-    "appctl [options]",
+    "appctl2 [options] [[--] args]",
+    "appctl2 [options]",
     NULL,
 };
 
@@ -68,10 +59,6 @@ int parse_args(int argc, const char** argv, int* debug, const char** config_file
 
     if (version != 0) {
         show_version();
-        return 1;
-    }
-    if (list != 0) {
-        list_devices();
         return 1;
     }
     // if (debug != 0)

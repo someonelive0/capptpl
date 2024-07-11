@@ -8,8 +8,9 @@
 #include "cchan_pthread.h"
 
 #include "version.h"
-#include "init.h"
+#include "apptpl_init.h"
 #include "init_log.h"
+#include "load_config.h"
 #include "magt.h"
 #include "inputer.h"
 #include "worker.h"
@@ -30,13 +31,14 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    struct config myconfig = {{0}, 0, 0, {0}};
-    if (load_config(config_filename, ini_callback, &myconfig) < 0) {
+    struct config myconfig = {{0}, 0, 0, {0}, 0, 0, {0}};
+    if (load_config_ini(config_filename, ini_callback, &myconfig) < 0) {
         exit(1);
     }
-    LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, zmq_port=%d, pcap_device=%s",
+    LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, zmq_port=%d, pcap_device=%s, pcap_snaplen=%d, pcap_buffer_size=%d, pcap_filter=%s",
         asctime(localtime( &begin_time )), // ctime(&begin_time),
-        config_filename, myconfig.version, myconfig.http_port, myconfig.zmq_port, myconfig.pcap_device);
+        config_filename, myconfig.version, myconfig.http_port, myconfig.zmq_port,
+        myconfig.pcap_device, myconfig.pcap_snaplen, myconfig.pcap_buffer_size, myconfig.pcap_filter);
 
     // init something
     if (0 != inputer_init(myconfig.zmq_port)) {
@@ -44,7 +46,8 @@ int main(int argc, char** argv)
     }
 
     // don't use mingw64 libpcap-devel, use npcap-sdk-1.13 to link -lwpcap.
-    if (0 != capture_open_device(myconfig.pcap_device)) {
+    if (0 != capture_open_device(myconfig.pcap_device,
+        myconfig.pcap_snaplen, myconfig.pcap_buffer_size, myconfig.pcap_filter)) {
         exit(1);
     }
 

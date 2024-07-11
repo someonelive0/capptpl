@@ -4,20 +4,8 @@
 
 #include "logger.h"
 
-#include "init_log.h"
+#include "load_config.h"
 
-
-int init_log(const char* filename, int debug, int filesize, int filenumber) {
-    logger_initConsoleLogger(NULL);
-    logger_initFileLogger(filename, filesize, filenumber);
-    if (debug) {
-        logger_setLevel(LogLevel_DEBUG);
-        LOG_DEBUG("set log level to DEBUG");
-    } else {
-        logger_setLevel(LogLevel_INFO);
-    }
-    return 0 ;
-}
 
 #define UNUSED(x) (void)(x)
 int ini_cb(void* arg, const char* section, const char* name, const char* value) {
@@ -39,7 +27,7 @@ int ini_cb(void* arg, const char* section, const char* name, const char* value) 
     return 1;
 }
 
-int load_config(const char* filename, ini_handler ini_callback, void* arg) {
+int load_config_ini(const char* filename, ini_handler ini_callback, void* arg) {
     char* tpl_filename;
     int rc;
 

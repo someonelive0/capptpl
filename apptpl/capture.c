@@ -14,9 +14,10 @@
 
 
 int capture_shutdown;
+uint64_t capture_count;
 pcap_t* capture_handle = NULL;
 
-int capture_open_device(const char *device) {
+int capture_open_device(const char *device, int snaplen, int buffer_size, const char* filter) {
 
     bpf_u_int32 net_mask = 0;
     bpf_u_int32 net_ip = 0;
@@ -32,9 +33,9 @@ int capture_open_device(const char *device) {
     }
 
     // 设置抓包长度
-    int rc = pcap_set_snaplen(handle, 65535);
+    int rc = pcap_set_snaplen(handle, snaplen);
     if (rc < 0) {
-        LOG_WARN ("pcap_set_snaplen %d failed:%s", 65535, pcap_geterr(handle));
+        LOG_WARN ("pcap_set_snaplen %d failed:%s", snaplen, pcap_geterr(handle));
     }
 
     // 设置混杂模式
@@ -43,7 +44,7 @@ int capture_open_device(const char *device) {
         LOG_WARN ("pcap_set_promisc %d failed:%s", 1, pcap_geterr(handle));
     }
 
-    // 设置读取超时，单位 毫秒
+    // 设置读取超时，单位 毫秒, 默认 100ms
     rc = pcap_set_timeout(handle, 100);
     if (rc < 0) {
         LOG_WARN ("pcap_set_timeout %d failed:%s", 100, pcap_geterr(handle));
@@ -55,10 +56,12 @@ int capture_open_device(const char *device) {
         LOG_WARN ("pcap_set_immediate_mode %d failed:%s", 0, pcap_geterr(handle));
     }
 
-    if(pcap_set_buffer_size(handle, 2048) != 0) {
+    // 设置缓存大小，单位 KBytes
+    if(pcap_set_buffer_size(handle, buffer_size) != 0) {
         LOG_WARN ("pcap_set_buffer_size failed, size %d KB, %s",
-          2048, pcap_geterr(handle));
+          buffer_size, pcap_geterr(handle));
     }
+    LOG_INFO("pcap buffer_size: %d KBytes", buffer_size);
 
     // 激活句柄
     rc = pcap_activate(handle);
@@ -70,16 +73,18 @@ int capture_open_device(const char *device) {
     LOG_INFO("pcap snapshot: %d", pcap_snapshot(handle));
 
 
-    char filter[128] = "tcp";
-    struct bpf_program bpf_filter;
-    if (pcap_compile(handle, &bpf_filter, filter, 1, 0xFFFFFF00) == -1) {
-        LOG_ERROR ("capturer pcap_compile filter:%s, failed:%s", filter, pcap_geterr(handle));
-        return -1;
-    }
-    /*设置FILTER*/
-    if (pcap_setfilter(handle, &bpf_filter) == -1) {
-        LOG_ERROR ("capturer pcap_setfilter failed:%s", pcap_geterr(handle));
-        return -1;
+    if (strlen(filter) > 0) {
+        struct bpf_program bpf_filter;
+        if (pcap_compile(handle, &bpf_filter, filter, 1, 0xFFFFFF00) == -1) {
+            LOG_ERROR ("capturer pcap_compile filter:%s, failed:%s", filter, pcap_geterr(handle));
+            return -1;
+        }
+        /*设置FILTER*/
+        if (pcap_setfilter(handle, &bpf_filter) == -1) {
+            LOG_ERROR ("capturer pcap_setfilter failed:%s", pcap_geterr(handle));
+            return -1;
+        }
+        LOG_INFO("pcap filter: %s", filter);
     }
 
     // WIN32 必须在设备activate后设置pcap_setbuff，否则失败
@@ -130,6 +135,7 @@ int capture_close() {
 #define UNUSED(x) (void)(x)
 void capture_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata) {
     UNUSED(arg);
+    capture_count ++;
     // PcapCapturer *cap = (PcapCapturer *)arg;
     // cap->ProcessPcapPacket(packet_header, packet_content);
     printf("capture_cb: %d/%d,\tdata addr: %p\n",
@@ -141,6 +147,7 @@ void* capture(void *arg) {
 
     LOG_INFO ("capture begin loop");
     capture_shutdown = 0;
+    capture_count = 0;
     while (!capture_shutdown) {
         rc = pcap_dispatch(capture_handle, -1, capture_cb, (u_char *)arg);
         if (rc == -1) {
@@ -148,7 +155,7 @@ void* capture(void *arg) {
             break;
         }
     }
-    LOG_INFO ("END capture loop");
+    LOG_INFO ("END capture loop, capture count %lld", capture_count);
 
     return ((void*)0);
 }
@@ -158,9 +165,9 @@ int list_devices() {
     pcap_if_t *alldevs, *d;
     int rc;
 
-    char ip[13] = {0};
-    char subnet_mask[13] = {0};
-    bpf_u_int32 ip_raw; /* IP address as integer */
+    char ip[46] = {0}; // include ipv6
+    char subnet_mask[46] = {0};
+    bpf_u_int32 subnet_raw; /* Subnet address as integer */
     bpf_u_int32 subnet_mask_raw; /* Subnet mask as integer */
     struct in_addr inaddr; /* Used for both ip & subnet */
 
@@ -173,10 +180,25 @@ int list_devices() {
     for (d = alldevs; d; d = d->next) {
         printf("device: %s\n", d->name);
 
-        /* Get device info */
+        for (pcap_addr_t *a = d->addresses; a; a = a->next) {
+            if (a->addr && a->addr->sa_family == AF_INET) {
+                memset(ip, 0, sizeof(ip));
+                inet_ntop(AF_INET, &((struct sockaddr_in *)(a->addr))->sin_addr.s_addr, ip, sizeof(ip));
+                printf("\tipv4: %s\n", ip);
+            } else if (a->addr && a->addr->sa_family == AF_INET6) {
+                memset(ip, 0, sizeof(ip));
+                inet_ntop(AF_INET6, &((struct sockaddr_in6 *)(a->addr))->sin6_addr, ip, sizeof(ip));
+                printf("\tipv6: %s\n", ip);
+            } else {
+                // printf("other sa_family:%d\n", a->addr->sa_family);
+                continue;
+            }
+        }
+
+        /* Get device subnet info */
         rc = pcap_lookupnet(
             d->name,
-            &ip_raw,
+            &subnet_raw,
             &subnet_mask_raw,
             errbuf
         );
@@ -186,14 +208,14 @@ int list_devices() {
         }
 
         /* Get ip in human readable form */
-        inaddr.s_addr = ip_raw;
+        inaddr.s_addr = subnet_raw;
         char* p = inet_ntoa(inaddr);
         if (p == NULL) {
             printf ("inet_ntoa ip failed, %d %s\n", errno, strerror(errno));
             return -1;
         }
         strncpy(ip, p, sizeof(ip)-1);
-        
+
         /* Get subnet mask in human readable form */
         inaddr.s_addr = subnet_mask_raw;
         if ((p = inet_ntoa(inaddr)) == NULL) {
@@ -202,7 +224,7 @@ int list_devices() {
         }
         strncpy(subnet_mask, p, sizeof(subnet_mask)-1);
 
-        printf("\tip: %s\tnetmask: %s\n", ip, subnet_mask);
+        printf("\tsubnet: %s\tnetmask: %s\n", ip, subnet_mask);
     }
 
     pcap_freealldevs(alldevs);

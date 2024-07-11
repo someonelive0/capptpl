@@ -9,7 +9,9 @@
 #include "logger.h"
 
 #include "version.h"
+#include "apptpl2_init.h"
 #include "init_log.h"
+#include "load_config.h"
 #include "magt.h"
 
 
@@ -18,25 +20,25 @@ int main(int argc, char** argv)
     time_t begin_time = time(NULL);
     int debug = 0;
     const char *config_filename = NULL; 
-    // if (0 != parse_args(argc, (const char**)argv, &debug, &config_filename)) {
-    //     exit(1);
-    // }
-    // if (NULL == config_filename) config_filename = DEFAULT_CONFIG_FILE;
+    if (0 != parse_args(argc, (const char**)argv, &debug, &config_filename)) {
+        exit(1);
+    }
+    if (NULL == config_filename) config_filename = DEFAULT_CONFIG_FILE;
 
     if (0 != init_log("apptpl2.log", debug, 1024*1024, 5)) {
         exit(1);
     }
 
-    // struct config myconfig = {{0}, 0, 0, {0}};
-    // if (load_config(config_filename, ini_callback, &myconfig) < 0) {
-    //     exit(1);
-    // }
-    // LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, zmq_port=%d, pcap_device=%s",
-    //     asctime(localtime( &begin_time )), // ctime(&begin_time),
-    //     config_filename, myconfig.version, myconfig.http_port, myconfig.zmq_port, myconfig.pcap_device);
+    struct config myconfig = {{0}, 0};
+    if (load_config_ini(config_filename, ini_callback, &myconfig) < 0) {
+        exit(1);
+    }
+    LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d",
+        asctime(localtime( &begin_time )), // ctime(&begin_time),
+        config_filename, myconfig.version, myconfig.http_port);
 
 
-    pthread_t tid_magt, tid_inputer, tid_worker, tid_capture;
+    pthread_t tid_magt;
     cchan_t *chan_msg = cchan_new(sizeof(void*));    /* producers -> consumers */
 
     int http_port = 3000;
