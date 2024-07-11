@@ -27,7 +27,7 @@ endif
 
 #CC     = clang
 CC     = gcc
-CFLAGS += -I../cchan-0.1 -I../c-logger-0.4.1 -I../inih-r58 -I../lib
+CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 -I../lib
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 \
 		-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
@@ -51,7 +51,7 @@ endif
 
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 OBJDIR = obj
-vpath %.c ../cchan-0.1 ../c-logger-0.4.1 ../inih-r58 ../lib
+vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 ../lib
 apptpl_srcs = main.c magt.c inputer.c worker.c capture.c \
 	init_log.c load_config.c \
 	cchan_pthread.c \

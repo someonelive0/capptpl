@@ -11,7 +11,7 @@ Alse with arg parser and rotating logging.
 
 ## Depends
 
-Include in my project with source code. 
+Include in my project with source code in subpath ./lib. 
 - c-logger-0.4.1
 - cchan-0.1
 - inih-r58
