@@ -35,7 +35,10 @@ make DEBUG=1
 
 ## Run
 
+If not root user, first use setcap to enable CAP* ability to program.
+
 ```
+setcap 'CAP_NET_RAW,CAP_NET_ADMIN,CAP_DAC_OVERRIDE+ep' ./apptpl
 ./apptpl
 ```
 

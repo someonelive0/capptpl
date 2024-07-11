@@ -76,6 +76,8 @@ clean:
 	rm -f apptpl
 
 install:
+	mkdir -p ../bin
+	cp apptpl apptpl.ini.tpl ../bin
 
 
 diag:

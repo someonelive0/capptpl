@@ -69,6 +69,8 @@ clean:
 	rm -f apptpl2
 
 install:
+	mkdir -p ../bin
+	cp apptpl2 apptpl2.ini.tpl ../bin
 
 
 diag:
