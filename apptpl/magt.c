@@ -70,23 +70,22 @@ void httpd_handler(struct evhttp_request *req, void *arg) {
     evbuffer_add_printf(buf, "It works!\n%s\n", output);
     evhttp_send_reply(req, HTTP_OK, "OK", buf);
     evbuffer_free(buf);
-
 }
 
-int called = 0;
+int signal_called = 0;
 #ifdef _WIN32
-static void signall_cb(long long fd, short event, void *arg) {
+static void signal_cb(long long fd, short event, void *arg) {
 #else
-static void signall_cb(int fd, short event, void *arg) {
+static void signal_cb(int fd, short event, void *arg) {
 #endif
     UNUSED(fd);
     UNUSED(event);
     struct event *signal = arg;
     LOG_INFO ("%s: got signal %d", __func__, EVENT_SIGNAL(signal));
     event_base_loopbreak(arg);  //终止侦听event_dispatch()的事件侦听循环，执行之后的代码
-    if (called >= 2)
+    if (signal_called >= 2)
         evsignal_del(signal);
-     called++;
+     signal_called ++;
 }
 
 #ifdef _WIN32
@@ -114,16 +113,15 @@ void* magt(void *arg) {
 #endif
 
     struct event_base* base = event_base_new();
-    if (!base)
-    {
+    if (!base) {
         LOG_ERROR ("create event_base failed!");
         return ((void*)1);
     }
 
     // struct event signal_int;
-    // event_set(&signal_int, SIGINT, EV_SIGNAL|EV_PERSIST, signall_cb, &signal_int);
+    // event_set(&signal_int, SIGINT, EV_SIGNAL|EV_PERSIST, signal_cb, &signal_int);
     // event_add(&signal_int, NULL);
-    struct event *signal_int = evsignal_new(base, SIGINT, signall_cb, base);
+    struct event *signal_int = evsignal_new(base, SIGINT, signal_cb, base);
     evsignal_add(signal_int, 0); //  event_add(signal_int, 0);
 
     // struct event *evtimer = evtimer_new(base, timer_cb, base); // only call timer_cb once
@@ -133,14 +131,12 @@ void* magt(void *arg) {
 
     // add httpd event
     struct evhttp* httpd = evhttp_new(base);
-    if (!httpd)
-    {
+    if (!httpd) {
         LOG_ERROR ("create evhttp failed!");
         return ((void*)1);
     }
 
-    if (evhttp_bind_socket(httpd, "0.0.0.0", port) != 0)
-    {
+    if (evhttp_bind_socket(httpd, "0.0.0.0", port) != 0) {
         LOG_ERROR ("bind socket failed! port:%d", port);
         return ((void*)1);
     }

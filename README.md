@@ -54,7 +54,9 @@ Under mingw64, install gcc
 ```
 pacman -Sy mingw-w64-x86_64-gcc
 pacman -Sy mingw-w64-x86_64-gdb
-pacman -Sy libevent zeromq
+pacman -Sy mingw-w64-x86_64-libevent
+pacman -Sy mingw-w64-x86_64-zeromq
+pacman -Sy mingw-w64-x86_64-hiredis
 pacman -Sy make
 ```
 

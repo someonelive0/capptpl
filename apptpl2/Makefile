@@ -31,7 +31,7 @@ CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 -I../lib
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 
 #LDFLAGS += 
-LDLIBS = -levent -lwsock32
+LDLIBS = -levent -lhiredis -lwsock32
 else
 CFLAGS += -D_BSD_SOURCE \
 		-I/usr/local/libevent-2.1.12/include
@@ -46,7 +46,7 @@ endif
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 OBJDIR = obj
 vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 ../lib
-apptpl2_srcs = main.c magt.c \
+apptpl2_srcs = main.c magt.c doredis.c \
 	init_log.c load_config.c \
 	cchan_pthread.c \
 	logger.c \

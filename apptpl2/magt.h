@@ -6,6 +6,8 @@
 
 // management interface thread
 // param *data is int port
+// int magt_init();
+// int magt_close();
 void* magt(void *arg);
 
 #endif // MAGT_H
