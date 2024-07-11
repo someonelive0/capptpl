@@ -25,6 +25,7 @@ CFLAGS = -W -Wall -O2 -std=c11
 LDFLAGS = -O2 -std=c11
 endif
 
+#CC     = clang
 CC     = gcc
 CFLAGS += -I../cchan-0.1 -I../c-logger-0.4.1 -I../inih-r58
 ifeq ($(detected_OS),MSYS)

@@ -18,7 +18,7 @@ Include in my project with source code.
 - uthash-2.3.0
 
 Depend OS env.
-- gcc with -std=c11
+- gcc/clang with -std=c11
 - libevent-2.1.12
 - zeromq-4.3.5
 - libpcap-1.10 or npcap-sdk-1.13
