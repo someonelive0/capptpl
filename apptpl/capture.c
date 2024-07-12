@@ -14,8 +14,8 @@
 
 
 int capture_shutdown;
-uint64_t capture_count;
-pcap_t* capture_handle = NULL;
+static uint64_t capture_count;
+static pcap_t* capture_handle = NULL;
 
 int capture_open_device(const char *device, int snaplen, int buffer_size, const char* filter) {
 
@@ -133,7 +133,7 @@ int capture_close() {
 }
 
 #define UNUSED(x) (void)(x)
-void capture_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata) {
+static void capture_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata) {
     UNUSED(arg);
     capture_count ++;
     // PcapCapturer *cap = (PcapCapturer *)arg;
@@ -142,6 +142,9 @@ void capture_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pkt
         pkthdr->caplen, pkthdr->len, &pktdata);
 }
 
+/*
+ * loop to cature packets, can be called by pthread
+ */
 void* capture(void *arg) {
     int rc;
 

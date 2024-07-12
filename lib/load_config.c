@@ -34,7 +34,7 @@ int load_config_ini(const char* filename, ini_handler ini_callback, void* arg) {
     rc = access(filename, F_OK);
     if (0 != rc) {
         printf("load_config ini file '%s' not exists\n", filename);
-        tpl_filename = malloc(strlen(filename) + 4);
+        tpl_filename = malloc(strlen(filename) + 5);
         strcpy(tpl_filename, filename);
         strcat(tpl_filename, ".tpl");
         rc = copy_file(tpl_filename, filename);

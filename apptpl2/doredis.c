@@ -8,25 +8,28 @@
 
 #include "logger.h"
 
+static char *redis_host;
+static int redis_port;
+static char *redis_passwd;
+static struct redisAsyncContext *redis_ctx;
+static struct event_base* redis_evbase;
+static int redis_status;
 
-struct redisAsyncContext *redis_ctx;
-struct event_base* tmp_evbase;
-int redis_status;
-static void on_redis_connect(const struct redisAsyncContext *redis_ctx, int status);
-static void on_redis_close(const struct redisAsyncContext *redis_ctx, int status);
-static void on_redis_auth(struct redisAsyncContext *redis_ctx, void *reply, void* arg);
-static void on_redis_pop(struct redisAsyncContext *redis_ctx, void *reply, void* arg);
+static void on_redis_connect(const struct redisAsyncContext *ctx, int status);
+static void on_redis_close(const struct redisAsyncContext *ctx, int status);
+static void on_redis_auth(struct redisAsyncContext *ctx, void *reply, void* arg);
+static void on_redis_pop(struct redisAsyncContext *ctx, void *reply, void* arg);
 static void do_redis_pop(evutil_socket_t fd, short arg, void * ctx);
 
 
-int redis_connect(char* addr, int port, struct event_base* evbase) {
+int redis_connect(char* host, int port, char* passwd, struct event_base* evbase) {
     if (redis_ctx) {
         LOG_ERROR ("redis had connected");
         return -1;
     }
-    tmp_evbase = evbase;
+    redis_evbase = evbase;
 
-    struct redisAsyncContext *ctx = redisAsyncConnect(addr, port);
+    struct redisAsyncContext *ctx = redisAsyncConnect(host, port);
     if (!ctx || ctx->err) {
         LOG_ERROR ("redisAsyncConnect: %s", ctx ? ctx->errstr : "error");
         return -1;
@@ -38,9 +41,12 @@ int redis_connect(char* addr, int port, struct event_base* evbase) {
         return -1;
     }
     redis_ctx = ctx;
+    redis_host = host;
+    redis_port = port;
+    redis_passwd = passwd;
 
-    (void)redisAsyncSetConnectCallback(redis_ctx, on_redis_connect);
-    (void)redisAsyncSetDisconnectCallback(redis_ctx, on_redis_close);
+    (void)redisAsyncSetConnectCallback(ctx, on_redis_connect);
+    (void)redisAsyncSetDisconnectCallback(ctx, on_redis_close);
 
     return 0;
 }
@@ -56,34 +62,38 @@ int redis_close() {
     return -1;
 }
 
-
-static void on_redis_connect(const struct redisAsyncContext *redis_ctx, int status) {
+static void on_redis_connect(const struct redisAsyncContext *ctx, int status) {
     redis_status = status;
     if (status == REDIS_ERR) {
-        LOG_ERROR ("Redis connect error %s, reconnecting...", redis_ctx->errstr);
+        LOG_ERROR ("Redis connect error %s, should reconnect", ctx->errstr);
+        redisAsyncDisconnect(redis_ctx);
+        redis_ctx = NULL;
+        redis_connect(redis_host, redis_port, redis_passwd, redis_evbase);
         return;
     }
 
     if (status == REDIS_OK) {
         LOG_INFO ("Redis connected");
-        if (0) { // if need auth
-            redisAsyncCommand((struct redisAsyncContext *)redis_ctx, on_redis_auth, NULL, "AUTH BDsec2022,,");
+        if (strlen(redis_passwd) > 0) { // if need auth
+            char tmp[64] = {0};
+            snprintf(tmp, sizeof(tmp)-1, "AUTH %s", redis_passwd);
+            redisAsyncCommand((struct redisAsyncContext *)ctx, on_redis_auth, NULL, tmp);
         } else {
             struct timeval timeout = {0, 500};
-            event_base_once(tmp_evbase, -1, EV_TIMEOUT, do_redis_pop, (void*)redis_ctx, &timeout);
-            // redisAsyncCommand((struct redisAsyncContext *)redis_ctx, on_redis_pop, NULL, "BRPOP queue1 queue2 queue3 10");
+            event_base_once(redis_evbase, -1, EV_TIMEOUT, do_redis_pop, (void*)ctx, &timeout);
+            // redisAsyncCommand((struct redisAsyncContext *)ctx, on_redis_pop, NULL, "BRPOP queue1 queue2 queue3 10");
         }
     }
 }
 
 #define UNUSED(x) (void)(x)
-static void on_redis_close(const struct redisAsyncContext *redis_ctx, int status) {
-    UNUSED(redis_ctx);
+static void on_redis_close(const struct redisAsyncContext *ctx, int status) {
+    UNUSED(ctx);
     UNUSED(status);
     LOG_INFO ("Redis disconnected: %d", status);
 }
 
-static void on_redis_auth(struct redisAsyncContext *redis_ctx, void *reply, void *arg) {
+static void on_redis_auth(struct redisAsyncContext *ctx, void *reply, void *arg) {
     UNUSED(arg);
     struct redisReply *redis_reply = reply;
     if (!redis_reply || redis_reply->type == REDIS_REPLY_ERROR) {
@@ -97,7 +107,7 @@ static void on_redis_auth(struct redisAsyncContext *redis_ctx, void *reply, void
     }
     LOG_INFO ("redis AUTH success");
 
-    redisAsyncCommand(redis_ctx, on_redis_pop, NULL, "BRPOP queue1 queue2 queue3 10");
+    redisAsyncCommand(ctx, on_redis_pop, NULL, "BRPOP queue1 queue2 queue3 10");
 }
 
 static void do_redis_pop(evutil_socket_t fd, short arg, void* ctx) {
@@ -107,7 +117,7 @@ static void do_redis_pop(evutil_socket_t fd, short arg, void* ctx) {
     redisAsyncCommand((struct redisAsyncContext *)ctx, on_redis_pop, NULL, "BRPOP queue1 queue2 queue3 10");
 }
 
-static void on_redis_pop(struct redisAsyncContext *redis_ctx, void *reply, void *arg) {
+static void on_redis_pop(struct redisAsyncContext *ctx, void *reply, void *arg) {
     UNUSED(arg);
     struct redisReply *redis_reply = reply;
     if (!redis_reply || redis_reply->type == REDIS_REPLY_ERROR) {
@@ -126,5 +136,5 @@ static void on_redis_pop(struct redisAsyncContext *redis_ctx, void *reply, void 
         }
     }
 
-    redisAsyncCommand(redis_ctx, on_redis_pop, NULL, "BRPOP queue1 queue2 queue3 10");
+    redisAsyncCommand(ctx, on_redis_pop, NULL, "BRPOP queue1 queue2 queue3 10");
 }

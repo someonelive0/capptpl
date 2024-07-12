@@ -22,6 +22,7 @@ Depend OS env.
 - libevent-2.1.12
 - zeromq-4.3.5
 - libpcap-1.10 or npcap-sdk-1.13
+- hiredis-1.2.0
 
 Attention: zeromq need libstdc++
 

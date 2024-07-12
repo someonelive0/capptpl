@@ -11,12 +11,13 @@
 
 #include "logger.h"
 
-#include "magt.h"
+#include "apptpl2_init.h"
 #include "doredis.h"
+#include "magt.h"
 
 
 #define UNUSED(x) (void)(x)
-void httpd_handler(struct evhttp_request *req, void *arg) {
+static void httpd_handler(struct evhttp_request *req, void *arg) {
     UNUSED(arg);
     char output[2048] = "\0";
     char tmp[1024];
@@ -73,7 +74,7 @@ void httpd_handler(struct evhttp_request *req, void *arg) {
     evbuffer_free(buf);
 }
 
-int signal_called = 0;
+static int signal_called = 0;
 #ifdef _WIN32
 static void signal_cb(long long fd, short event, void *arg) {
 #else
@@ -102,10 +103,10 @@ static void timer_cb(int fd, short event, void *arg) {
 
 
 // management interface thread
-// param *data is int port
+// param *data is struct config
 void* magt(void *arg) {
 
-    int port = (*(int*)arg);
+    struct config* myconfig = (struct config*)arg;
 
 // link with -lwsock32
 #ifdef _WIN32
@@ -137,16 +138,16 @@ void* magt(void *arg) {
         return ((void*)1);
     }
 
-    if (evhttp_bind_socket(httpd, "0.0.0.0", port) != 0) {
-        LOG_ERROR ("bind socket failed! port:%d", port);
+    if (evhttp_bind_socket(httpd, "0.0.0.0", myconfig->http_port) != 0) {
+        LOG_ERROR ("bind socket failed! port:%d", myconfig->http_port);
         return ((void*)1);
     }
 
     evhttp_set_gencb(httpd, httpd_handler, NULL);
 
-    redis_connect("192.168.30.59", 6379, base);
+    redis_connect(myconfig->redis_host, myconfig->redis_port, myconfig->redis_passwd, base);
 
-    LOG_INFO ("http listen port %d, start event loop", port);
+    LOG_INFO ("http listen port %d, start event loop", myconfig->http_port);
     event_base_dispatch(base);
     LOG_INFO ("END event loop");
 

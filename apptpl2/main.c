@@ -8,7 +8,6 @@
 #include "cchan_pthread.h"
 #include "logger.h"
 
-#include "version.h"
 #include "apptpl2_init.h"
 #include "init_log.h"
 #include "load_config.h"
@@ -29,20 +28,19 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    struct config myconfig = {{0}, 0};
+    struct config myconfig = {{0}, 0, {0}, 0, {0}};
     if (load_config_ini(config_filename, ini_callback, &myconfig) < 0) {
         exit(1);
     }
-    LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d",
+    LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, redis_host=%s, redis_port=%d",
         asctime(localtime( &begin_time )), // ctime(&begin_time),
-        config_filename, myconfig.version, myconfig.http_port);
+        config_filename, myconfig.version, myconfig.http_port, myconfig.redis_host, myconfig.redis_port);
 
 
     pthread_t tid_magt;
     cchan_t *chan_msg = cchan_new(sizeof(void*));    /* producers -> consumers */
 
-    int http_port = 3000;
-    pthread_create(&tid_magt, NULL, magt, ((void *)&http_port));
+    pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig));
     LOG_INFO ("start thread magt with tid %lld", tid_magt);
 
     // brok here to wait

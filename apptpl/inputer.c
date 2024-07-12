@@ -8,16 +8,16 @@
 #include "inputer.h"
 
 
-void *context;
-void *puller;
-int puller_port;
+static void *zmq_context;
+static void *puller;
+static int puller_port;
 
 int inputer_init(int port) {
     char addr[16] = {0};
     puller_port = port;
 
-    context = zmq_ctx_new();
-    puller = zmq_socket (context, ZMQ_PULL);
+    zmq_context = zmq_ctx_new();
+    puller = zmq_socket (zmq_context, ZMQ_PULL);
     snprintf(addr, sizeof(addr)-1, "tcp://*:%d", port);
     if (zmq_bind (puller, addr) == -1) {
         LOG_ERROR("zmq zmq_bind port %d failed: %d, %s",
@@ -29,10 +29,13 @@ int inputer_init(int port) {
 
 int inputer_stop() {
     zmq_close (puller);
-    zmq_ctx_term (context);
+    zmq_ctx_term (zmq_context);
     return 0;
 }
 
+/*
+ * loop to input zeromq messages, can be called by pthread
+ */
 void* inputer(void *arg) {
     cchan_t *chan_msg = ((cchan_t*)arg);
     int rc;

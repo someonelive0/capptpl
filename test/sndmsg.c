@@ -8,7 +8,7 @@
 
 static int init_log();
 static int ini_cb(void* arg, const char* section, const char* name, const char* value);
-int copy(const char* in_path, const char* out_path);
+static int copy_file(const char* in_path, const char* out_path);
 static int load_config(const char* filename);
 
 #define UNUSED(x) (void)(x)
@@ -97,7 +97,7 @@ static int ini_cb(void* arg, const char* section, const char* name, const char* 
     return 1;
 }
 
-int copy(const char* in_path, const char* out_path) {
+static int copy_file(const char* in_path, const char* out_path) {
     size_t n;
     FILE* in=NULL, * out=NULL;
     char buf[64];
@@ -118,10 +118,10 @@ static int load_config(const char* filename) {
     rc = access(filename, F_OK);
     if (0 != rc) {
         printf("ini file '%s' not exists\n", filename);
-        tpl_filename = malloc(strlen(filename) + 4);
+        tpl_filename = malloc(strlen(filename) + 5);
         strcpy(tpl_filename, filename);
         strcat(tpl_filename, ".tpl");
-        rc = copy(tpl_filename, filename);
+        rc = copy_file(tpl_filename, filename);
         free(tpl_filename);
         if (0 != rc) {
             printf("copy ini tpl file '%s.tpl' to ini '%s' failed\n", filename, filename);

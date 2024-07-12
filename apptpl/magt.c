@@ -15,7 +15,7 @@
 
 
 #define UNUSED(x) (void)(x)
-void httpd_handler(struct evhttp_request *req, void *arg) {
+static void httpd_handler(struct evhttp_request *req, void *arg) {
     UNUSED(arg);
     char output[2048] = "\0";
     char tmp[1024];
@@ -72,7 +72,7 @@ void httpd_handler(struct evhttp_request *req, void *arg) {
     evbuffer_free(buf);
 }
 
-int signal_called = 0;
+static int signal_called = 0;
 #ifdef _WIN32
 static void signal_cb(long long fd, short event, void *arg) {
 #else

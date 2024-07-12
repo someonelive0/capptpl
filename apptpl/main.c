@@ -6,8 +6,8 @@
 #include <pthread.h>
 
 #include "cchan_pthread.h"
+#include "logger.h"
 
-#include "version.h"
 #include "apptpl_init.h"
 #include "init_log.h"
 #include "load_config.h"
