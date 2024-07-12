@@ -16,7 +16,7 @@ static void on_redis_connect(const struct redisAsyncContext *redis_ctx, int stat
 static void on_redis_close(const struct redisAsyncContext *redis_ctx, int status);
 static void on_redis_auth(struct redisAsyncContext *redis_ctx, void *reply, void* arg);
 static void on_redis_pop(struct redisAsyncContext *redis_ctx, void *reply, void* arg);
-static void do_redis_pop(evutil_socket_t, short, void * ctx);
+static void do_redis_pop(evutil_socket_t fd, short arg, void * ctx);
 
 
 int redis_connect(char* addr, int port, struct event_base* evbase) {
@@ -76,11 +76,15 @@ static void on_redis_connect(const struct redisAsyncContext *redis_ctx, int stat
     }
 }
 
-static void on_redis_close(const struct redisAsyncContext *, int status) {
+#define UNUSED(x) (void)(x)
+static void on_redis_close(const struct redisAsyncContext *redis_ctx, int status) {
+    UNUSED(redis_ctx);
+    UNUSED(status);
     LOG_INFO ("Redis disconnected: %d", status);
 }
 
-static void on_redis_auth(struct redisAsyncContext *redis_ctx, void *reply, void* ) {
+static void on_redis_auth(struct redisAsyncContext *redis_ctx, void *reply, void *arg) {
+    UNUSED(arg);
     struct redisReply *redis_reply = reply;
     if (!redis_reply || redis_reply->type == REDIS_REPLY_ERROR) {
         LOG_ERROR ("redis auth error: %s", redis_reply ? redis_reply->str : "error");
@@ -96,12 +100,15 @@ static void on_redis_auth(struct redisAsyncContext *redis_ctx, void *reply, void
     redisAsyncCommand(redis_ctx, on_redis_pop, NULL, "BRPOP queue1 queue2 queue3 10");
 }
 
-static void do_redis_pop(evutil_socket_t, short, void* ctx) {
+static void do_redis_pop(evutil_socket_t fd, short arg, void* ctx) {
+    UNUSED(fd);
+    UNUSED(arg);
     LOG_INFO ("redis begin BRPOP ...");
     redisAsyncCommand((struct redisAsyncContext *)ctx, on_redis_pop, NULL, "BRPOP queue1 queue2 queue3 10");
 }
 
-static void on_redis_pop(struct redisAsyncContext *redis_ctx, void *reply, void* ) {
+static void on_redis_pop(struct redisAsyncContext *redis_ctx, void *reply, void *arg) {
+    UNUSED(arg);
     struct redisReply *redis_reply = reply;
     if (!redis_reply || redis_reply->type == REDIS_REPLY_ERROR) {
         LOG_ERROR ("redis pop failed: %s", redis_reply ? redis_reply->str : "error");

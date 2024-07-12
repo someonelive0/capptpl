@@ -6,6 +6,64 @@
 #include "logger.h"
 
 
+static int init_log();
+static int ini_cb(void* arg, const char* section, const char* name, const char* value);
+int copy(const char* in_path, const char* out_path);
+static int load_config(const char* filename);
+
+#define UNUSED(x) (void)(x)
+int main(int argc, char** argv) {
+    UNUSED(argc);
+    UNUSED(argv);
+    char addr[24] = {0};
+    int port = 3001;
+    int rc, count = 0;
+
+    if (load_config("sndmsg.ini") < 0) {
+        exit(1);
+    }
+
+    init_log();
+
+    void *context = zmq_ctx_new();
+    void *pusher = zmq_socket (context, ZMQ_PUSH);
+    snprintf(addr, sizeof(addr)-1, "tcp://localhost:%d", port);
+    if(zmq_connect(pusher, addr) == -1) {
+        printf("E: connect %s failed: %s\n", addr,  zmq_strerror(zmq_errno()));
+        exit(1);
+    }
+
+    zmq_msg_t msg;
+    for (int i=0; i<1000000; i++) {
+        if (0 != zmq_msg_init_size (&msg, strlen(addr))) {
+            printf("zmq zmq_msg_init failed: %d, %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
+        }
+        memcpy (zmq_msg_data (&msg), addr, strlen(addr));
+        rc = zmq_msg_send (&msg, pusher, 0);
+        // printf("zmq_msg_send len %d\n", rc);
+        if (rc != (int)strlen(addr)) {
+            printf("zmq_msg_send len %d not equle data len %zd\n", rc, strlen(addr));
+        }
+
+        count ++;
+        if ((count % 10000) == 0) {
+            // printf("send msg count %d, len %lld: [%s]\n",
+            //     count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
+            LOG_DEBUG("send msg count %d, len %lld: [%s]",
+                count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
+        }
+
+        if ((rc = zmq_msg_close(&msg)) != 0) {
+            printf("zmq_msg_close msg failed: %d, %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
+        }
+    }
+
+    zmq_close (pusher);
+    zmq_ctx_term (context);
+
+    exit(0);
+}
+
 static int init_log() {
     logger_initConsoleLogger(NULL);
     logger_initFileLogger("sndmsg.log", 1024*1024, 5);
@@ -20,8 +78,8 @@ static int init_log() {
     return 0 ;
 }
 
-static int ini_cb(void* arg, const char* section, const char* name, const char* value)
-{
+static int ini_cb(void* arg, const char* section, const char* name, const char* value) {
+    UNUSED(arg);
     // configuration* pconfig = (configuration*)arg;
 
     #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
@@ -39,7 +97,7 @@ static int ini_cb(void* arg, const char* section, const char* name, const char* 
     return 1;
 }
 
-int copy(const char* in_path, const char* out_path){
+int copy(const char* in_path, const char* out_path) {
     size_t n;
     FILE* in=NULL, * out=NULL;
     char buf[64];
@@ -77,55 +135,4 @@ static int load_config(const char* filename) {
     }
 
     return 0;
-}
-
-int main(int argc, char** argv)
-{
-    char addr[24] = {0};
-    int port = 3001;
-    int rc, count = 0;
-
-    if (load_config("sndmsg.ini") < 0) {
-        exit(1);
-    }
-
-    init_log();
-
-    void *context = zmq_ctx_new();
-    void *pusher = zmq_socket (context, ZMQ_PUSH);
-    snprintf(addr, sizeof(addr)-1, "tcp://localhost:%d", port);
-    if(zmq_connect(pusher, addr) == -1) {
-        printf("E: connect %s failed: %s\n", addr,  zmq_strerror(zmq_errno()));
-        exit(1);
-    }
-
-    zmq_msg_t msg;
-    for (int i=0; i<1000000; i++) {
-        if (0 != zmq_msg_init_size (&msg, strlen(addr))) {
-            printf("zmq zmq_msg_init failed: %d, %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
-        }
-        memcpy (zmq_msg_data (&msg), addr, strlen(addr));
-        rc = zmq_msg_send (&msg, pusher, 0);
-        // printf("zmq_msg_send len %d\n", rc);
-        if (rc != strlen(addr)) {
-            printf("zmq_msg_send len %d not equle data len %lld\n", rc, strlen(addr));
-        }
-
-        count ++;
-        if ((count % 10000) == 0) {
-            // printf("send msg count %d, len %lld: [%s]\n",
-            //     count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
-            LOG_DEBUG("send msg count %d, len %lld: [%s]",
-                count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
-        }
-
-        if ((rc = zmq_msg_close(&msg)) != 0) {
-            printf("zmq_msg_close msg failed: %d, %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
-        }
-    }
-
-    zmq_close (pusher);
-    zmq_ctx_term (context);
-
-    exit(0);
 }

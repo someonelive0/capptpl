@@ -16,11 +16,11 @@ else
 endif
 
 ifeq ($(DEBUG), 1)
-$(warning compile mode is debug)
+$(info compile mode is debug)
 CFLAGS = -Wall -ggdb -std=c11
 LDFLAGS = -ggdb -std=c11
 else
-$(warning compile mode is release)
+$(info compile mode is release)
 CFLAGS = -W -Wall -O2 -std=c11
 LDFLAGS = -O2 -std=c11
 endif

@@ -1,4 +1,4 @@
-# Makefile for apptpl
+# Makefile for apptpl2
 # run 'make' to build release mode
 # run 'make DEBUG=1' to build debug mode
 #
@@ -16,11 +16,11 @@ else
 endif
 
 ifeq ($(DEBUG), 1)
-$(warning compile mode is debug)
+$(info compile mode is debug)
 CFLAGS = -Wall -ggdb -std=c11
 LDFLAGS = -ggdb -std=c11
 else
-$(warning compile mode is release)
+$(info compile mode is release)
 CFLAGS = -W -Wall -O2 -std=c11
 LDFLAGS = -O2 -std=c11
 endif
@@ -34,9 +34,11 @@ CFLAGS += -D_WIN32
 LDLIBS = -levent -lhiredis -lwsock32
 else
 CFLAGS += -D_BSD_SOURCE \
-		-I/usr/local/libevent-2.1.12/include
+		-I/usr/local/libevent-2.1.12/include \
+		-I/usr/local/hiredis-1.2.0/include
 #LDFLAGS += 
 LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
+	/usr/local/hiredis-1.2.0/lib64/libhiredis.a \
 	-lpthread -ldl -lunwind
 endif
 

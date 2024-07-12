@@ -3,8 +3,9 @@
 *.log
 *.log.*
 *.ini
-src/apptpl
-src/obj
-test/sndmsg
+*/obj
 .vscode
 bin
+apptpl/apptpl
+apptpl2/apptpl2
+test/sndmsg

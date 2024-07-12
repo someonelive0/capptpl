@@ -1,31 +1,79 @@
+# Makefile for test
+# run 'make' to build release mode
+# run 'make DEBUG=1' to build debug mode
+#
+
 .POSIX:
 .SUFFIXES:
 
-CC     = gcc
-CFLAGS = -D_WIN32 -Wall -ggdb -O -I../cchan-0.1 -I../c-logger-0.4.1 -I../inih-r58
-LDFLAGS = -ggdb -O
-LDLIBS = -lm
+ifeq '$(findstring ;,$(PATH))' ';'
+    detected_OS := Windows
+else
+    detected_OS := $(shell uname 2>/dev/null || echo Unknown)
+    detected_OS := $(patsubst CYGWIN%,Cygwin,$(detected_OS))
+    detected_OS := $(patsubst MSYS%,MSYS,$(detected_OS))
+    detected_OS := $(patsubst MINGW%,MSYS,$(detected_OS))
+endif
 
-.SUFFIXES: .c .o
-.c.o:
-	$(CC) $(CFLAGS) -c $<
+ifeq ($(DEBUG), 1)
+$(info compile mode is debug)
+CFLAGS = -Wall -ggdb -std=c11
+LDFLAGS = -ggdb -std=c11
+else
+$(info compile mode is release)
+CFLAGS = -W -Wall -O2 -std=c11
+LDFLAGS = -O2 -std=c11
+endif
+
+#CC     = clang
+CC     = gcc
+CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 -I../lib
+ifeq ($(detected_OS),MSYS)
+CFLAGS += -D_WIN32 
+#LDFLAGS += 
+LDLIBS = -levent -lzmq -lwsock32
+else
+CFLAGS += -D_BSD_SOURCE \
+		-I/usr/local/libevent-2.1.12/include \
+		-I/usr/local/zeromq-4.3.5/include
+#LDFLAGS += 
+LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
+	/usr/local/zeromq-4.3.5/lib/libzmq.a \
+	/usr/local/gcc-7.4.0/lib64/libstdc++.a \
+	-lpthread -ldl -lunwind
+endif
+
+# CFLAGS += -fprofile-arcs -ftest-coverage
+# LDFLAGS += -lgcov --coverage
+
+# obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
+OBJDIR = obj
+vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 ../lib
+sndmsg_srcs = sndmsg.c \
+	logger.c \
+	ini.c argparse.c
+sndmsg_objs = $(sndmsg_srcs:%.c=$(OBJDIR)/%.o)
 
 
 all: sndmsg
 
-sndmsg: sndmsg.o logger.o ini.o
-	$(CC) $(LDFLAGS) $^ -levent -lzmq -lwsock32 -o $@
 
-logger.o: ../c-logger-0.4.1/logger.c
-	$(CC) $(CFLAGS) -c $<
+sndmsg: $(sndmsg_objs)
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-ini.o: ../inih-r58/ini.c
-	$(CC) $(CFLAGS) -c $<
-
+$(sndmsg_objs): $(OBJDIR)/%.o : %.c
+	@mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o
+	rm -f $(sndmsg_objs)
 	rm -f sndmsg
 
 install:
+	mkdir -p ../bin
+	cp sndmsg sndmsg.ini.tpl ../bin
 
+
+diag:
+	@echo "OS is $(detected_OS)"
+	@echo "sndmsg_srcs: $(sndmsg_srcs)"
