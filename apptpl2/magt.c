@@ -15,7 +15,7 @@
 #include "doredis.h"
 #include "magt.h"
 
-static struct event_base *magt_evbase;
+struct event_base *magt_evbase;
 static struct evhttp *magt_httpd;
 static struct event *magt_signal;
 static struct event *magt_timer;
@@ -68,8 +68,6 @@ int magt_init(struct config* myconfig) {
 
     evhttp_set_gencb(httpd, httpd_handler, NULL);
 
-    redis_connect(myconfig->redis_host, myconfig->redis_port, myconfig->redis_passwd, base);
-
     magt_evbase = base;
     magt_httpd = httpd;
     magt_signal = evsignal;
@@ -78,7 +76,6 @@ int magt_init(struct config* myconfig) {
 }
 
 int magt_close() {
-    redis_close();
 
     evhttp_free(magt_httpd);
     evsignal_del(magt_signal);

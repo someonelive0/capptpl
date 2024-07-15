@@ -11,6 +11,7 @@
 #include "apptpl2_init.h"
 #include "init_log.h"
 #include "load_config.h"
+#include "doredis.h"
 #include "magt.h"
 
 
@@ -44,9 +45,12 @@ int main(int argc, char** argv)
         LOG_ERROR ("msgt_init failed");
         exit(1);
     }
+    redis_connect(myconfig.redis_host, myconfig.redis_port, myconfig.redis_passwd, magt_evbase);
 
     // main thread broke here.
     magt_loop(&myconfig);
+
+    redis_close();
     magt_close();
 
     // pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig));
