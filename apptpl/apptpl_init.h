@@ -1,13 +1,15 @@
 #ifndef INIT_H
 #define INIT_H
 
+#include <stdint.h>
+
 #define DEFAULT_CONFIG_FILE "apptpl.ini"
 
 
 struct config {
     char version[8];
-    int  http_port;
-    int  zmq_port;
+    uint16_t http_port;
+    uint16_t zmq_port;
     char pcap_device[128];
     int  pcap_snaplen;
     int  pcap_buffer_size;

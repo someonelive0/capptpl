@@ -41,6 +41,11 @@ int main(int argc, char** argv)
         myconfig.pcap_device, myconfig.pcap_snaplen, myconfig.pcap_buffer_size, myconfig.pcap_filter);
 
     // init something
+    if (-1 == magt_init(&myconfig)) {
+        LOG_ERROR ("msgt_init failed");
+        exit(1);
+    }
+
     if (0 != inputer_init(myconfig.zmq_port)) {
         exit(1);
     }
@@ -51,11 +56,11 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    pthread_t tid_magt, tid_inputer, tid_worker, tid_capture;
+    pthread_t tid_inputer, tid_worker, tid_capture;
     cchan_t *chan_msg = cchan_new(sizeof(void*));    /* producers -> consumers */
 
-    pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig.http_port));
-    LOG_INFO ("start thread magt with tid %lld", tid_magt);
+    // pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig));
+    // LOG_INFO ("start thread magt with tid %lld", tid_magt);
 
     pthread_create(&tid_worker, NULL, worker, ((void *)chan_msg));
     LOG_INFO ("start thread worker with tid %lld", tid_worker);
@@ -66,9 +71,13 @@ int main(int argc, char** argv)
     pthread_create(&tid_capture, NULL, capture, ((void *)chan_msg));
     LOG_INFO ("start thread capture with tid %lld", tid_capture);
 
-    // brok here to wait
-    pthread_join(tid_magt, NULL);
-    LOG_INFO ("join thread magt with tid %lld", tid_magt);
+    // broke here to wait
+    // pthread_join(tid_magt, NULL);
+    // LOG_INFO ("join thread magt with tid %lld", tid_magt);
+
+    // main thread broke here.
+    magt_loop(&myconfig);
+    magt_close();
 
     inputer_stop();
     pthread_join(tid_inputer, NULL);

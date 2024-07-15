@@ -11,7 +11,142 @@
 
 #include "logger.h"
 
+#include "apptpl_init.h"
 #include "magt.h"
+
+struct event_base *magt_evbase;
+static struct evhttp *magt_httpd;
+static struct event *magt_signal;
+static struct event *magt_timer;
+
+static void httpd_handler(struct evhttp_request *req, void *arg);
+#ifdef _WIN32
+static void signal_cb(long long fd, short event, void *arg);
+static void timer_cb(long long fd, short event, void *arg);
+#else
+static void signal_cb(int fd, short event, void *arg);
+static void timer_cb(int fd, short event, void *arg);
+#endif
+
+
+int magt_init(struct config* myconfig) {
+// link with -lwsock32
+#ifdef _WIN32
+    WSADATA wsa_data;
+    WSAStartup(0x0201, &wsa_data);
+#endif
+
+    struct event_base* base = event_base_new();
+    if (!base) {
+        LOG_ERROR ("create event_base failed!");
+        return -1;
+    }
+
+    // struct event evsignal;
+    // event_set(&evsignal, SIGINT, EV_SIGNAL|EV_PERSIST, signal_cb, &evsignal);
+    // event_add(&evsignal, NULL);
+    struct event *evsignal = evsignal_new(base, SIGINT, signal_cb, base);
+    evsignal_add(evsignal, 0); //  event_add(evsignal, 0);
+
+    // struct event *evtimer = evtimer_new(base, timer_cb, base); // only call timer_cb once
+    struct event *evtimer = event_new(base, -1, EV_TIMEOUT|EV_PERSIST, timer_cb, base);
+    struct timeval timeout = {2, 0};
+    evtimer_add(evtimer, &timeout); //  event_add(evtimer, 0);
+
+    // add httpd event
+    struct evhttp* httpd = evhttp_new(base);
+    if (!httpd) {
+        LOG_ERROR ("create evhttp failed!");
+        return -1;
+    }
+
+    if (evhttp_bind_socket(httpd, "0.0.0.0", myconfig->http_port) != 0) {
+        LOG_ERROR ("bind socket failed! port:%d", myconfig->http_port);
+        return -1;
+    }
+
+    evhttp_set_gencb(httpd, httpd_handler, NULL);
+
+    magt_evbase = base;
+    magt_httpd = httpd;
+    magt_signal = evsignal;
+    magt_timer = evtimer;
+    return 0;
+}
+
+int magt_close() {
+
+    evhttp_free(magt_httpd);
+    evsignal_del(magt_signal);
+    event_free(magt_signal);
+    event_free(magt_timer);
+    event_base_free(magt_evbase);
+
+    return 0;
+}
+
+void* magt_loop(struct config* myconfig) {
+    LOG_INFO ("http listen port %d, start event loop", myconfig->http_port);
+    event_base_dispatch(magt_evbase);
+    LOG_INFO ("END event loop");
+
+    return 0;
+}
+
+// management interface thread
+// param *data is struct config
+void* magt(void *arg) {
+    struct config* myconfig = (struct config*)arg;
+
+// link with -lwsock32
+#ifdef _WIN32
+    WSADATA wsa_data;
+    WSAStartup(0x0201, &wsa_data);
+#endif
+
+    struct event_base* base = event_base_new();
+    if (!base) {
+        LOG_ERROR ("create event_base failed!");
+        return ((void*)1);
+    }
+
+    // struct event evsignal;
+    // event_set(&evsignal, SIGINT, EV_SIGNAL|EV_PERSIST, signal_cb, &evsignal);
+    // event_add(&evsignal, NULL);
+    struct event *evsignal = evsignal_new(base, SIGINT, signal_cb, base);
+    evsignal_add(evsignal, 0); //  event_add(evsignal, 0);
+
+    // struct event *evtimer = evtimer_new(base, timer_cb, base); // only call timer_cb once
+    struct event *evtimer = event_new(base, -1, EV_TIMEOUT|EV_PERSIST, timer_cb, base);
+    struct timeval timeout = {2, 0};
+    evtimer_add(evtimer, &timeout); //  event_add(evtimer, 0);
+
+    // add httpd event
+    struct evhttp* httpd = evhttp_new(base);
+    if (!httpd) {
+        LOG_ERROR ("create evhttp failed!");
+        return ((void*)1);
+    }
+
+    if (evhttp_bind_socket(httpd, "0.0.0.0", myconfig->http_port) != 0) {
+        LOG_ERROR ("bind socket failed! port:%d", myconfig->http_port);
+        return ((void*)1);
+    }
+
+    evhttp_set_gencb(httpd, httpd_handler, NULL);
+
+    LOG_INFO ("http listen port %d, start event loop", myconfig->http_port);
+    event_base_dispatch(base);
+    LOG_INFO ("END event loop");
+
+    evhttp_free(httpd);
+    evsignal_del(evsignal);
+    event_free(evsignal);
+    event_free(evtimer);
+    event_base_free(base);
+
+    return ((void*)0);
+}
 
 
 #define UNUSED(x) (void)(x)
@@ -97,61 +232,4 @@ static void timer_cb(int fd, short event, void *arg) {
     UNUSED(event);
     UNUSED(arg);
     // LOG_TRACE ("%s: got timeout with unix time: %lld\n", __func__, time(NULL));
-}
-
-
-// management interface thread
-// param *data is int port
-void* magt(void *arg) {
-
-    int port = (*(int*)arg);
-
-// link with -lwsock32
-#ifdef _WIN32
-    WSADATA wsa_data;
-    WSAStartup(0x0201, &wsa_data);
-#endif
-
-    struct event_base* base = event_base_new();
-    if (!base) {
-        LOG_ERROR ("create event_base failed!");
-        return ((void*)1);
-    }
-
-    // struct event signal_int;
-    // event_set(&signal_int, SIGINT, EV_SIGNAL|EV_PERSIST, signal_cb, &signal_int);
-    // event_add(&signal_int, NULL);
-    struct event *signal_int = evsignal_new(base, SIGINT, signal_cb, base);
-    evsignal_add(signal_int, 0); //  event_add(signal_int, 0);
-
-    // struct event *evtimer = evtimer_new(base, timer_cb, base); // only call timer_cb once
-    struct event *evtimer = event_new(base, -1, EV_TIMEOUT|EV_PERSIST, timer_cb, base);
-    struct timeval timeout = {2, 0};
-    evtimer_add(evtimer, &timeout); //  event_add(signal_int, 0);
-
-    // add httpd event
-    struct evhttp* httpd = evhttp_new(base);
-    if (!httpd) {
-        LOG_ERROR ("create evhttp failed!");
-        return ((void*)1);
-    }
-
-    if (evhttp_bind_socket(httpd, "0.0.0.0", port) != 0) {
-        LOG_ERROR ("bind socket failed! port:%d", port);
-        return ((void*)1);
-    }
-
-    evhttp_set_gencb(httpd, httpd_handler, NULL);
-
-    LOG_INFO ("http listen port %d, start event loop", port);
-    event_base_dispatch(base);
-    LOG_INFO ("END event loop");
-
-    evhttp_free(httpd);
-    evsignal_del(signal_int);
-    event_free(signal_int);
-    event_free(evtimer);
-    event_base_free(base);
-
-    return ((void*)0);
 }

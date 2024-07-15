@@ -14,13 +14,17 @@ static int puller_port;
 
 int inputer_init(int port) {
     char addr[16] = {0};
+    int major, minor, patch = 0;
     puller_port = port;
+
+    zmq_version(&major, &minor, &patch);
+    LOG_DEBUG ("zeromq version: %d.%d.%d", major, minor, patch);
 
     zmq_context = zmq_ctx_new();
     puller = zmq_socket (zmq_context, ZMQ_PULL);
     snprintf(addr, sizeof(addr)-1, "tcp://*:%d", port);
     if (zmq_bind (puller, addr) == -1) {
-        LOG_ERROR("zmq zmq_bind port %d failed: %d, %s",
+        LOG_ERROR ("zmq zmq_bind port %d failed: %d, %s",
             port, zmq_errno(), zmq_strerror(zmq_errno()));
         return -1;
     }
@@ -50,7 +54,7 @@ void* inputer(void *arg) {
             break;
         }
         if ((rc = zmq_msg_init (msg)) != 0) {
-            LOG_WARN("zmq zmq_msg_init failed: %d, %s", zmq_errno(), zmq_strerror(zmq_errno()));
+            LOG_WARN ("zmq zmq_msg_init failed: %d, %s", zmq_errno(), zmq_strerror(zmq_errno()));
             free(msg);
             continue;
         }
@@ -58,9 +62,12 @@ void* inputer(void *arg) {
         // rc = zmq_recv (puller, buffer, sizeof(buffer), 0);
         rc = zmq_msg_recv (msg, puller, 0);
         if (rc == -1) {
-            LOG_ERROR ("zmq recv failed: %d, %s", zmq_errno(), zmq_strerror(zmq_errno()));
-             free(msg);
-             break;
+            if (ETERM == zmq_errno()) // ETERM = 156384765, Context was terminated
+                LOG_INFO ("zmq recv ETERM(%d), %s", zmq_errno(), zmq_strerror(zmq_errno()));
+            else
+                LOG_ERROR ("zmq recv failed: %d, %s", zmq_errno(), zmq_strerror(zmq_errno()));
+            free(msg);
+            break;
         }
         // LOG_DEBUG ("inputer rcv msg %lld: [%s]\n", zmq_msg_size (msg), (char*)zmq_msg_data (msg));
 
