@@ -37,15 +37,24 @@ int main(int argc, char** argv)
         config_filename, myconfig.version, myconfig.http_port, myconfig.redis_host, myconfig.redis_port);
 
 
-    pthread_t tid_magt;
+    // pthread_t tid_magt;
     cchan_t *chan_msg = cchan_new(sizeof(void*));    /* producers -> consumers */
 
-    pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig));
-    LOG_INFO ("start thread magt with tid %lld", tid_magt);
+    if (-1 == magt_init(&myconfig)) {
+        LOG_ERROR ("msgt_init failed");
+        exit(1);
+    }
 
-    // brok here to wait
-    pthread_join(tid_magt, NULL);
-    LOG_INFO ("join thread magt with tid %lld", tid_magt);
+    // main thread broke here.
+    magt_loop(&myconfig);
+    magt_close();
+
+    // pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig));
+    // LOG_INFO ("start thread magt with tid %lld", tid_magt);
+
+    // // brok here to wait
+    // pthread_join(tid_magt, NULL);
+    // LOG_INFO ("join thread magt with tid %lld", tid_magt);
 
     cchan_free(chan_msg);
 
