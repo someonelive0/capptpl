@@ -1,6 +1,7 @@
 /*
  * Wrapper libpcap or npcap on windows
  */
+#include <stdlib.h>
 #include <errno.h>
 #include <pcap.h>
 
@@ -16,6 +17,7 @@
 int capture_shutdown;
 static uint64_t capture_count;
 static pcap_t* capture_handle = NULL;
+static struct bpf_program* capture_bpf = NULL;
 
 int capture_open_device(const char *device, int snaplen, int buffer_size, const char* filter) {
 
@@ -74,13 +76,16 @@ int capture_open_device(const char *device, int snaplen, int buffer_size, const 
 
 
     if (strlen(filter) > 0) {
-        struct bpf_program bpf_filter;
-        if (pcap_compile(handle, &bpf_filter, filter, 1, 0xFFFFFF00) == -1) {
+	    if (NULL == (capture_bpf = malloc(sizeof(struct bpf_program)))) {
+            LOG_ERROR ("capturer malloc filter of struct bpf_program");
+            return -1;
+	    }
+        if (pcap_compile(handle, capture_bpf, filter, 1, 0xFFFFFF00) == -1) {
             LOG_ERROR ("capturer pcap_compile filter:%s, failed:%s", filter, pcap_geterr(handle));
             return -1;
         }
         /*设置FILTER*/
-        if (pcap_setfilter(handle, &bpf_filter) == -1) {
+        if (pcap_setfilter(handle, capture_bpf) == -1) {
             LOG_ERROR ("capturer pcap_setfilter failed:%s", pcap_geterr(handle));
             return -1;
         }
@@ -128,6 +133,11 @@ int capture_close() {
         pcap_breakloop(capture_handle);
         pcap_close(capture_handle);
         capture_handle = NULL;
+    }
+    if (capture_bpf != NULL) {
+        pcap_freecode(capture_bpf);
+        free(capture_bpf);
+        capture_bpf = NULL;
     }
     return 0;
 }

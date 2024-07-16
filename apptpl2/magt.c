@@ -237,4 +237,5 @@ static void timer_cb(int fd, short event, void *arg) {
     UNUSED(event);
     UNUSED(arg);
     // LOG_TRACE ("%s: got timeout with unix time: %lld\n", __func__, time(NULL));
+    logger_flush();
 }

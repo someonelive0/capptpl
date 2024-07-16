@@ -86,6 +86,7 @@ int main(int argc, char** argv)
     capture_shutdown = 1;
     pthread_join(tid_capture, NULL);
     LOG_INFO ("join thread capture with tid %lld", tid_capture);
+    capture_close();
 
     worker_shutdown = 1;
     pthread_join(tid_worker, NULL);
