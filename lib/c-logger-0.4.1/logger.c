@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdint.h>
 #if defined(_WIN32) || defined(_WIN64)
  #include <winsock2.h>
 #else
@@ -26,7 +27,7 @@ enum
 static struct
 {
     FILE* output;
-    long flushedTime;
+    uint64_t flushedTime;
 }
 s_clog;
 
@@ -38,13 +39,13 @@ static struct
     long maxFileSize;
     unsigned char maxBackupFiles;
     long currentFileSize;
-    long flushedTime;
+    uint64_t flushedTime;
 }
 s_flog;
 
 static volatile int s_logger;
 static volatile enum LogLevel s_logLevel = LogLevel_INFO;
-static volatile long s_flushInterval = 0; /* msec, 0 is auto flush off */
+static volatile uint64_t s_flushInterval = 0; /* msec, 0 is auto flush off */
 static volatile int s_initialized = 0; /* false */
 #if defined(_WIN32) || defined(_WIN64)
 static CRITICAL_SECTION s_mutex;
@@ -84,7 +85,7 @@ static void unlock(void)
 }
 
 #if defined(_WIN32) || defined(_WIN64)
-static int gettimeofday(struct timeval* tv, void* tz)
+static int gettimeofday(struct timeval* tv, void* /*tz*/)
 {
     const UINT64 epochFileTime = 116444736000000000ULL;
     FILETIME ft;
@@ -312,7 +313,7 @@ static int rotateLogFiles(void)
 
 static long vflog(FILE* fp, char levelc, const char* timestamp, long threadID,
         const char* file, int line, const char* fmt, va_list arg,
-        long currentTime, long* flushedTime)
+        uint64_t currentTime, uint64_t* flushedTime)
 {
     int size;
     long totalsize = 0;
@@ -338,7 +339,7 @@ static long vflog(FILE* fp, char levelc, const char* timestamp, long threadID,
 void logger_log(enum LogLevel level, const char* file, int line, const char* fmt, ...)
 {
     struct timeval now;
-    long currentTime; /* milliseconds */
+    uint64_t currentTime; /* milliseconds */
     char levelc;
     char timestamp[32];
     long threadID;

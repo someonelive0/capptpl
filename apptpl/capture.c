@@ -70,7 +70,7 @@ int capture_open_device(const char *device, int snaplen, int buffer_size, const 
         pcap_close(handle);
         return -1;
     }
-    LOG_INFO("pcap snapshot: %d", pcap_snapshot(handle));
+    LOG_INFO ("pcap snapshot: %d", pcap_snapshot(handle));
 
 
     if (strlen(filter) > 0) {
@@ -117,7 +117,7 @@ int capture_open_device(const char *device, int snaplen, int buffer_size, const 
         return -1;
     }
 
-    LOG_INFO("capturer open device success: %s", device);
+    LOG_INFO ("capturer open device success: %s", device);
 
     capture_handle = handle;
     return 0;
