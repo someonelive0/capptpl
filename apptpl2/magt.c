@@ -5,13 +5,10 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <event.h>
-#include <event2/http.h>
-#include <event2/http_struct.h>
 #include <event2/http_compat.h>
 
 #include "logger.h"
 
-#include "apptpl2_init.h"
 #include "doredis.h"
 #include "magt.h"
 

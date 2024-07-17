@@ -97,5 +97,6 @@ int main(int argc, char** argv)
     time_t end_time = time(NULL);
     LOG_INFO ("END at %s\tprogram is totally running time of seconds %f",
         asctime(localtime( &end_time )), difftime(end_time, begin_time));
+    logger_close();
     exit(0);
 }

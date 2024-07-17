@@ -1,6 +1,11 @@
 #ifndef MAGT_H
 #define MAGT_H
 
+#include <event2/http.h>
+#include <event2/http_struct.h>
+
+#include "apptpl2_init.h"
+
 #define MYHTTPD_SIGNATURE   "myhttpd v 0.0.1"
 
 extern struct event_base *magt_evbase;

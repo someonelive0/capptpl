@@ -61,6 +61,7 @@ int main(int argc, char** argv) {
     zmq_close (pusher);
     zmq_ctx_term (context);
 
+    logger_close();
     exit(0);
 }
 

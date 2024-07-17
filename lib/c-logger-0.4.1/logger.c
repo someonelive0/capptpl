@@ -184,6 +184,13 @@ cleanup:
     return ok;
 }
 
+void logger_close() {
+    logger_flush();
+    if (s_flog.output != NULL) { /* reinit */
+        fclose(s_flog.output);
+    }
+}
+
 void logger_setLevel(enum LogLevel level)
 {
     s_logLevel = level;
