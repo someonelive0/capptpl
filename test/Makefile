@@ -71,6 +71,13 @@ clean:
 
 install:
 	mkdir -p ../bin
+ifneq ($(DEBUG), 1)
+ifeq ($(detected_OS),MSYS)
+	strip sndmsg.exe
+else
+	strip sndmsg
+endif
+endif
 	cp sndmsg sndmsg.ini.tpl ../bin
 
 

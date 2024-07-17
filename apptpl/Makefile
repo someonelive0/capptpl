@@ -77,6 +77,13 @@ clean:
 
 install:
 	mkdir -p ../bin
+ifneq ($(DEBUG), 1)
+ifeq ($(detected_OS),MSYS)
+	strip apptpl.exe
+else
+	strip apptpl
+endif
+endif
 	cp apptpl apptpl.ini.tpl ../bin
 
 

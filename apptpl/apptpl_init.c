@@ -11,7 +11,7 @@
 int ini_callback(void* arg, const char* section, const char* name, const char* value) {
     struct config* pconfig = (struct config*)arg;
 
-    LOG_DEBUG ("ini global %s, name %s, value %s", section, name, value);
+    // LOG_TRACE ("ini global %s, name %s, value %s", section, name, value);
 
     #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
     if (MATCH("global", "version")) {

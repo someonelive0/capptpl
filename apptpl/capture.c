@@ -26,7 +26,7 @@ int capture_open_device(const char *device, int snaplen, int buffer_size, const 
     char errbuf[PCAP_ERRBUF_SIZE];
 
     // Check Libpcap version number
-    LOG_INFO ("libpcap version: %s", pcap_lib_version());
+    LOG_DEBUG ("libpcap version: %s", pcap_lib_version());
 
     pcap_t* handle = pcap_create(device, errbuf);
     if (handle == NULL) {
