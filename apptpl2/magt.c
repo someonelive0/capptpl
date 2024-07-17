@@ -66,7 +66,8 @@ int magt_init(struct config* myconfig) {
         return -1;
     }
 
-    evhttp_set_gencb(httpd, httpd_handler, NULL);
+    api_route_init();
+    evhttp_set_gencb(httpd, api_handler, NULL);
 
     magt_evbase = base;
     magt_httpd = httpd;
@@ -82,6 +83,7 @@ int magt_close() {
     event_free(magt_signal);
     event_free(magt_timer);
     event_base_free(magt_evbase);
+    api_route_free();
 
     return 0;
 }

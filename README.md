@@ -16,6 +16,7 @@ Include in my project with source code in subpath ./lib.
 - cchan-0.1
 - inih-r58
 - uthash-2.3.0
+- cJSON-1.7.18
 
 Depend OS env.
 - gcc/clang with -std=c11
@@ -28,10 +29,12 @@ Attention: zeromq need libstdc++
 
 ## Build
 
+Three subdir can make, they are apptpl, apptpl2, test
+
 ```
-cd src
 make
 make DEBUG=1
+make install
 ```
 
 ## Run
@@ -64,3 +67,27 @@ pacman -Sy make
 ### Linux
 
 Install gcc or clang of llvm
+
+
+## Analyse
+
+Here have some tool to ayalyze c app to check memory leak, system calls except gdb.
+
+### valgrind
+
+```
+valgrind --leak-check=full --show-leak-kinds=all ./apptpl
+```
+
+### strace
+
+```
+top -H -p $(pidof apptpl)
+strace -p $(pidof apptpl)
+```
+
+### ltrace
+
+```
+ltrace -f ./apptpl
+```

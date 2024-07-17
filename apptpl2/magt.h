@@ -9,6 +9,10 @@ int magt_init(struct config* myconfig);
 int magt_close();
 void* magt_loop(struct config* myconfig);
 
+int api_route_init();
+void api_route_free();
+void api_handler(struct evhttp_request *req, void *arg);
+
 // management interface thread
 // param *data is int port
 void* magt(void *arg);

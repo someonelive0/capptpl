@@ -62,6 +62,7 @@ apptpl_objs = $(apptpl_srcs:%.c=$(OBJDIR)/%.o)
 
 all: apptpl
 
+
 # apptpl: main.o init_log.o magt.o inputer.o worker.o capture.o \
 # 	cchan_pthread.o logger.o ini.o
 apptpl: $(apptpl_objs)
