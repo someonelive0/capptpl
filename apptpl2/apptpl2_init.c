@@ -7,6 +7,17 @@
 #include "apptpl2_init.h"
 
 
+UT_string* config2json(const struct config* p) {
+    UT_string *s;
+    utstring_new(s);
+    utstring_printf(s, "{\"versin\": \"%s\", \"http_port\": %d, \"redis_host\": \"%s\",  \"redis_port\": %d}",
+        p->version, p->http_port, p->redis_host, p->redis_port);
+    // printf("%s\n", utstring_body(s));
+
+    // should remember to free s by utstring_free(s);
+    return s;
+}
+
 int ini_callback(void* arg, const char* section, const char* name, const char* value) {
     struct config* pconfig = (struct config*)arg;
 

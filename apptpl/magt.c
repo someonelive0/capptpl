@@ -14,6 +14,7 @@
 #include "apptpl_init.h"
 #include "magt.h"
 
+
 struct event_base *magt_evbase;
 static struct evhttp *magt_httpd;
 static struct event *magt_sigint, *magt_sigterm;

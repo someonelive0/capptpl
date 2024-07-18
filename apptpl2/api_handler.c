@@ -2,10 +2,15 @@
 
 #include "logger.h"
 #include "uthash.h"
+#include "cJSON.h"
 
 #include "magt.h"
 
 
+/*
+ * hash table with key is string of path,
+ * value is functin pointer to process the path of http.
+ */
 struct api_route {
     char path[32];        /* key */
     void (*cb)(struct evhttp_request *, void *); // evhttp callback
@@ -15,25 +20,31 @@ struct api_route {
 struct api_route *routes = NULL;    /* important! initialize to NULL */
 static void status_handler(struct evhttp_request *req, void *arg);
 static void stats_handler(struct evhttp_request *req, void *arg);
+static void config_handler(struct evhttp_request *req, void *arg);
 
 
 int api_route_init() {
     struct api_route *r;
 
-    r = malloc(sizeof *r);
+    if (NULL == (r = malloc(sizeof *r))) return -1;
     strcpy(r->path, "/");
     r->cb = status_handler;
-    HASH_ADD_STR(routes, path, r);  /* id: name of key field */
+    HASH_ADD_STR(routes, path, r);
 
-    r = malloc(sizeof *r);
+    if (NULL == (r = malloc(sizeof *r))) return -1;
     strcpy(r->path, "/status");
     r->cb = status_handler;
-    HASH_ADD_STR(routes, path, r);  /* id: name of key field */
+    HASH_ADD_STR(routes, path, r);
 
-    r = malloc(sizeof *r);
+    if (NULL == (r = malloc(sizeof *r))) return -1;
     strcpy(r->path, "/stats");
     r->cb = stats_handler;
-    HASH_ADD_STR(routes, path, r);  /* id: name of key field */
+    HASH_ADD_STR(routes, path, r);
+
+    if (NULL == (r = malloc(sizeof *r))) return -1;
+    strcpy(r->path, "/config");
+    r->cb = config_handler;
+    HASH_ADD_STR(routes, path, r);
 
     return 0;
 }
@@ -50,6 +61,9 @@ void api_route_free() {
 }
 
 
+/*
+ * api_handler is event2/http callback function.
+ */
 void api_handler(struct evhttp_request *req, void *arg) {
     struct evhttp_uri *decoded = NULL;
     char* decoded_path = NULL;
@@ -58,7 +72,15 @@ void api_handler(struct evhttp_request *req, void *arg) {
     if (cmd != EVHTTP_REQ_GET && cmd != EVHTTP_REQ_HEAD) {
             return;
     }
-    LOG_DEBUG ("evhttp_cmd_type %d", cmd);
+    // LOG_DEBUG ("evhttp_cmd_type %d", cmd);
+
+    struct evkeyvalq * headers = evhttp_request_get_input_headers (req);
+    const char* api_key = evhttp_find_header(headers, "Api-key");
+    if (api_key == NULL || strcmp(api_key, MYHTTPD_APIKEY) != 0) {
+        LOG_WARN ("HTTP_UNAUTHORIZED");
+        // evhttp_send_error(req, 401 , 0); // #define HTTP_UNAUTHORIZED   401
+        // return;
+    }
 
     /* Decode the URI */
     decoded = evhttp_uri_parse(evhttp_request_get_uri(req));
@@ -76,12 +98,12 @@ void api_handler(struct evhttp_request *req, void *arg) {
     decoded_path = evhttp_uridecode(path, 0, NULL);
     if (decoded_path == NULL)
             goto err;
-    LOG_DEBUG ("decoded_path %s", decoded_path);
+    // LOG_DEBUG ("decoded_path %s", decoded_path);
 
     struct api_route *r;
     HASH_FIND_STR(routes, decoded_path, r);
     if (r) {
-        printf("route is %s, %p\n", r->path, r->cb);
+        // LOG_TRACE ("route is %s, %p", r->path, r->cb);
         r->cb(req, arg);
         goto done;
     }
@@ -90,26 +112,43 @@ err:
     evhttp_send_error(req, HTTP_NOTFOUND, NULL);
 done:
     if (decoded)
-            evhttp_uri_free(decoded);
+        evhttp_uri_free(decoded);
     if (decoded_path)
-            free(decoded_path);
+        free(decoded_path);
 }
 
 #define UNUSED(x) (void)(x)
 static void status_handler(struct evhttp_request *req, void *arg) {
     UNUSED(arg);
+    struct evbuffer *buf = NULL;
+
     enum evhttp_cmd_type cmd = evhttp_request_get_command(req);
     LOG_DEBUG ("status_handler %d", cmd);
 
     evhttp_add_header(req->output_headers, "Server", MYHTTPD_SIGNATURE);
-    evhttp_add_header(req->output_headers, "Content-Type", "text/plain; charset=UTF-8");
+    evhttp_add_header(req->output_headers, "Content-Type", "application/json; charset=UTF-8");
     evhttp_add_header(req->output_headers, "Connection", "close");
+
+    // parse json
+    char text[]="{\"status\":\"ok\",\"code\":200}";
+    cJSON * root = cJSON_Parse(text);
+    if(!root) {
+        LOG_ERROR ("cJSON_Parse error: %s", cJSON_GetErrorPtr());
+        goto err;
+    }
+
     //输出的内容
-    struct evbuffer *buf;
     buf = evbuffer_new();
-    evbuffer_add_printf(buf, "It works! status is ok\n%d\n", cmd);
+    evbuffer_add_printf(buf, "%s", cJSON_PrintUnformatted(root));
     evhttp_send_reply(req, HTTP_OK, "OK", buf);
-    evbuffer_free(buf);
+    cJSON_Delete(root);
+    goto done;
+
+err:
+    evhttp_send_error(req, HTTP_INTERNAL, NULL);
+done:
+    if (buf)
+         evbuffer_free(buf);
 }
 
 static void stats_handler(struct evhttp_request *req, void *arg) {
@@ -120,10 +159,38 @@ static void stats_handler(struct evhttp_request *req, void *arg) {
     evhttp_add_header(req->output_headers, "Server", MYHTTPD_SIGNATURE);
     evhttp_add_header(req->output_headers, "Content-Type", "text/plain; charset=UTF-8");
     evhttp_add_header(req->output_headers, "Connection", "close");
+
     //输出的内容
     struct evbuffer *buf;
     buf = evbuffer_new();
     evbuffer_add_printf(buf, "It works! stats is statistic of program\n%d\n", cmd);
     evhttp_send_reply(req, HTTP_OK, "OK", buf);
     evbuffer_free(buf);
+}
+
+static void config_handler(struct evhttp_request *req, void *arg) {
+    enum evhttp_cmd_type cmd = evhttp_request_get_command(req);
+    if (cmd != EVHTTP_REQ_GET) {
+        evhttp_send_error(req, HTTP_NOTFOUND, NULL);
+        return;
+    }
+
+    evhttp_add_header(req->output_headers, "Server", MYHTTPD_SIGNATURE);
+    evhttp_add_header(req->output_headers, "Content-Type", "application/json; charset=UTF-8");
+    evhttp_add_header(req->output_headers, "Connection", "close");
+
+    struct config* myconfig = arg;
+    UT_string* s = config2json(myconfig);
+    if (!s) {
+        evhttp_send_error(req, HTTP_INTERNAL, NULL);
+        return;
+    }
+
+    //输出的内容
+    struct evbuffer *buf;
+    buf = evbuffer_new();
+    evbuffer_add_printf(buf, "%s", utstring_body(s));
+    evhttp_send_reply(req, HTTP_OK, "OK", buf);
+    evbuffer_free(buf);
+    utstring_free(s);
 }

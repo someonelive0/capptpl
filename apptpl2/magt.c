@@ -12,6 +12,7 @@
 #include "doredis.h"
 #include "magt.h"
 
+
 struct event_base *magt_evbase;
 static struct evhttp *magt_httpd;
 static struct event *magt_sigint, *magt_sigterm;
@@ -65,8 +66,9 @@ int magt_init(struct config* myconfig) {
         return -1;
     }
 
-    api_route_init();
-    evhttp_set_gencb(httpd, api_handler, NULL);
+    if (-1 == api_route_init())
+        return -1;
+    evhttp_set_gencb(httpd, api_handler, myconfig);
 
     magt_evbase = base;
     magt_httpd = httpd;
