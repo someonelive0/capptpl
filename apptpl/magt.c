@@ -16,7 +16,7 @@
 
 struct event_base *magt_evbase;
 static struct evhttp *magt_httpd;
-static struct event *magt_signal;
+static struct event *magt_sigint, *magt_sigterm;
 static struct event *magt_timer;
 
 static void httpd_handler(struct evhttp_request *req, void *arg);
@@ -45,8 +45,10 @@ int magt_init(struct config* myconfig) {
     // struct event evsignal;
     // event_set(&evsignal, SIGINT, EV_SIGNAL|EV_PERSIST, signal_cb, &evsignal);
     // event_add(&evsignal, NULL);
-    struct event *evsignal = evsignal_new(base, SIGINT, signal_cb, base);
-    evsignal_add(evsignal, 0); //  event_add(evsignal, 0);
+    struct event *evsigint = evsignal_new(base, SIGINT, signal_cb, base);
+    evsignal_add(evsigint, 0);
+    struct event *evsigterm = evsignal_new(base, SIGTERM, signal_cb, base);
+    evsignal_add(evsigterm, 0);
 
     // struct event *evtimer = evtimer_new(base, timer_cb, base); // only call timer_cb once
     struct event *evtimer = event_new(base, -1, EV_TIMEOUT|EV_PERSIST, timer_cb, base);
@@ -69,17 +71,19 @@ int magt_init(struct config* myconfig) {
 
     magt_evbase = base;
     magt_httpd = httpd;
-    magt_signal = evsignal;
+    magt_sigint = evsigint;
+    magt_sigterm = evsigterm;
     magt_timer = evtimer;
     return 0;
 }
 
 int magt_close() {
-
-    evhttp_free(magt_httpd);
-    evsignal_del(magt_signal);
-    event_free(magt_signal);
+    evsignal_del(magt_sigint);
+    evsignal_del(magt_sigterm);
+    event_free(magt_sigint);
+    event_free(magt_sigterm);
     event_free(magt_timer);
+    evhttp_free(magt_httpd);
     event_base_free(magt_evbase);
 
     return 0;
@@ -93,6 +97,7 @@ void* magt_loop(struct config* myconfig) {
     return 0;
 }
 
+#if 0
 // management interface thread
 // param *data is struct config
 void* magt(void *arg) {
@@ -147,7 +152,7 @@ void* magt(void *arg) {
 
     return ((void*)0);
 }
-
+#endif
 
 #define UNUSED(x) (void)(x)
 static void httpd_handler(struct evhttp_request *req, void *arg) {
@@ -207,20 +212,16 @@ static void httpd_handler(struct evhttp_request *req, void *arg) {
     evbuffer_free(buf);
 }
 
-static int signal_called = 0;
 #ifdef _WIN32
 static void signal_cb(long long fd, short event, void *arg) {
 #else
 static void signal_cb(int fd, short event, void *arg) {
 #endif
-    UNUSED(fd);
-    UNUSED(event);
-    struct event *signal = arg;
-    LOG_INFO ("%s: got signal %d", __func__, EVENT_SIGNAL(signal));
-    event_base_loopbreak(arg);  //终止侦听event_dispatch()的事件侦听循环，执行之后的代码
-    if (signal_called >= 2)
-        evsignal_del(signal);
-     signal_called ++;
+    if (event == EV_SIGNAL) { // should be EV_SIGNAL=8
+        LOG_INFO ("%s: got signal %d", __func__, fd);
+        if (fd == SIGINT || fd == SIGTERM)
+            event_base_loopbreak(arg);  // arg = evbase
+    }
 }
 
 #ifdef _WIN32

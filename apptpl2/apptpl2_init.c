@@ -61,17 +61,15 @@ int parse_args(int argc, const char** argv, int* debug, const char** config_file
         SHOW_VERSION();
         return 1;
     }
-    // if (debug != 0)
-    //     printf("debug: %d\n", *debug);
-    //  if (config_filename != NULL)
-    //     printf("config_filename: %s\n", *config_filename);
 
     if (argc != 0) {
-        printf("argc: %d\n", argc);
+        printf("there are more unknown argc %d: ", argc);
         int i;
         for (i = 0; i < argc; i++) {
-            printf("argv[%d]: %s\n", i, *(argv + i));
+            printf("argv[%d]: %s, ", i, *(argv + i));
         }
+        printf("\n");
+        return -1;
     }
 
     return 0;

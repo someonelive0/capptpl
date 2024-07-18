@@ -7,6 +7,7 @@
 #include "load_config.h"
 
 
+#if 0
 #define UNUSED(x) (void)(x)
 int ini_cb(void* arg, const char* section, const char* name, const char* value) {
     UNUSED(arg);
@@ -26,6 +27,7 @@ int ini_cb(void* arg, const char* section, const char* name, const char* value) 
     }
     return 1;
 }
+#endif
 
 int load_config_ini(const char* filename, ini_handler ini_callback, void* arg) {
     char* tpl_filename;
