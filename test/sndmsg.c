@@ -12,7 +12,8 @@ static int copy_file(const char* in_path, const char* out_path);
 static int load_config(const char* filename);
 
 #define UNUSED(x) (void)(x)
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
     UNUSED(argc);
     UNUSED(argv);
     char addr[24] = {0};
@@ -28,7 +29,7 @@ int main(int argc, char** argv) {
     void *context = zmq_ctx_new();
     void *pusher = zmq_socket (context, ZMQ_PUSH);
     snprintf(addr, sizeof(addr)-1, "tcp://localhost:%d", port);
-    if(zmq_connect(pusher, addr) == -1) {
+    if (zmq_connect(pusher, addr) == -1) {
         printf("E: connect %s failed: %s\n", addr,  zmq_strerror(zmq_errno()));
         exit(1);
     }
@@ -50,7 +51,7 @@ int main(int argc, char** argv) {
             // printf("send msg count %d, len %lld: [%s]\n",
             //     count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
             LOG_DEBUG("send msg count %d, len %lld: [%s]",
-                count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
+                      count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
         }
 
         if ((rc = zmq_msg_close(&msg)) != 0) {
@@ -65,7 +66,8 @@ int main(int argc, char** argv) {
     exit(0);
 }
 
-static int init_log() {
+static int init_log()
+{
     logger_initConsoleLogger(NULL);
     logger_initFileLogger("sndmsg.log", 1024*1024, 5);
     LOG_INFO("multi logging");
@@ -79,11 +81,12 @@ static int init_log() {
     return 0 ;
 }
 
-static int ini_cb(void* arg, const char* section, const char* name, const char* value) {
+static int ini_cb(void* arg, const char* section, const char* name, const char* value)
+{
     UNUSED(arg);
     // configuration* pconfig = (configuration*)arg;
 
-    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
+#define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
     if (MATCH("global", "version")) {
         printf("ini global %s, name %s, value %s\n", section, name, value);
         // pconfig->version = atoi(value);
@@ -98,21 +101,23 @@ static int ini_cb(void* arg, const char* section, const char* name, const char* 
     return 1;
 }
 
-static int copy_file(const char* in_path, const char* out_path) {
+static int copy_file(const char* in_path, const char* out_path)
+{
     size_t n;
     FILE* in=NULL, * out=NULL;
     char buf[64];
-    
-    if((in = fopen(in_path, "rb")) && (out = fopen(out_path, "wb")))
-        while((n = fread(buf, 1, sizeof(buf), in)) && fwrite(buf, 1, n, out));
+
+    if ((in = fopen(in_path, "rb")) && (out = fopen(out_path, "wb")))
+        while ((n = fread(buf, 1, sizeof(buf), in)) && fwrite(buf, 1, n, out));
     else return -1;
 
-    if(in) fclose(in);
-    if(out) fclose(out);
+    if (in) fclose(in);
+    if (out) fclose(out);
     return 0;
 }
 
-static int load_config(const char* filename) {
+static int load_config(const char* filename)
+{
     char* tpl_filename;
     int rc;
 

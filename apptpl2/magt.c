@@ -28,7 +28,8 @@ static void timer_cb(int fd, short event, void *arg);
 #endif
 
 
-int magt_init(struct config* myconfig) {
+int magt_init(struct config* myconfig)
+{
 // link with -lwsock32
 #ifdef _WIN32
     WSADATA wsa_data;
@@ -78,7 +79,8 @@ int magt_init(struct config* myconfig) {
     return 0;
 }
 
-int magt_close() {
+int magt_close()
+{
     evsignal_del(magt_sigint);
     evsignal_del(magt_sigterm);
     event_free(magt_sigint);
@@ -91,7 +93,8 @@ int magt_close() {
     return 0;
 }
 
-void* magt_loop(struct config* myconfig) {
+void* magt_loop(struct config* myconfig)
+{
     LOG_INFO ("http listen port %d, start event loop", myconfig->http_port);
     event_base_dispatch(magt_evbase);
     LOG_INFO ("END event loop");
@@ -102,7 +105,8 @@ void* magt_loop(struct config* myconfig) {
 #if 0
 // management interface thread
 // param *data is struct config
-void* magt(void *arg) {
+void* magt(void *arg)
+{
     struct config* myconfig = (struct config*)arg;
 
 // link with -lwsock32
@@ -159,7 +163,8 @@ void* magt(void *arg) {
     return ((void*)0);
 }
 
-static void httpd_handler(struct evhttp_request *req, void *arg) {
+static void httpd_handler(struct evhttp_request *req, void *arg)
+{
     UNUSED(arg);
     char output[2048] = "\0";
     char tmp[1024];
@@ -219,10 +224,11 @@ static void httpd_handler(struct evhttp_request *req, void *arg) {
 
 #define UNUSED(x) (void)(x)
 #ifdef _WIN32
-static void signal_cb(long long fd, short event, void *arg) {
+static void signal_cb(long long fd, short event, void *arg)
 #else
-static void signal_cb(int fd, short event, void *arg) {
+static void signal_cb(int fd, short event, void *arg)
 #endif
+{
     if (event == EV_SIGNAL) { // should be EV_SIGNAL=8
         LOG_INFO ("%s: got signal %d", __func__, fd);
         if (fd == SIGINT || fd == SIGTERM)
@@ -231,10 +237,12 @@ static void signal_cb(int fd, short event, void *arg) {
 }
 
 #ifdef _WIN32
-static void timer_cb(long long fd, short event, void *arg) {
+static void timer_cb(long long fd, short event, void *arg)
+
 #else
-static void timer_cb(int fd, short event, void *arg) {
+static void timer_cb(int fd, short event, void *arg)
 #endif
+{
     UNUSED(fd);
     UNUSED(event);
     UNUSED(arg);

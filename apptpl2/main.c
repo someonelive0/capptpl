@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 {
     time_t begin_time = time(NULL);
     int debug = 0;
-    const char *config_filename = NULL; 
+    const char *config_filename = NULL;
     if (0 != parse_args(argc, (const char**)argv, &debug, &config_filename)) {
         exit(1);
     }
@@ -34,8 +34,8 @@ int main(int argc, char** argv)
         exit(1);
     }
     LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, redis_host=%s, redis_port=%d",
-        asctime(localtime( &begin_time )), // ctime(&begin_time),
-        config_filename, myconfig.version, myconfig.http_port, myconfig.redis_host, myconfig.redis_port);
+              asctime(localtime( &begin_time )), // ctime(&begin_time),
+              config_filename, myconfig.version, myconfig.http_port, myconfig.redis_host, myconfig.redis_port);
 
 
     // pthread_t tid_magt;
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 
     time_t end_time = time(NULL);
     LOG_INFO ("END at %s\tprogram is totally running time of seconds %f",
-        asctime(localtime( &end_time )), difftime(end_time, begin_time));
+              asctime(localtime( &end_time )), difftime(end_time, begin_time));
     logger_close();
     exit(0);
 }

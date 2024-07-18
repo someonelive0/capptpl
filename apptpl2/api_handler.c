@@ -23,7 +23,8 @@ static void stats_handler(struct evhttp_request *req, void *arg);
 static void config_handler(struct evhttp_request *req, void *arg);
 
 
-int api_route_init() {
+int api_route_init()
+{
     struct api_route *r;
 
     if (NULL == (r = malloc(sizeof *r))) return -1;
@@ -49,7 +50,8 @@ int api_route_init() {
     return 0;
 }
 
-void api_route_free() {
+void api_route_free()
+{
     struct api_route *current_route, *tmp;
 
     if (routes) {
@@ -64,13 +66,14 @@ void api_route_free() {
 /*
  * api_handler is event2/http callback function.
  */
-void api_handler(struct evhttp_request *req, void *arg) {
+void api_handler(struct evhttp_request *req, void *arg)
+{
     struct evhttp_uri *decoded = NULL;
     char* decoded_path = NULL;
 
     enum evhttp_cmd_type cmd = evhttp_request_get_command(req);
     if (cmd != EVHTTP_REQ_GET && cmd != EVHTTP_REQ_HEAD) {
-            return;
+        return;
     }
     // LOG_DEBUG ("evhttp_cmd_type %d", cmd);
 
@@ -85,19 +88,18 @@ void api_handler(struct evhttp_request *req, void *arg) {
     /* Decode the URI */
     decoded = evhttp_uri_parse(evhttp_request_get_uri(req));
     if (!decoded) {
-            evhttp_send_error(req, HTTP_BADREQUEST, 0);
-            return;
+        evhttp_send_error(req, HTTP_BADREQUEST, 0);
+        return;
     }
 
     /* Let's see what path the user asked for. */
     const char *path = evhttp_uri_get_path(decoded);
-    if (!path)
-            path = "/";
+    if (!path) path = "/";
 
     /* We need to decode it, to see what path the user really wanted. */
     decoded_path = evhttp_uridecode(path, 0, NULL);
     if (decoded_path == NULL)
-            goto err;
+        goto err;
     // LOG_DEBUG ("decoded_path %s", decoded_path);
 
     struct api_route *r;
@@ -111,14 +113,13 @@ void api_handler(struct evhttp_request *req, void *arg) {
 err:
     evhttp_send_error(req, HTTP_NOTFOUND, NULL);
 done:
-    if (decoded)
-        evhttp_uri_free(decoded);
-    if (decoded_path)
-        free(decoded_path);
+    if (decoded) evhttp_uri_free(decoded);
+    if (decoded_path) free(decoded_path);
 }
 
 #define UNUSED(x) (void)(x)
-static void status_handler(struct evhttp_request *req, void *arg) {
+static void status_handler(struct evhttp_request *req, void *arg)
+{
     UNUSED(arg);
     struct evbuffer *buf = NULL;
 
@@ -132,7 +133,7 @@ static void status_handler(struct evhttp_request *req, void *arg) {
     // parse json
     char text[]="{\"status\":\"ok\",\"code\":200}";
     cJSON * root = cJSON_Parse(text);
-    if(!root) {
+    if (!root) {
         LOG_ERROR ("cJSON_Parse error: %s", cJSON_GetErrorPtr());
         goto err;
     }
@@ -147,11 +148,11 @@ static void status_handler(struct evhttp_request *req, void *arg) {
 err:
     evhttp_send_error(req, HTTP_INTERNAL, NULL);
 done:
-    if (buf)
-         evbuffer_free(buf);
+    if (buf) evbuffer_free(buf);
 }
 
-static void stats_handler(struct evhttp_request *req, void *arg) {
+static void stats_handler(struct evhttp_request *req, void *arg)
+{
     UNUSED(arg);
     enum evhttp_cmd_type cmd = evhttp_request_get_command(req);
     LOG_DEBUG ("stats_handler %d", cmd);
@@ -168,7 +169,8 @@ static void stats_handler(struct evhttp_request *req, void *arg) {
     evbuffer_free(buf);
 }
 
-static void config_handler(struct evhttp_request *req, void *arg) {
+static void config_handler(struct evhttp_request *req, void *arg)
+{
     enum evhttp_cmd_type cmd = evhttp_request_get_command(req);
     if (cmd != EVHTTP_REQ_GET) {
         evhttp_send_error(req, HTTP_NOTFOUND, NULL);

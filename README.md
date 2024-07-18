@@ -9,6 +9,17 @@ A thread capture to capture ethernet packet with libpcap.
 
 Alse with arg parser and rotating logging.
 
+## Code
+
+C11 standard with -std=c11.
+
+Linux style code of C, and indent use space=4, use tool astyle to format codes.
+
+```
+astyle --style=linux --indent=spaces=4 --pad-header  main.c
+```
+
+
 ## Depends
 
 Include in my project with source code in subpath ./lib. 
