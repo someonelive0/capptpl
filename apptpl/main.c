@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 {
     time_t begin_time = time(NULL);
     int debug = 0;
-    const char *config_filename = NULL; 
+    const char *config_filename = NULL;
     if (0 != parse_args(argc, (const char**)argv, &debug, &config_filename)) {
         exit(1);
     }
@@ -36,9 +36,9 @@ int main(int argc, char** argv)
         exit(1);
     }
     LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, zmq_port=%d, pcap_device=%s, pcap_snaplen=%d, pcap_buffer_size=%d, pcap_filter=%s",
-        asctime(localtime( &begin_time )), // ctime(&begin_time),
-        config_filename, myconfig.version, myconfig.http_port, myconfig.zmq_port,
-        myconfig.pcap_device, myconfig.pcap_snaplen, myconfig.pcap_buffer_size, myconfig.pcap_filter);
+              asctime(localtime( &begin_time )), // ctime(&begin_time),
+              config_filename, myconfig.version, myconfig.http_port, myconfig.zmq_port,
+              myconfig.pcap_device, myconfig.pcap_snaplen, myconfig.pcap_buffer_size, myconfig.pcap_filter);
 
     // init something
     if (-1 == magt_init(&myconfig)) {
@@ -51,8 +51,8 @@ int main(int argc, char** argv)
     }
 
     // don't use mingw64 libpcap-devel, use npcap-sdk-1.13 to link -lwpcap.
-    if (0 != capture_open_device(myconfig.pcap_device,
-        myconfig.pcap_snaplen, myconfig.pcap_buffer_size, myconfig.pcap_filter)) {
+    if (0 != capture_open_device(myconfig.pcap_device, myconfig.pcap_snaplen,
+                                 myconfig.pcap_buffer_size, myconfig.pcap_filter)) {
         exit(1);
     }
 
@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 
     time_t end_time = time(NULL);
     LOG_INFO ("END at %s\tprogram is totally running time of seconds %f",
-        asctime(localtime( &end_time )), difftime(end_time, begin_time));
+              asctime(localtime( &end_time )), difftime(end_time, begin_time));
     logger_close();
     exit(0);
 }

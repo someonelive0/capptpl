@@ -19,7 +19,8 @@ static uint64_t capture_count;
 static pcap_t* capture_handle = NULL;
 static struct bpf_program* capture_bpf = NULL;
 
-int capture_open_device(const char *device, int snaplen, int buffer_size, const char* filter) {
+int capture_open_device(const char *device, int snaplen, int buffer_size, const char* filter)
+{
 
     bpf_u_int32 net_mask = 0;
     bpf_u_int32 net_ip = 0;
@@ -59,9 +60,9 @@ int capture_open_device(const char *device, int snaplen, int buffer_size, const 
     }
 
     // 设置缓存大小，单位 KBytes
-    if(pcap_set_buffer_size(handle, buffer_size) != 0) {
+    if (pcap_set_buffer_size(handle, buffer_size) != 0) {
         LOG_WARN ("pcap_set_buffer_size failed, size %d KB, %s",
-          buffer_size, pcap_geterr(handle));
+                  buffer_size, pcap_geterr(handle));
     }
     LOG_INFO("pcap buffer_size: %d KBytes", buffer_size);
 
@@ -76,10 +77,10 @@ int capture_open_device(const char *device, int snaplen, int buffer_size, const 
 
 
     if (strlen(filter) > 0) {
-	    if (NULL == (capture_bpf = malloc(sizeof(struct bpf_program)))) {
+        if (NULL == (capture_bpf = malloc(sizeof(struct bpf_program)))) {
             LOG_ERROR ("capturer malloc filter of struct bpf_program");
             return -1;
-	    }
+        }
         if (pcap_compile(handle, capture_bpf, filter, 1, 0xFFFFFF00) == -1) {
             LOG_ERROR ("capturer pcap_compile filter:%s, failed:%s", filter, pcap_geterr(handle));
             return -1;
@@ -93,12 +94,12 @@ int capture_open_device(const char *device, int snaplen, int buffer_size, const 
     }
 
     // WIN32 必须在设备activate后设置pcap_setbuff，否则失败
-    #ifdef _WIN32
+#ifdef _WIN32
     rc = pcap_setmintocopy(handle, 16000);
     if (rc < 0) {
         LOG_WARN ("pcap_setmintocopy %d failed:%s", 16000, pcap_geterr(handle));
     }
-    #endif
+#endif
 
     // step2 获取MAC地址
     if (pcap_lookupnet(device, &net_ip, &net_mask, errbuf) < 0) {
@@ -117,7 +118,7 @@ int capture_open_device(const char *device, int snaplen, int buffer_size, const 
     int datalink = pcap_datalink(handle);
     if (datalink != DLT_EN10MB && datalink != DLT_NULL) {
         LOG_ERROR ("capturer device=%s data link is %d, only support ethernet type",
-            device, datalink);
+                   device, datalink);
         pcap_close(handle);
         return -1;
     }
@@ -128,7 +129,8 @@ int capture_open_device(const char *device, int snaplen, int buffer_size, const 
     return 0;
 }
 
-int capture_close() {
+int capture_close()
+{
     if (capture_handle != NULL) {
         pcap_breakloop(capture_handle);
         pcap_close(capture_handle);
@@ -143,19 +145,21 @@ int capture_close() {
 }
 
 #define UNUSED(x) (void)(x)
-static void capture_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata) {
+static void capture_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata)
+{
     UNUSED(arg);
     capture_count ++;
     // PcapCapturer *cap = (PcapCapturer *)arg;
     // cap->ProcessPcapPacket(packet_header, packet_content);
     printf("capture_cb: %d/%d,\tdata addr: %p\n",
-        pkthdr->caplen, pkthdr->len, &pktdata);
+           pkthdr->caplen, pkthdr->len, &pktdata);
 }
 
 /*
  * loop to cature packets, can be called by pthread
  */
-void* capture(void *arg) {
+void* capture(void *arg)
+{
     int rc;
 
     LOG_INFO ("capture begin loop");
@@ -173,10 +177,10 @@ void* capture(void *arg) {
     return ((void*)0);
 }
 
-int list_devices() {
+int list_devices()
+{
     char errbuf[PCAP_ERRBUF_SIZE]; /* Size defined in pcap.h */
     pcap_if_t *alldevs, *d;
-    int rc;
 
     char ip[46] = {0}; // include ipv6
     char subnet_mask[46] = {0};
@@ -209,13 +213,7 @@ int list_devices() {
         }
 
         /* Get device subnet info */
-        rc = pcap_lookupnet(
-            d->name,
-            &subnet_raw,
-            &subnet_mask_raw,
-            errbuf
-        );
-        if (rc == -1) {
+        if (-1 == pcap_lookupnet(d->name, &subnet_raw, &subnet_mask_raw, errbuf)) {
             printf ("\tpcap_lookupnet of device %s failed: %s\n", d->name, errbuf);
             continue;
         }
@@ -224,7 +222,7 @@ int list_devices() {
         inaddr.s_addr = subnet_raw;
         char* p = inet_ntoa(inaddr);
         if (p == NULL) {
-            printf ("inet_ntoa ip failed, %d %s\n", errno, strerror(errno));
+            printf("inet_ntoa ip failed, %d %s\n", errno, strerror(errno));
             return -1;
         }
         strncpy(ip, p, sizeof(ip)-1);
@@ -232,7 +230,7 @@ int list_devices() {
         /* Get subnet mask in human readable form */
         inaddr.s_addr = subnet_mask_raw;
         if ((p = inet_ntoa(inaddr)) == NULL) {
-            printf ("inet_ntoa netmask failed, %d %s\n", errno, strerror(errno));
+            printf("inet_ntoa netmask failed, %d %s\n", errno, strerror(errno));
             return -1;
         }
         strncpy(subnet_mask, p, sizeof(subnet_mask)-1);

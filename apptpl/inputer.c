@@ -12,7 +12,8 @@ static void *zmq_context;
 static void *puller;
 static int puller_port;
 
-int inputer_init(int port) {
+int inputer_init(int port)
+{
     char addr[16] = {0};
     int major, minor, patch = 0;
     puller_port = port;
@@ -25,13 +26,14 @@ int inputer_init(int port) {
     snprintf(addr, sizeof(addr)-1, "tcp://*:%d", port);
     if (zmq_bind (puller, addr) == -1) {
         LOG_ERROR ("zmq zmq_bind port %d failed: %d, %s",
-            port, zmq_errno(), zmq_strerror(zmq_errno()));
+                   port, zmq_errno(), zmq_strerror(zmq_errno()));
         return -1;
     }
     return 0;
 }
 
-int inputer_stop() {
+int inputer_stop()
+{
     zmq_close (puller);
     zmq_ctx_term (zmq_context);
     return 0;
@@ -40,12 +42,13 @@ int inputer_stop() {
 /*
  * loop to input zeromq messages, can be called by pthread
  */
-void* inputer(void *arg) {
+void* inputer(void *arg)
+{
     cchan_t *chan_msg = ((cchan_t*)arg);
     int rc;
 
     LOG_INFO ("inputer listen port %d, start zmq loop, zmq_msg_t size %lld",
-        puller_port, sizeof(zmq_msg_t));
+              puller_port, sizeof(zmq_msg_t));
     // char buffer [100];
     zmq_msg_t *msg = NULL;
     while (1) {
@@ -58,7 +61,7 @@ void* inputer(void *arg) {
             free(msg);
             continue;
         }
-        
+
         // rc = zmq_recv (puller, buffer, sizeof(buffer), 0);
         rc = zmq_msg_recv (msg, puller, 0);
         if (rc == -1) {

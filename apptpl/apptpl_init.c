@@ -8,12 +8,13 @@
 #include "apptpl_init.h"
 
 
-int ini_callback(void* arg, const char* section, const char* name, const char* value) {
+int ini_callback(void* arg, const char* section, const char* name, const char* value)
+{
     struct config* pconfig = (struct config*)arg;
 
     // LOG_TRACE ("ini global %s, name %s, value %s", section, name, value);
 
-    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
+#define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
     if (MATCH("global", "version")) {
         strncpy(pconfig->version, value, sizeof(pconfig->version)-1);
     } else if (MATCH("http", "port")) {
@@ -42,7 +43,8 @@ static const char *const usages[] = {
     NULL,
 };
 
-int parse_args(int argc, const char** argv, int* debug, const char** config_filename) {
+int parse_args(int argc, const char** argv, int* debug, const char** config_filename)
+{
     int version = 0;
     int list = 0;
     // int debug = 0;
