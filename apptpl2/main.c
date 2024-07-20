@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     // pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig));
     // LOG_INFO ("start thread magt with tid %lld", tid_magt);
 
-    // // brok here to wait
+    // brok here to wait
     // pthread_join(tid_magt, NULL);
     // LOG_INFO ("join thread magt with tid %lld", tid_magt);
 
@@ -66,5 +66,10 @@ int main(int argc, char** argv)
     LOG_INFO ("END at %s\tprogram is totally running time of seconds %f",
               asctime(localtime( &end_time )), difftime(end_time, begin_time));
     logger_close();
+
+    // restart program itself.
+    restart(argv);
+
+    // not reach here.
     exit(0);
 }

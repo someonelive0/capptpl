@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "logger.h"
 #include "argparse.h"
@@ -86,4 +87,13 @@ int parse_args(int argc, const char** argv, int* debug, const char** config_file
     }
 
     return 0;
+}
+
+void restart(char** argv)
+{
+    // execve("/proc/self/exe", argv, NULL);
+    int rc = execv("/proc/self/exe", argv);
+    if (rc == -1) {
+        printf("restart with execv failed, %d: %s\n", errno, strerror(errno));
+    }
 }
