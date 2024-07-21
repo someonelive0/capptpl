@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "logger.h"
 #include "argparse.h"
