@@ -27,7 +27,8 @@ endif
 
 #CC     = clang
 CC     = gcc
-CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 -I../lib
+CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 \
+		-I../lib/sds -I../lib
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 
 #LDFLAGS += 
@@ -48,14 +49,20 @@ endif
 
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 OBJDIR = obj
-vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 ../lib
+vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 \
+	../lib/sds ../lib
 sndmsg_srcs = sndmsg.c \
 	logger.c \
 	ini.c argparse.c
 sndmsg_objs = $(sndmsg_srcs:%.c=$(OBJDIR)/%.o)
 
+teststr_srcs = teststr.c \
+	hex.c \
+	sds.c
+teststr_objs = $(teststr_srcs:%.c=$(OBJDIR)/%.o)
 
-all: sndmsg
+
+all: sndmsg teststr
 
 
 sndmsg: $(sndmsg_objs)
@@ -65,9 +72,18 @@ $(sndmsg_objs): $(OBJDIR)/%.o : %.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+
+teststr: $(teststr_objs)
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+$(teststr_objs): $(OBJDIR)/%.o : %.c
+	@mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+
 clean:
-	rm -f $(sndmsg_objs)
-	rm -f sndmsg
+	rm -f $(sndmsg_objs) $(teststr_objs)
+	rm -f sndmsg teststr
 
 install:
 	mkdir -p ../bin
@@ -84,3 +100,4 @@ endif
 diag:
 	@echo "OS is $(detected_OS)"
 	@echo "sndmsg_srcs: $(sndmsg_srcs)"
+	@echo "teststrteststr_srcs: $(teststr_srcs)"
