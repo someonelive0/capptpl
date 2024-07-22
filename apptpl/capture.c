@@ -195,7 +195,11 @@ int list_devices()
 
     /* Scan the list printing every entry */
     for (d = alldevs; d; d = d->next) {
-        printf("device: %s\n", d->name);
+	if (d->description)
+            printf("name: %s\n", d->description);
+        else
+            printf("name: None\n");
+        printf("\tdevice: %s\n", d->name);
 
         for (pcap_addr_t *a = d->addresses; a; a = a->next) {
             if (a->addr && a->addr->sa_family == AF_INET) {
@@ -214,7 +218,7 @@ int list_devices()
 
         /* Get device subnet info */
         if (-1 == pcap_lookupnet(d->name, &subnet_raw, &subnet_mask_raw, errbuf)) {
-            printf ("\tpcap_lookupnet of device %s failed: %s\n", d->name, errbuf);
+            //printf ("\tpcap_lookupnet of device %s failed: %s\n", d->name, errbuf);
             continue;
         }
 
