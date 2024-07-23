@@ -21,7 +21,8 @@ int capture_open(struct capture* captr, const char *device,
 int capture_close(struct capture* captr);
 // arg is struct capture*
 void* capture_loop(void *arg);
-
+// when capture packet to callback function;
+void pkt_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata);
 
 // =============================================
 // not with struct

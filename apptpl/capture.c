@@ -154,7 +154,7 @@ void* capture_loop(void *arg)
 
     LOG_INFO ("capture begin loop");
     while (!capture_shutdown) {
-        rc = pcap_dispatch(captr->handle, -1, capture_cb, (u_char *)captr);
+        rc = pcap_dispatch(captr->handle, -1, pkt_cb, (u_char *)captr);
         if (rc == -1) {
             LOG_ERROR ("pcap_dispatch pcap_geterr:%s", pcap_geterr(captr->handle));
             break;
@@ -163,6 +163,14 @@ void* capture_loop(void *arg)
     LOG_INFO ("END capture loop, capture count %zu", captr->count);
 
     return ((void*)0);
+}
+
+void pkt_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata)
+{
+    struct capture* captr = (struct capture*)arg;
+    captr->count ++;
+    printf("capture_cb: %d/%d,\tdata addr: %p\n",
+           pkthdr->caplen, pkthdr->len, &pktdata);
 }
 
 
