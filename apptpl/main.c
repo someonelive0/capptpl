@@ -46,24 +46,21 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    if (0 != inputer_init(myconfig.zmq_port)) {
-        exit(1);
+    cchan_t *chan_msg = cchan_new(sizeof(void*));    /* producers -> consumers */
+    struct inputer inptr;
+    memset(&inptr, 0, sizeof(struct inputer));
+    if (0 != inputer_open(&inptr, myconfig.zmq_port, chan_msg)) {
+        goto err;
     }
 
     struct capture captr;
     memset(&captr, 0, sizeof(struct capture));
-    // don't use mingw64 libpcap-devel, use npcap-sdk-1.13 to link -lwpcap.
-    // if (0 != capture_open_device(myconfig.pcap_device, myconfig.pcap_snaplen,
-    //                              myconfig.pcap_buffer_size, myconfig.pcap_filter)) {
-    //     exit(1);
-    // }
     if (0 != capture_open(&captr, myconfig.pcap_device, myconfig.pcap_snaplen,
-                                 myconfig.pcap_buffer_size, myconfig.pcap_filter)) {
-        exit(1);
+                          myconfig.pcap_buffer_size, myconfig.pcap_filter)) {
+        goto err;
     }
 
     pthread_t tid_inputer, tid_worker, tid_capture;
-    cchan_t *chan_msg = cchan_new(sizeof(void*));    /* producers -> consumers */
 
     // pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig));
     // LOG_INFO ("start thread magt with tid %lld", tid_magt);
@@ -71,7 +68,7 @@ int main(int argc, char** argv)
     pthread_create(&tid_worker, NULL, worker, ((void *)chan_msg));
     LOG_INFO ("start thread worker with tid %lld", tid_worker);
 
-    pthread_create(&tid_inputer, NULL, inputer, ((void *)chan_msg));
+    pthread_create(&tid_inputer, NULL, inputer_loop, ((void *)&inptr));
     LOG_INFO ("start thread inputer with tid %lld", tid_inputer);
 
     pthread_create(&tid_capture, NULL, capture_loop, ((void *)&captr));
@@ -85,11 +82,12 @@ int main(int argc, char** argv)
     magt_loop(&myconfig);
     magt_close();
 
-    inputer_stop();
+    inputer_stop(&inptr);
     pthread_join(tid_inputer, NULL);
     LOG_INFO ("join thread inputer with tid %lld", tid_inputer);
 
-    capture_shutdown = 1;
+    // capture_shutdown = 1;
+    captr.shutdown = 1;
     pthread_join(tid_capture, NULL);
     LOG_INFO ("join thread capture with tid %lld", tid_capture);
     // capture_close_device();
@@ -106,4 +104,12 @@ int main(int argc, char** argv)
               asctime(localtime( &end_time )), difftime(end_time, begin_time));
     logger_close();
     exit(0);
+
+err:
+    magt_close();
+    inputer_stop(&inptr);
+    capture_close(&captr);
+    if (chan_msg) cchan_free(chan_msg);
+    logger_close();
+    exit(1);
 }

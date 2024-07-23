@@ -16,14 +16,17 @@
 #include "capture.h"
 
 
-static void capture_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata);
-
 int capture_open(struct capture* captr, const char *device, 
             int snaplen, int buffer_size, const char* filter)
 {
     pcap_t* handle = NULL;
     struct bpf_program* bpf = NULL;
     char errbuf[PCAP_ERRBUF_SIZE];
+
+    if (captr->handle) {
+        LOG_ERROR ("capture had opened");
+        return -1;
+    }
 
     // Check Libpcap version number
     LOG_DEBUG ("libpcap version: %s", pcap_lib_version());
@@ -153,7 +156,7 @@ void* capture_loop(void *arg)
     captr->count = 0;
 
     LOG_INFO ("capture begin loop");
-    while (!capture_shutdown) {
+    while (!captr->shutdown) {
         rc = pcap_dispatch(captr->handle, -1, pkt_cb, (u_char *)captr);
         if (rc == -1) {
             LOG_ERROR ("pcap_dispatch pcap_geterr:%s", pcap_geterr(captr->handle));
@@ -169,11 +172,12 @@ void pkt_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata
 {
     struct capture* captr = (struct capture*)arg;
     captr->count ++;
-    printf("capture_cb: %d/%d,\tdata addr: %p\n",
+    printf("pkt_cb: %d/%d,\tdata addr: %p\n",
            pkthdr->caplen, pkthdr->len, &pktdata);
 }
 
 
+#if 0
 // =============================================
 // not with struct
 // =============================================
@@ -339,6 +343,7 @@ void* capture(void *arg)
 
     return ((void*)0);
 }
+#endif
 
 int list_devices()
 {
