@@ -22,6 +22,6 @@ void api_handler(struct evhttp_request *req, void *arg);
 
 // management interface thread
 // param *data is int port
-void* magt(void *arg);
+// void* magt(void *arg);
 
 #endif // MAGT_H

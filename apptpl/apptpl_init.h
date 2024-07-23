@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "utstring.h"
+
 #define DEFAULT_CONFIG_FILE "apptpl.ini"
 
 
@@ -15,6 +17,8 @@ struct config {
     int  pcap_buffer_size;
     char pcap_filter[256];
 };
+
+UT_string* config2json(const struct config* p);
 
 int ini_callback(void* arg, const char* section, const char* name, const char* value);
 int parse_args(int argc, const char** argv, int* debug, const char** config_filename);

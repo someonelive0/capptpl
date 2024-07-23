@@ -8,6 +8,26 @@
 #include "apptpl_init.h"
 
 
+UT_string* config2json(const struct config* p)
+{
+    UT_string *s;
+    char device[160] = {0};
+    for (size_t i=0, j=0; i<strlen(p->pcap_device) && i<sizeof(device)-1; i++, j++) {
+        if (p->pcap_device[i] == '\\' || p->pcap_device[i] == '"')
+            device[j++] = '\\';
+        device[j] = p->pcap_device[i];
+    }
+
+    utstring_new(s);
+    utstring_printf(s, "{\"versin\": \"%s\", \"http_port\": %d, \"zmq_port\": %d, \"pcap_device\": \"%s\", \"pcap_snaplen\": %d, \"pcap_buffer_size\": %d, \"pcap_filter\": \"%s\"}",
+                    p->version, p->http_port, p->zmq_port, device,
+                    p->pcap_snaplen, p->pcap_buffer_size, p->pcap_filter);
+    // printf("%s\n", utstring_body(s));
+
+    // should remember to free s by utstring_free(s);
+    return s;
+}
+
 int ini_callback(void* arg, const char* section, const char* name, const char* value)
 {
     struct config* pconfig = (struct config*)arg;
