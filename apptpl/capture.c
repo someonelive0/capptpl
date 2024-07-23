@@ -13,7 +13,162 @@
 
 #include "logger.h"
 
+#include "capture.h"
 
+
+static void capture_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata);
+
+int capture_open(struct capture* captr, const char *device, 
+            int snaplen, int buffer_size, const char* filter)
+{
+    pcap_t* handle = NULL;
+    struct bpf_program* bpf = NULL;
+    char errbuf[PCAP_ERRBUF_SIZE];
+
+    // Check Libpcap version number
+    LOG_DEBUG ("libpcap version: %s", pcap_lib_version());
+
+    if (NULL == (handle = pcap_create(device, errbuf))) {
+        LOG_ERROR ("pcap_create device=%s failed:%s", device, errbuf);
+        return -1;
+    }
+
+    // 设置抓包长度
+    if (0 != pcap_set_snaplen(handle, snaplen)) {
+        LOG_WARN ("pcap_set_snaplen %d failed:%s", snaplen, pcap_geterr(handle));
+    }
+
+    // 设置混杂模式
+    if (0 != pcap_set_promisc(handle, 1)) {
+        LOG_WARN ("pcap_set_promisc %d failed:%s", 1, pcap_geterr(handle));
+    }
+
+    // 设置读取超时，单位 毫秒, 默认 100ms
+    if (0 != pcap_set_timeout(handle, 100)) {
+        LOG_WARN ("pcap_set_timeout %d failed:%s", 100, pcap_geterr(handle));
+    }
+
+    // 设置非立即模式. 1: 立即模式会快速返回，但是会丢包。0: 非立即模式，会缓存一下再读取，丢包少
+    if (0 != pcap_set_immediate_mode(handle, 0)) {
+        LOG_WARN ("pcap_set_immediate_mode %d failed:%s", 0, pcap_geterr(handle));
+    }
+
+    // 设置缓存大小，单位 KBytes
+    if (0 != pcap_set_buffer_size(handle, buffer_size)) {
+        LOG_WARN ("pcap_set_buffer_size failed, size %d KB, %s",
+                  buffer_size, pcap_geterr(handle));
+    }
+    LOG_INFO("pcap buffer_size: %d KBytes", buffer_size);
+
+    // 激活句柄
+    if (0 != pcap_activate(handle)) {
+        LOG_ERROR ("pcap_activate failed:%s", pcap_geterr(handle));
+        goto err;
+    }
+    LOG_INFO ("pcap snapshot: %d", pcap_snapshot(handle));
+
+
+    if (strlen(filter) > 0) {
+        if (NULL == (bpf = malloc(sizeof(struct bpf_program)))) {
+            LOG_ERROR ("capturer malloc filter of struct bpf_program");
+            goto err;
+        }
+        if (0 != pcap_compile(handle, bpf, filter, 1, 0xFFFFFF00)) {
+            LOG_ERROR ("capturer pcap_compile filter:%s, failed:%s", filter, pcap_geterr(handle));
+            goto err;
+        }
+        /*设置FILTER*/
+        if (0 != pcap_setfilter(handle, bpf)) {
+            LOG_ERROR ("capturer pcap_setfilter failed:%s", pcap_geterr(handle));
+            goto err;
+        }
+        LOG_INFO("pcap filter: %s", filter);
+    }
+
+    // WIN32 必须在设备activate后设置pcap_setbuff，否则失败
+#ifdef _WIN32
+    if (0 != pcap_setmintocopy(handle, 16000)) {
+        LOG_WARN ("pcap_setmintocopy %d failed:%s", 16000, pcap_geterr(handle));
+    }
+#endif
+
+    // step2 查看网卡类型
+    /*
+    * datalink:
+    *  DLT_EN10MB: Ethernet (10Mb, 100Mb, 1000Mb, and up)
+    *  DLT_NULL: BSD loopback encapsulation; the link layer header is a 4-byte
+    * field, in host byte order, containing a PF_ value from socket.h for the
+    * network-layer protocol of the packet. DLT_LINUX_SLL: Linux "cooked"
+    * capture encapsulation;
+    */
+    int datalink = pcap_datalink(handle);
+    if (datalink != DLT_EN10MB && datalink != DLT_NULL) {
+        LOG_ERROR ("capturer device=%s data link is %d, only support ethernet type",
+                   device, datalink);
+        goto err;
+    }
+
+    LOG_INFO ("capturer open device success: %s", device);
+    goto done;
+
+err:
+    if (handle) pcap_close(handle);
+    if (bpf) {
+        pcap_freecode(bpf);
+        free(bpf);
+    }
+    return -1;
+
+done:
+    captr->handle = handle;
+    captr->bpf = bpf;
+    captr->device = device;
+    captr->filter = filter;
+    captr->snaplen = snaplen;
+    captr->buffer_size = buffer_size;
+    return 0;
+}
+
+int capture_close(struct capture* captr)
+{
+    if (captr->handle != NULL) {
+        pcap_breakloop(captr->handle);
+        pcap_close(captr->handle);
+        captr->handle = NULL;
+    }
+    if (captr->bpf != NULL) {
+        pcap_freecode(captr->bpf);
+        free(captr->bpf);
+        captr->bpf = NULL;
+    }
+    return 0;
+}
+
+// arg is struct capture*
+void* capture_loop(void *arg)
+{
+    struct capture* captr = arg;
+    int rc;
+    captr->shutdown = 0;
+    captr->count = 0;
+
+    LOG_INFO ("capture begin loop");
+    while (!capture_shutdown) {
+        rc = pcap_dispatch(captr->handle, -1, capture_cb, (u_char *)captr);
+        if (rc == -1) {
+            LOG_ERROR ("pcap_dispatch pcap_geterr:%s", pcap_geterr(captr->handle));
+            break;
+        }
+    }
+    LOG_INFO ("END capture loop, capture count %zu", captr->count);
+
+    return ((void*)0);
+}
+
+
+// =============================================
+// not with struct
+// =============================================
 int capture_shutdown;
 static uint64_t capture_count;
 static pcap_t* capture_handle = NULL;
@@ -129,7 +284,7 @@ int capture_open_device(const char *device, int snaplen, int buffer_size, const 
     return 0;
 }
 
-int capture_close()
+int capture_close_device()
 {
     if (capture_handle != NULL) {
         pcap_breakloop(capture_handle);
@@ -195,7 +350,7 @@ int list_devices()
 
     /* Scan the list printing every entry */
     for (d = alldevs; d; d = d->next) {
-	if (d->description)
+        if (d->description)
             printf("name: %s\n", d->description);
         else
             printf("name: None\n");

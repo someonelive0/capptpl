@@ -50,8 +50,14 @@ int main(int argc, char** argv)
         exit(1);
     }
 
+    struct capture captr;
+    memset(&captr, 0, sizeof(struct capture));
     // don't use mingw64 libpcap-devel, use npcap-sdk-1.13 to link -lwpcap.
-    if (0 != capture_open_device(myconfig.pcap_device, myconfig.pcap_snaplen,
+    // if (0 != capture_open_device(myconfig.pcap_device, myconfig.pcap_snaplen,
+    //                              myconfig.pcap_buffer_size, myconfig.pcap_filter)) {
+    //     exit(1);
+    // }
+    if (0 != capture_open(&captr, myconfig.pcap_device, myconfig.pcap_snaplen,
                                  myconfig.pcap_buffer_size, myconfig.pcap_filter)) {
         exit(1);
     }
@@ -68,7 +74,7 @@ int main(int argc, char** argv)
     pthread_create(&tid_inputer, NULL, inputer, ((void *)chan_msg));
     LOG_INFO ("start thread inputer with tid %lld", tid_inputer);
 
-    pthread_create(&tid_capture, NULL, capture, ((void *)chan_msg));
+    pthread_create(&tid_capture, NULL, capture_loop, ((void *)&captr));
     LOG_INFO ("start thread capture with tid %lld", tid_capture);
 
     // broke here to wait
@@ -86,7 +92,8 @@ int main(int argc, char** argv)
     capture_shutdown = 1;
     pthread_join(tid_capture, NULL);
     LOG_INFO ("join thread capture with tid %lld", tid_capture);
-    capture_close();
+    // capture_close_device();
+    capture_close(&captr);
 
     worker_shutdown = 1;
     pthread_join(tid_worker, NULL);
