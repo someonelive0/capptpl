@@ -5,10 +5,11 @@
 
 
 struct inputer {
-    int  port;
-    cchan_t *chan_msg;
-    void *zmq_context;
-    void *puller;
+    int      port;
+    cchan_t  *chan_msg;
+    void     *zmq_context;
+    void     *puller;
+    uint64_t count;
 };
 
 int inputer_open(struct inputer* inptr, int port, cchan_t *chan_msg);

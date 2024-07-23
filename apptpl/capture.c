@@ -172,8 +172,8 @@ void pkt_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata
 {
     struct capture* captr = (struct capture*)arg;
     captr->count ++;
-    printf("pkt_cb: %d/%d,\tdata addr: %p\n",
-           pkthdr->caplen, pkthdr->len, &pktdata);
+    printf("pkt_callback: %d/%d,\taddr: %p, %p\n",
+           pkthdr->caplen, pkthdr->len, &pkthdr, &pktdata);
 }
 
 

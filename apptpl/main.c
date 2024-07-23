@@ -46,14 +46,15 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    cchan_t *chan_msg = cchan_new(sizeof(void*));    /* producers -> consumers */
+    cchan_t *chan_msg = cchan_new(sizeof(void*));    // channel of zmq messages
+    // cchan_t *chan_pkt = cchan_new(sizeof(void*));    // channel of pcap pkts
     struct inputer inptr;
     memset(&inptr, 0, sizeof(struct inputer));
     if (0 != inputer_open(&inptr, myconfig.zmq_port, chan_msg)) {
         goto err;
     }
 
-    struct worker wrkr = {0, chan_msg};
+    struct worker wrkr = {0, chan_msg, 0};
     struct capture captr;
     memset(&captr, 0, sizeof(struct capture));
     if (0 != capture_open(&captr, myconfig.pcap_device, myconfig.pcap_snaplen,

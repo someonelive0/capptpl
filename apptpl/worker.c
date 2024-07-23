@@ -12,12 +12,12 @@ void* worker_loop(void *arg)
 {
     int rc;
     zmq_msg_t *msg = NULL;
-    uint64_t count = 0;
 
     struct worker* wrkr = arg;
+    wrkr->shutdown = 0;
+    wrkr->count = 0;
 
     LOG_INFO ("worker loop");
-    wrkr->shutdown = 0;
     while (!wrkr->shutdown) {
         if (0 == cchan_waittime(wrkr->chan_msg, &msg, WORKER_WAIT_MS)) { // 0 means timeout
             // printf("cchan_waittime\n");
@@ -28,10 +28,10 @@ void* worker_loop(void *arg)
         }
 
         // LOG_TRACE ("worker rcv msg %lld: [%s]\n", zmq_msg_size (msg), (char*)zmq_msg_data (msg));
-        count ++;
-        if ((count % 10000) == 0) {
+        wrkr->count ++;
+        if ((wrkr->count % 10000) == 0) {
             LOG_DEBUG ("worker rcv count times %zu, len %zu: [%s]",
-                       count, zmq_msg_size (msg), (char*)zmq_msg_data (msg));
+                       wrkr->count, zmq_msg_size (msg), (char*)zmq_msg_data (msg));
         }
 
         if ((rc = zmq_msg_close(msg)) != 0) {
@@ -39,7 +39,7 @@ void* worker_loop(void *arg)
         }
         free(msg);
     }
-    LOG_INFO ("END worker loop");
+    LOG_INFO ("END worker loop, worker count %zu", wrkr->count);
 
     return ((void*)0);
 }

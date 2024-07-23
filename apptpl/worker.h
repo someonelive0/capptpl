@@ -7,8 +7,9 @@
 
 
 struct worker {
-    int  shutdown;
+    int     shutdown;
     cchan_t *chan_msg;
+    uint64_t count;
 };
 
 // arg is struct worker*

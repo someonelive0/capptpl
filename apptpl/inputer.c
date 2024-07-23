@@ -49,6 +49,7 @@ done:
     inptr->chan_msg = chan_msg;
     inptr->zmq_context = zmq_context;
     inptr->puller = puller;
+    inptr->count = 0;
     return 0;
 }
 
@@ -99,6 +100,7 @@ void* inputer_loop(void *arg)
         }
         // LOG_DEBUG ("inputer rcv msg %lld: [%s]\n", zmq_msg_size (msg), (char*)zmq_msg_data (msg));
 
+        inptr->count ++;
         cchan_send(inptr->chan_msg, &msg);
 
         // to limit channel of msg size
@@ -107,7 +109,7 @@ void* inputer_loop(void *arg)
             usleep(100);
         }
     }
-    LOG_INFO ("END inputer loop");
+    LOG_INFO ("END inputer loop, inputer count %zu", inptr->count);
 
     return ((void*)0);
 }
