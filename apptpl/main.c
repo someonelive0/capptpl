@@ -53,6 +53,7 @@ int main(int argc, char** argv)
         goto err;
     }
 
+    struct worker wrkr = {0, chan_msg};
     struct capture captr;
     memset(&captr, 0, sizeof(struct capture));
     if (0 != capture_open(&captr, myconfig.pcap_device, myconfig.pcap_snaplen,
@@ -65,7 +66,7 @@ int main(int argc, char** argv)
     // pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig));
     // LOG_INFO ("start thread magt with tid %lld", tid_magt);
 
-    pthread_create(&tid_worker, NULL, worker, ((void *)chan_msg));
+    pthread_create(&tid_worker, NULL, worker_loop, ((void *)&wrkr));
     LOG_INFO ("start thread worker with tid %lld", tid_worker);
 
     pthread_create(&tid_inputer, NULL, inputer_loop, ((void *)&inptr));
@@ -93,7 +94,7 @@ int main(int argc, char** argv)
     // capture_close_device();
     capture_close(&captr);
 
-    worker_shutdown = 1;
+    wrkr.shutdown = 1;
     pthread_join(tid_worker, NULL);
     LOG_INFO ("join thread worker with tid %lld", tid_worker);
 

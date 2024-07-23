@@ -1,8 +1,17 @@
 #ifndef WORKER_H
 #define WORKER_H
 
-extern int worker_shutdown;
+#include "cchan_pthread.h"
 
-void* worker(void *arg);
+#define WORKER_WAIT_MS 200
+
+
+struct worker {
+    int  shutdown;
+    cchan_t *chan_msg;
+};
+
+// arg is struct worker*
+void* worker_loop(void *arg);
 
 #endif // WORKER_H
