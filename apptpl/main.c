@@ -15,6 +15,7 @@
 #include "inputer.h"
 #include "worker.h"
 #include "capture.h"
+#include "parser.h"
 
 
 int main(int argc, char** argv)
@@ -47,22 +48,24 @@ int main(int argc, char** argv)
     }
 
     cchan_t *chan_msg = cchan_new(sizeof(void*));    // channel of zmq messages
-    // cchan_t *chan_pkt = cchan_new(sizeof(void*));    // channel of pcap pkts
+    cchan_t *chan_pkt = cchan_new(sizeof(void*));    // channel of pcap pkts
+    struct worker wrkr = {0, chan_msg, 0};
     struct inputer inptr;
     memset(&inptr, 0, sizeof(struct inputer));
     if (0 != inputer_open(&inptr, myconfig.zmq_port, chan_msg)) {
         goto err;
     }
 
-    struct worker wrkr = {0, chan_msg, 0};
+    struct parser prsr = {0, chan_pkt, 0};
     struct capture captr;
     memset(&captr, 0, sizeof(struct capture));
+    captr.chan_pkt = chan_pkt;
     if (0 != capture_open(&captr, myconfig.pcap_device, myconfig.pcap_snaplen,
                           myconfig.pcap_buffer_size, myconfig.pcap_filter)) {
         goto err;
     }
 
-    pthread_t tid_inputer, tid_worker, tid_capture;
+    pthread_t tid_inputer, tid_worker, tid_capture, tid_parser;
 
     // pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig));
     // LOG_INFO ("start thread magt with tid %lld", tid_magt);
@@ -72,6 +75,9 @@ int main(int argc, char** argv)
 
     pthread_create(&tid_inputer, NULL, inputer_loop, ((void *)&inptr));
     LOG_INFO ("start thread inputer with tid %lld", tid_inputer);
+
+    pthread_create(&tid_parser, NULL, parser_loop, ((void *)&prsr));
+    LOG_INFO ("start thread parser with tid %lld", tid_parser);
 
     pthread_create(&tid_capture, NULL, capture_loop, ((void *)&captr));
     LOG_INFO ("start thread capture with tid %lld", tid_capture);
@@ -99,7 +105,12 @@ int main(int argc, char** argv)
     pthread_join(tid_worker, NULL);
     LOG_INFO ("join thread worker with tid %lld", tid_worker);
 
+    prsr.shutdown = 1;
+    pthread_join(tid_parser, NULL);
+    LOG_INFO ("join thread parser with tid %lld", tid_parser);
+
     cchan_free(chan_msg);
+    cchan_free(chan_pkt);
 
     time_t end_time = time(NULL);
     LOG_INFO ("END at %s\tprogram is totally running time of seconds %f",
@@ -112,6 +123,7 @@ err:
     inputer_stop(&inptr);
     capture_close(&captr);
     if (chan_msg) cchan_free(chan_msg);
+    if (chan_pkt) cchan_free(chan_pkt);
     logger_close();
     exit(1);
 }

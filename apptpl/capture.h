@@ -3,8 +3,11 @@
 
 #include <pcap.h>
 
+#include "cchan_pthread.h"
+
 
 struct capture {
+    cchan_t       *chan_pkt;
     const char*    device;
     const char*    filter;
     int      snaplen;

@@ -13,6 +13,7 @@
 
 #include "logger.h"
 
+#include "pkt.h"
 #include "capture.h"
 
 
@@ -172,8 +173,15 @@ void pkt_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata
 {
     struct capture* captr = (struct capture*)arg;
     captr->count ++;
-    printf("pkt_callback: %d/%d,\taddr: %p, %p\n",
-           pkthdr->caplen, pkthdr->len, &pkthdr, &pktdata);
+    // printf("pkt_callback: %d/%d,\taddr: %p, %p\n",
+    //        pkthdr->caplen, pkthdr->len, pkthdr, pktdata);
+    
+    struct packet* pkt = packet_new(pkthdr, pktdata);
+    if (NULL == pkt) {
+        LOG_ERROR ("packet_new failed");
+    } else {
+        cchan_send(captr->chan_pkt, &pkt);
+    }
 }
 
 
