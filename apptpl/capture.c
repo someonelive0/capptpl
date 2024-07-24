@@ -2,8 +2,8 @@
  * Wrapper libpcap or npcap on windows
  */
 #include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
-#include <pcap.h>
 
 // struct ether_header in /usr/include/sys/ethernet.h
 // struct in_addr in /usr/include/netinet/in.h
@@ -148,6 +148,23 @@ int capture_close(struct capture* captr)
     return 0;
 }
 
+int capture_stats(struct capture* captr)
+{
+    struct pcap_stat ps;
+
+    if (captr->handle == NULL) {
+        LOG_ERROR ("capturer pcap_stats failed, handle is not opened");
+        return -1;
+    }
+    if (0 != pcap_stats(captr->handle, &ps)) {
+        LOG_ERROR ("capturer pcap_stats failed:%s", pcap_geterr(captr->handle));
+        return -1;
+    }
+    LOG_INFO ("pcap stats, ps_recv=%d, ps_drop=%d, ps_ifdrop=%d",
+                ps.ps_recv, ps.ps_drop, ps.ps_ifdrop);
+    return 0;
+}
+
 // arg is struct capture*
 void* capture_loop(void *arg)
 {
@@ -164,6 +181,7 @@ void* capture_loop(void *arg)
             break;
         }
     }
+    capture_stats(captr);
     LOG_INFO ("END capture loop, capture count %zu", captr->count);
 
     return ((void*)0);
@@ -181,6 +199,12 @@ void pkt_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata
         LOG_ERROR ("packet_new failed");
     } else {
         cchan_send(captr->chan_pkt, &pkt);
+
+        // to limit channel of pkt size
+        if (captr->chan_pkt->used >= 1024) {
+            // LOG_TRACE ("chan_pkt used size: %d, %d\n", chan_pkt->used, chan_pkt->size);
+            usleep(100);
+        }
     }
 }
 

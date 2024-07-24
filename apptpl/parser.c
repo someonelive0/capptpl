@@ -9,7 +9,7 @@
 // arg is struct parser*
 void* parser_loop(void *arg)
 {
-    struct packet *pkt;
+    struct packet *pkt = NULL;
 
     struct parser* prsr = arg;
     prsr->shutdown = 0;
@@ -25,14 +25,14 @@ void* parser_loop(void *arg)
             continue;
         }
 
-        printf("parser recv: %d/%d,\taddr: %p, %p\n",
-            pkt->hdr->caplen, pkt->hdr->len, pkt->hdr, pkt->data);
-
-        // LOG_TRACE ("parser rcv pkt %d, %d\n", pkt->hdr, pkt->hdr);
         prsr->count ++;
         if ((prsr->count % 10000) == 0) {
             LOG_DEBUG ("worker rcv count times %zu", prsr->count);
         }
+
+        LOG_DEBUG ("parser recv: %d/%d,\taddr: %p, %p",
+            pkt->hdr->caplen, pkt->hdr->len, pkt->hdr, pkt->data);
+        // packet_dump(pkt);
 
         packet_free(pkt);
     }

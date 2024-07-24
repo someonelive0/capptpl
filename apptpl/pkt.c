@@ -1,4 +1,9 @@
+#include <stdlib.h>
+#include <string.h>
+
+#include "hex.h"
 #include "pkt.h"
+
 
 struct packet* packet_new(const struct pcap_pkthdr *pkthdr, const u_char *pktdata)
 {
@@ -33,4 +38,10 @@ int packet_free(struct packet* pkt)
     }
 
     return 0;
+}
+
+void packet_dump(const struct packet* pkt)
+{
+    printf("caplen=%d, len=%d\n", pkt->hdr->caplen, pkt->hdr->len);
+    dump_hex(pkt->data, pkt->hdr->caplen);
 }

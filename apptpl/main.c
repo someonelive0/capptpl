@@ -92,22 +92,22 @@ int main(int argc, char** argv)
 
     inputer_stop(&inptr);
     pthread_join(tid_inputer, NULL);
-    LOG_INFO ("join thread inputer with tid %lld", tid_inputer);
+    LOG_DEBUG ("join thread inputer with tid %lld", tid_inputer);
 
     // capture_shutdown = 1;
     captr.shutdown = 1;
     pthread_join(tid_capture, NULL);
-    LOG_INFO ("join thread capture with tid %lld", tid_capture);
+    LOG_DEBUG ("join thread capture with tid %lld", tid_capture);
     // capture_close_device();
     capture_close(&captr);
 
     wrkr.shutdown = 1;
     pthread_join(tid_worker, NULL);
-    LOG_INFO ("join thread worker with tid %lld", tid_worker);
+    LOG_DEBUG ("join thread worker with tid %lld", tid_worker);
 
     prsr.shutdown = 1;
     pthread_join(tid_parser, NULL);
-    LOG_INFO ("join thread parser with tid %lld", tid_parser);
+    LOG_DEBUG ("join thread parser with tid %lld", tid_parser);
 
     cchan_free(chan_msg);
     cchan_free(chan_pkt);
