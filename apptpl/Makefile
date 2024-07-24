@@ -27,8 +27,8 @@ endif
 
 #CC     = clang
 CC     = gcc
-CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 \
-		-I../lib/inih-r58 -I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.18 \
+CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 \
+		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.18 -I../lib/sds \
 		-I../lib
 
 ifeq ($(detected_OS),MSYS)
@@ -55,13 +55,14 @@ endif
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 OBJDIR = obj
 vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 \
-	../lib/cJSON-1.7.18 ../lib
+	../lib/cJSON-1.7.18 ../lib/sds ../lib
 apptpl_srcs = main.c apptpl_init.c magt.c api_handler.c \
 	inputer.c worker.c capture.c parser.c pkt.c \
 	init_log.c load_config.c \
 	cchan_pthread.c \
 	logger.c \
 	cJSON.c \
+	sds.c \
 	ini.c argparse.c hex.c
 apptpl_objs = $(apptpl_srcs:%.c=$(OBJDIR)/%.o)
 

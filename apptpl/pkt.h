@@ -3,10 +3,13 @@
 
 #include <pcap.h>
 
+#include "sds.h"
+
 
 struct packet {
     struct pcap_pkthdr *hdr;
-    u_char             *data;
+    // u_char             *data;
+    sds                data; // typedef char *sds; from sds.h
 };
 
 struct packet* packet_new(const struct pcap_pkthdr *pkthdr, const u_char *pktdata);
