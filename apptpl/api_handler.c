@@ -131,7 +131,6 @@ done:
 #define UNUSED(x) (void)(x)
 static void status_handler(struct evhttp_request *req, void *arg)
 {
-    struct app* myapp = arg;
     struct evbuffer *buf = NULL;
 
     enum evhttp_cmd_type cmd = evhttp_request_get_command(req);
@@ -148,13 +147,16 @@ static void status_handler(struct evhttp_request *req, void *arg)
         LOG_ERROR ("cJSON_Parse error: %s", cJSON_GetErrorPtr());
         goto err;
     }
+    struct app* myapp = arg;
     cJSON* run_time = cJSON_GetObjectItemCaseSensitive(root, "run_time");
-    cJSON_SetValuestring(run_time, asctime(localtime( &myapp->run_time )));
+    if (run_time) cJSON_SetValuestring(run_time, asctime(localtime( &myapp->run_time )));
+    char* jsonstr = cJSON_PrintUnformatted(root);
 
-    //输出的内容
     buf = evbuffer_new();
-    evbuffer_add_printf(buf, "%s", cJSON_PrintUnformatted(root));
+    // evbuffer_add_printf(buf, "%s", jsonstr);
+    evbuffer_add(buf, jsonstr, strlen(jsonstr));
     evhttp_send_reply(req, HTTP_OK, "OK", buf);
+    free(jsonstr);
     cJSON_Delete(root);
     goto done;
 
@@ -176,8 +178,6 @@ static void version_handler(struct evhttp_request *req, void *arg)
     evhttp_add_header(req->output_headers, "Content-Type", "application/json; charset=UTF-8");
     evhttp_add_header(req->output_headers, "Connection", "close");
 
-
-    //输出的内容
     buf = evbuffer_new();
     evbuffer_add_printf(buf, "{\"version\": \"%s\", \"build_time\": \"%s %s\" }",
                         MY_VERSION, __DATE__, __TIME__);
@@ -200,7 +200,6 @@ static void stats_handler(struct evhttp_request *req, void *arg)
     evhttp_add_header(req->output_headers, "Connection", "close");
 
     struct app* myapp = arg;
-    //输出的内容
     struct evbuffer *buf;
     buf = evbuffer_new();
     evbuffer_add_printf(buf, "{ \"capture\": { \"pkts\": %llu, \"bytes\": %llu }, \
@@ -233,7 +232,6 @@ static void config_handler(struct evhttp_request *req, void *arg)
         return;
     }
 
-    //输出的内容
     struct evbuffer *buf;
     buf = evbuffer_new();
     evbuffer_add_printf(buf, "%s", utstring_body(s));

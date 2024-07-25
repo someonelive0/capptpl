@@ -20,7 +20,7 @@
 
 int main(int argc, char** argv)
 {
-    struct app myapp = { time(NULL), NULL, NULL, NULL };
+    struct app myapp = { time(NULL), NULL, NULL, NULL, NULL, NULL };
     int debug = 0;
     const char *config_filename = NULL;
     if (0 != parse_args(argc, (const char**)argv, &debug, &config_filename)) {
