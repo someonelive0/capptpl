@@ -11,7 +11,8 @@
 struct parser {
     int     shutdown;
     cchan_t *chan_pkt;
-    uint64_t count;
+    uint64_t count;     // total packet number
+    uint64_t bytes;    // total byte number};
 };
 
 // arg is struct parser*

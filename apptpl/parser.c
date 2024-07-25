@@ -26,6 +26,7 @@ void* parser_loop(void *arg)
         }
 
         prsr->count ++;
+        prsr->bytes += pkt->hdr->caplen;
         if ((prsr->count % 10000) == 0) {
             LOG_DEBUG ("worker rcv count times %zu", prsr->count);
         }

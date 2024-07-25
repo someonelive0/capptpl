@@ -171,7 +171,8 @@ void* capture_loop(void *arg)
     struct capture* captr = arg;
     int rc;
     captr->shutdown = 0;
-    captr->count = 0;
+    captr->pkts = 0;
+    captr->bytes = 0;
 
     LOG_INFO ("capture begin loop");
     while (!captr->shutdown) {
@@ -182,7 +183,7 @@ void* capture_loop(void *arg)
         }
     }
     capture_stats(captr);
-    LOG_INFO ("END capture loop, capture count %zu", captr->count);
+    LOG_INFO ("END capture loop, capture pkts %zu, bytes %zu", captr->pkts, captr->bytes);
 
     return ((void*)0);
 }
@@ -190,7 +191,8 @@ void* capture_loop(void *arg)
 void pkt_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata)
 {
     struct capture* captr = (struct capture*)arg;
-    captr->count ++;
+    captr->pkts ++;
+    captr->bytes += pkthdr->caplen;
     // printf("pkt_callback: %d/%d,\taddr: %p, %p\n",
     //        pkthdr->caplen, pkthdr->len, pkthdr, pktdata);
     

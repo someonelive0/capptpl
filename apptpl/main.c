@@ -20,7 +20,7 @@
 
 int main(int argc, char** argv)
 {
-    time_t begin_time = time(NULL);
+    struct app myapp = { time(NULL), NULL, NULL, NULL };
     int debug = 0;
     const char *config_filename = NULL;
     if (0 != parse_args(argc, (const char**)argv, &debug, &config_filename)) {
@@ -36,13 +36,14 @@ int main(int argc, char** argv)
     if (load_config_ini(config_filename, ini_callback, &myconfig) < 0) {
         exit(1);
     }
+    myapp.myconfig = &myconfig;
     LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, zmq_port=%d, pcap_device=%s, pcap_snaplen=%d, pcap_buffer_size=%d, pcap_filter=%s",
-              asctime(localtime( &begin_time )), // ctime(&begin_time),
+              asctime(localtime( &myapp.run_time )), // ctime(&myapp.run_time),
               config_filename, myconfig.version, myconfig.http_port, myconfig.zmq_port,
               myconfig.pcap_device, myconfig.pcap_snaplen, myconfig.pcap_buffer_size, myconfig.pcap_filter);
 
     // init something
-    if (-1 == magt_init(&myconfig)) {
+    if (-1 == magt_init(&myapp)) {
         LOG_ERROR ("msgt_init failed");
         exit(1);
     }
@@ -55,8 +56,10 @@ int main(int argc, char** argv)
     if (0 != inputer_open(&inptr, myconfig.zmq_port, chan_msg)) {
         goto err;
     }
+    myapp.inptr = &inptr;
+    myapp.wrkr = & wrkr;
 
-    struct parser prsr = {0, chan_pkt, 0};
+    struct parser prsr = {0, chan_pkt, 0, 0};
     struct capture captr;
     memset(&captr, 0, sizeof(struct capture));
     captr.chan_pkt = chan_pkt;
@@ -64,6 +67,8 @@ int main(int argc, char** argv)
                           myconfig.pcap_buffer_size, myconfig.pcap_filter)) {
         goto err;
     }
+    myapp.captr = &captr;
+    myapp.prsr = & prsr;
 
     pthread_t tid_inputer, tid_worker, tid_capture, tid_parser;
 
@@ -114,7 +119,7 @@ int main(int argc, char** argv)
 
     time_t end_time = time(NULL);
     LOG_INFO ("END at %s\tprogram is totally running time of seconds %f",
-              asctime(localtime( &end_time )), difftime(end_time, begin_time));
+              asctime(localtime( &end_time )), difftime(end_time, myapp.run_time));
     logger_close();
     exit(0);
 

@@ -26,7 +26,7 @@ static void timer_cb(int fd, short event, void *arg);
 #endif
 
 
-int magt_init(struct config* myconfig)
+int magt_init(struct app* myapp)
 {
 // link with -lwsock32
 #ifdef _WIN32
@@ -60,14 +60,14 @@ int magt_init(struct config* myconfig)
         return -1;
     }
 
-    if (evhttp_bind_socket(httpd, "0.0.0.0", myconfig->http_port) != 0) {
-        LOG_ERROR ("bind socket failed! port:%d", myconfig->http_port);
+    if (evhttp_bind_socket(httpd, "0.0.0.0", myapp->myconfig->http_port) != 0) {
+        LOG_ERROR ("bind socket failed! port:%d", myapp->myconfig->http_port);
         return -1;
     }
 
     if (-1 == api_route_init())
         return -1;
-    evhttp_set_gencb(httpd, api_handler, myconfig);
+    evhttp_set_gencb(httpd, api_handler, myapp);
 
     magt_evbase = base;
     magt_httpd = httpd;

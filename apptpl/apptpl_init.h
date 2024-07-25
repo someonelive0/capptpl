@@ -8,6 +8,9 @@
 #define DEFAULT_CONFIG_FILE "apptpl.ini"
 
 
+/*
+ * struct config
+ */
 struct config {
     char version[8];
     uint16_t http_port;
@@ -22,5 +25,18 @@ UT_string* config2json(const struct config* p);
 
 int ini_callback(void* arg, const char* section, const char* name, const char* value);
 int parse_args(int argc, const char** argv, int* debug, const char** config_filename);
+
+
+/*
+ * struct app of this program, means apptpl
+ */
+struct app {
+    time_t           run_time;
+    struct config*   myconfig;
+    struct capture*  captr;
+    struct parser*   prsr;
+    struct inputer*  inptr;
+    struct worker*   wrkr;
+};
 
 #endif // INIT_H

@@ -6,6 +6,10 @@
 
 #include "version.h"
 #include "magt.h"
+#include "capture.h"
+#include "parser.h"
+#include "inputer.h"
+#include "worker.h"
 
 
 /*
@@ -127,7 +131,7 @@ done:
 #define UNUSED(x) (void)(x)
 static void status_handler(struct evhttp_request *req, void *arg)
 {
-    UNUSED(arg);
+    struct app* myapp = arg;
     struct evbuffer *buf = NULL;
 
     enum evhttp_cmd_type cmd = evhttp_request_get_command(req);
@@ -138,12 +142,14 @@ static void status_handler(struct evhttp_request *req, void *arg)
     evhttp_add_header(req->output_headers, "Connection", "close");
 
     // parse json
-    char text[]="{\"status\":\"ok\",\"code\":200}";
+    char text[]="{\"status\":\"ok\",\"run_time\":\"\"}";
     cJSON * root = cJSON_Parse(text);
     if (!root) {
         LOG_ERROR ("cJSON_Parse error: %s", cJSON_GetErrorPtr());
         goto err;
     }
+    cJSON* run_time = cJSON_GetObjectItemCaseSensitive(root, "run_time");
+    cJSON_SetValuestring(run_time, asctime(localtime( &myapp->run_time )));
 
     //输出的内容
     buf = evbuffer_new();
@@ -184,15 +190,26 @@ static void stats_handler(struct evhttp_request *req, void *arg)
     UNUSED(arg);
     enum evhttp_cmd_type cmd = evhttp_request_get_command(req);
     LOG_DEBUG ("stats_handler %d", cmd);
+    if (cmd != EVHTTP_REQ_GET) {
+        evhttp_send_error(req, HTTP_NOTFOUND, NULL);
+        return;
+    }
 
     evhttp_add_header(req->output_headers, "Server", MYHTTPD_SIGNATURE);
-    evhttp_add_header(req->output_headers, "Content-Type", "text/plain; charset=UTF-8");
+    evhttp_add_header(req->output_headers, "Content-Type", "application/json; charset=UTF-8");
     evhttp_add_header(req->output_headers, "Connection", "close");
 
+    struct app* myapp = arg;
     //输出的内容
     struct evbuffer *buf;
     buf = evbuffer_new();
-    evbuffer_add_printf(buf, "It works! stats is statistic of program\n%d\n", cmd);
+    evbuffer_add_printf(buf, "{ \"capture\": { \"pkts\": %llu, \"bytes\": %llu }, \
+                                \"parser\": { \"pkts\": %llu, \"bytes\": %llu }, \
+                                \"inputer\": { \"count\": %llu }, \
+                                \"worker\": { \"count\": %llu } }",
+                        myapp->captr->pkts, myapp->captr->bytes, \
+                        myapp->prsr->count, myapp->prsr->bytes, \
+                        myapp->inptr->count, myapp->wrkr->count);
     evhttp_send_reply(req, HTTP_OK, "OK", buf);
     evbuffer_free(buf);
 }
@@ -209,8 +226,8 @@ static void config_handler(struct evhttp_request *req, void *arg)
     evhttp_add_header(req->output_headers, "Content-Type", "application/json; charset=UTF-8");
     evhttp_add_header(req->output_headers, "Connection", "close");
 
-    struct config* myconfig = arg;
-    UT_string* s = config2json(myconfig);
+    struct app* myapp = arg;
+    UT_string* s = config2json(myapp->myconfig);
     if (!s) {
         evhttp_send_error(req, HTTP_INTERNAL, NULL);
         return;
