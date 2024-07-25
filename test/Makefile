@@ -15,6 +15,8 @@ else
     detected_OS := $(patsubst MINGW%,MSYS,$(detected_OS))
 endif
 
+# default use DEBUG, or make DEBUG=0 to disable it
+DEBUG = 1
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
 CFLAGS = -Wall -ggdb -std=c11
@@ -28,7 +30,7 @@ endif
 #CC     = clang
 CC     = gcc
 CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 \
-		-I../lib/sds -I../lib
+		-I../lib/uthash-2.3.0 -I../lib/sds -I../lib
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 
 #LDFLAGS += 
@@ -62,7 +64,7 @@ teststr_srcs = teststr.c \
 teststr_objs = $(teststr_srcs:%.c=$(OBJDIR)/%.o)
 
 
-all: sndmsg teststr
+all: sndmsg teststr testut
 
 
 sndmsg: $(sndmsg_objs)
@@ -80,10 +82,16 @@ $(teststr_objs): $(OBJDIR)/%.o : %.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+testut: obj/testut.o
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+obj/testut.o: testut.c
+	@mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(sndmsg_objs) $(teststr_objs)
-	rm -f sndmsg teststr
+	rm -f $(sndmsg_objs) $(teststr_objs) obj/testut.o
+	rm -f sndmsg teststr testut
 
 install:
 	mkdir -p ../bin
@@ -100,4 +108,5 @@ endif
 diag:
 	@echo "OS is $(detected_OS)"
 	@echo "sndmsg_srcs: $(sndmsg_srcs)"
-	@echo "teststrteststr_srcs: $(teststr_srcs)"
+	@echo "sndmsg_objs: $(sndmsg_objs)"
+	@echo "teststr_srcs: $(teststr_srcs)"
