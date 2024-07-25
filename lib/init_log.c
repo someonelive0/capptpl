@@ -7,7 +7,8 @@
 #include "init_log.h"
 
 
-int init_log(const char* filename, int debug, int filesize, int filenumber) {
+int init_log(const char* filename, int debug, int filesize, int filenumber)
+{
     if (0 == logger_initConsoleLogger(NULL)) {
         printf("logger_initConsoleLogger failed\n");
     }

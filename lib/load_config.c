@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <libgen.h>
 
 #include "logger.h"
 
@@ -9,11 +10,12 @@
 
 #if 0
 #define UNUSED(x) (void)(x)
-int ini_cb(void* arg, const char* section, const char* name, const char* value) {
+int ini_cb(void* arg, const char* section, const char* name, const char* value)
+{
     UNUSED(arg);
     // configuration* pconfig = (configuration*)arg;
 
-    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
+#define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
     if (MATCH("global", "version")) {
         printf("ini global %s, name %s, value %s\n", section, name, value);
         // pconfig->version = atoi(value);
@@ -29,7 +31,8 @@ int ini_cb(void* arg, const char* section, const char* name, const char* value) 
 }
 #endif
 
-int load_config_ini(const char* filename, ini_handler ini_callback, void* arg) {
+int load_config_ini(const char* filename, ini_handler ini_callback, void* arg)
+{
     char* tpl_filename;
     int rc;
 
@@ -55,16 +58,40 @@ int load_config_ini(const char* filename, ini_handler ini_callback, void* arg) {
     return 0;
 }
 
-int copy_file(const char* in_path, const char* out_path) {
+int copy_file(const char* in_path, const char* out_path)
+{
     size_t n;
     FILE* in=NULL, * out=NULL;
     char buf[64];
-    
-    if((in = fopen(in_path, "rb")) && (out = fopen(out_path, "wb")))
-        while((n = fread(buf, 1, sizeof(buf), in)) && fwrite(buf, 1, n, out));
+
+    if ((in = fopen(in_path, "rb")) && (out = fopen(out_path, "wb")))
+        while ((n = fread(buf, 1, sizeof(buf), in)) && fwrite(buf, 1, n, out));
     else return -1;
 
-    if(in) fclose(in);
-    if(out) fclose(out);
+    if (in) fclose(in);
+    if (out) fclose(out);
+    return 0;
+}
+
+// change cwd to dir of exe
+int ch_exec_cwd(char* argv0)
+{
+    char path[PATH_MAX] = {0};
+
+#ifdef _WIN32
+    strncpy(path, argv0, sizeof(path)-1);
+#else
+    if (-1 == readlink("/proc/self/exe", path, sizeof(path))) {
+        printf("read self exe path failed: %d, %s\n", errno, strerror(errno));
+        return -1;
+    }
+#endif
+
+    char* pwd = dirname(path);
+    if (0 != chdir(pwd)) {
+        printf("change cwd to [%s] failed: %d, %s\n", pwd, errno, strerror(errno));
+        return -1;
+    }
+    printf ("chdir to %s\n", pwd);
     return 0;
 }

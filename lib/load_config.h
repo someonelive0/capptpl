@@ -10,4 +10,7 @@ int load_config_ini(const char* filename, ini_handler ini_callback, void* arg);
 
 int copy_file(const char* in_path, const char* out_path);
 
+// change cwd to dir of exe
+int ch_exec_cwd(char* argv0);
+
 #endif // LOAD_CONFIG_H

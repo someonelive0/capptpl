@@ -20,6 +20,9 @@
 
 int main(int argc, char** argv)
 {
+    if (0 != ch_exec_cwd(argv[0]))
+        exit(1);
+
     struct app myapp = { time(NULL), NULL, NULL, NULL, NULL, NULL };
     int debug = 0;
     const char *config_filename = NULL;

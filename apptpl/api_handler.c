@@ -200,22 +200,17 @@ static void stats_handler(struct evhttp_request *req, void *arg)
     evhttp_add_header(req->output_headers, "Connection", "close");
 
     struct app* myapp = arg;
-    UT_string* s;
-    utstring_new(s);
-    utstring_printf(s, "{ \"capture\": { \"pkts\": %zu, \"bytes\": %zu }, \
-                    \"parser\": { \"pkts\": %zu, \"bytes\": %zu }, \
-                    \"inputer\": { \"count\": %zu }, \
-                    \"worker\": { \"count\": %zu } }",
-                    myapp->captr->pkts, myapp->captr->bytes, \
-                    myapp->prsr->count, myapp->prsr->bytes, \
-                    myapp->inptr->count, myapp->wrkr->count);
-
+    char s[256] = {0};
+    snprintf(s, sizeof(s)-1, "{ \"capture\": { \"pkts\": %zu, \"bytes\": %zu }, \
+            \"parser\": { \"pkts\": %zu, \"bytes\": %zu }, \
+            \"inputer\": { \"count\": %zu },  \"worker\": { \"count\": %zu } }",
+            myapp->captr->pkts, myapp->captr->bytes, myapp->prsr->count, \
+            myapp->prsr->bytes, myapp->inptr->count, myapp->wrkr->count);
     struct evbuffer *buf;
     buf = evbuffer_new();
-    evbuffer_add(buf, utstring_body(s), utstring_len(s));
+    evbuffer_add(buf, s, strlen(s));
     evhttp_send_reply(req, HTTP_OK, "OK", buf);
     evbuffer_free(buf);
-    utstring_free(s);
 }
 
 static void config_handler(struct evhttp_request *req, void *arg)
