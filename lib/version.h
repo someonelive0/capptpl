@@ -1,7 +1,7 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define MY_VERSION "1.0.0"
+#define MY_VERSION "1.2.0"
 #define SHOW_VERSION() printf("versoin %s\n", MY_VERSION)
 
 // int show_version() {
