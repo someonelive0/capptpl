@@ -2,6 +2,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <libgen.h>
+#include <errno.h>
+#ifdef __linux__
+#include <linux/limits.h>
+#endif
 
 #include "logger.h"
 
@@ -9,7 +13,6 @@
 
 
 #if 0
-#define UNUSED(x) (void)(x)
 int ini_cb(void* arg, const char* section, const char* name, const char* value)
 {
     UNUSED(arg);
@@ -74,6 +77,7 @@ int copy_file(const char* in_path, const char* out_path)
 }
 
 // change cwd to dir of exe
+#define UNUSED(x) (void)(x)
 int ch_exec_cwd(char* argv0)
 {
     char path[PATH_MAX] = {0};
@@ -81,6 +85,7 @@ int ch_exec_cwd(char* argv0)
 #ifdef _WIN32
     strncpy(path, argv0, sizeof(path)-1);
 #else
+    UNUSED(argv0);
     if (-1 == readlink("/proc/self/exe", path, sizeof(path))) {
         printf("read self exe path failed: %d, %s\n", errno, strerror(errno));
         return -1;
