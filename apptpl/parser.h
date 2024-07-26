@@ -12,10 +12,14 @@ struct parser {
     int     shutdown;
     cchan_t *chan_pkt;
     uint64_t count;     // total packet number
-    uint64_t bytes;    // total byte number};
+    uint64_t bytes;    // total byte number;
+    int      timer_interval; // when timer to call this. seconds
 };
 
 // arg is struct parser*
 void* parser_loop(void *arg);
+inline void parser_time_ev(struct parser* prsr, int seconds) {
+    prsr->timer_interval = seconds;
+}
 
 #endif // PARSER_H

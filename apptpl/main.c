@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     myapp.inptr = &inptr;
     myapp.wrkr = & wrkr;
 
-    struct parser prsr = {0, chan_pkt, 0, 0};
+    struct parser prsr = {0, chan_pkt, 0, 0, 0};
     struct capture captr;
     memset(&captr, 0, sizeof(struct capture));
     captr.chan_pkt = chan_pkt;

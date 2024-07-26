@@ -10,6 +10,9 @@
 #include "logger.h"
 
 #include "magt.h"
+#include "parser.h"
+
+#define TIMER_INTERVAL 2  // timer interval in seconds
 
 
 struct event_base *magt_evbase;
@@ -49,8 +52,8 @@ int magt_init(struct app* myapp)
     evsignal_add(evsigterm, 0);
 
     // struct event *evtimer = evtimer_new(base, timer_cb, base); // only call timer_cb once
-    struct event *evtimer = event_new(base, -1, EV_TIMEOUT|EV_PERSIST, timer_cb, base);
-    struct timeval timeout = {2, 0};
+    struct event *evtimer = event_new(base, -1, EV_TIMEOUT|EV_PERSIST, timer_cb, myapp);
+    struct timeval timeout = {TIMER_INTERVAL, 0};
     evtimer_add(evtimer, &timeout); //  event_add(evtimer, 0);
 
     // add httpd event
@@ -116,14 +119,14 @@ static void signal_cb(int fd, short event, void *arg)
 
 #ifdef _WIN32
 static void timer_cb(long long fd, short event, void *arg)
-
 #else
 static void timer_cb(int fd, short event, void *arg)
 #endif
 {
-    UNUSED(fd);
-    UNUSED(event);
-    UNUSED(arg);
+    UNUSED(fd);     // always -1
+    UNUSED(event);  // always 1
+    struct app* myapp = arg;
+    parser_time_ev(myapp->prsr, TIMER_INTERVAL);
     // LOG_TRACE ("%s: got timeout with unix time: %lld\n", __func__, time(NULL));
     logger_flush();
 }

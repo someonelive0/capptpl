@@ -1,4 +1,5 @@
 #include <stdlib.h>
+// #include <stdatomic.h>
 
 #include "logger.h"
 
@@ -14,9 +15,17 @@ void* parser_loop(void *arg)
     struct parser* prsr = arg;
     prsr->shutdown = 0;
     prsr->count = 0;
+    prsr->bytes = 0;
 
     LOG_INFO ("parser loop");
     while (!prsr->shutdown) {
+        // process timer_seconds first
+        if (prsr->timer_interval) {
+            LOG_DEBUG ("parser timer interval seconds %d, rcv count %zu, bytes %zu",
+                        prsr->timer_interval, prsr->count, prsr->bytes);
+            prsr->timer_interval = 0;
+        }
+
         if (0 == cchan_waittime(prsr->chan_pkt, &pkt, PARSER_WAIT_MS)) { // 0 means timeout
             // printf("cchan_waittime\n");
             //if (chan_pkt->used > 10000) {
@@ -28,7 +37,7 @@ void* parser_loop(void *arg)
         prsr->count ++;
         prsr->bytes += pkt->hdr->caplen;
         if ((prsr->count % 10000) == 0) {
-            LOG_DEBUG ("worker rcv count times %zu", prsr->count);
+            LOG_DEBUG ("parser rcv count times %zu", prsr->count);
         }
 
         LOG_DEBUG ("parser recv: %d/%d,\taddr: %p, %p",
