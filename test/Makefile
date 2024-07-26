@@ -64,7 +64,7 @@ teststr_srcs = teststr.c \
 teststr_objs = $(teststr_srcs:%.c=$(OBJDIR)/%.o)
 
 
-all: sndmsg teststr testut
+all: sndmsg teststr testut testklib
 
 
 sndmsg: $(sndmsg_objs)
@@ -89,9 +89,17 @@ obj/testut.o: testut.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+testklib: obj/testklib.o
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+obj/testklib.o: testklib.c
+	@mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+
 clean:
-	rm -f $(sndmsg_objs) $(teststr_objs) obj/testut.o
-	rm -f sndmsg teststr testut
+	rm -f $(sndmsg_objs) $(teststr_objs) obj/testut.o obj/testklib.o
+	rm -f sndmsg teststr testut testklib
 
 install:
 	mkdir -p ../bin
