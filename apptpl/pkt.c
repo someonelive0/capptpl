@@ -10,8 +10,8 @@ struct packet* packet_new(const struct pcap_pkthdr *pkthdr, const u_char *pktdat
     struct packet* pkt = malloc(sizeof(struct packet));
     if (NULL == pkt) return NULL;
 
-    if (NULL == (pkt->hdr = malloc(sizeof(struct pcap_pkthdr)))) goto err;
-    memcpy(pkt->hdr, pkthdr, sizeof(struct pcap_pkthdr));
+    // if (NULL == (pkt->hdr = malloc(sizeof(struct pcap_pkthdr)))) goto err;
+    memcpy(&pkt->hdr, pkthdr, sizeof(struct pcap_pkthdr));
 
     // if (NULL == (pkt->data = malloc(pkthdr->caplen))) goto err;
     // memcpy(pkt->data, pktdata, pkthdr->caplen);
@@ -27,10 +27,10 @@ err:
 int packet_free(struct packet* pkt)
 {
     if (pkt) {
-        if (pkt->hdr) {
-            free(pkt->hdr);
-            pkt->hdr = NULL;
-        }
+        // if (pkt->hdr) {
+        //     free(pkt->hdr);
+        //     pkt->hdr = NULL;
+        // }
         if (pkt->data) {
             // free(pkt->data);
             sdsfree(pkt->data);
@@ -44,6 +44,6 @@ int packet_free(struct packet* pkt)
 
 void packet_dump(const struct packet* pkt)
 {
-    printf("caplen=%d, len=%d\n", pkt->hdr->caplen, pkt->hdr->len);
-    dump_hex(pkt->data, pkt->hdr->caplen);
+    printf("caplen=%d, len=%d\n", pkt->hdr.caplen, pkt->hdr.len);
+    dump_hex(pkt->data, pkt->hdr.caplen);
 }

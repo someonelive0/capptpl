@@ -174,7 +174,8 @@ void* capture_loop(void *arg)
     captr->pkts = 0;
     captr->bytes = 0;
 
-    LOG_INFO ("capture begin loop");
+    LOG_INFO ("capture begin loop, size of struct pcap_pkthdr %zu, struct packet %zu",
+                sizeof(struct pcap_pkthdr), sizeof(struct packet));
     while (!captr->shutdown) {
         rc = pcap_dispatch(captr->handle, -1, pkt_cb, (u_char *)captr);
         if (rc == -1) {

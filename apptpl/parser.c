@@ -35,13 +35,13 @@ void* parser_loop(void *arg)
         }
 
         prsr->count ++;
-        prsr->bytes += pkt->hdr->caplen;
+        prsr->bytes += pkt->hdr.caplen;
         if ((prsr->count % 10000) == 0) {
             LOG_DEBUG ("parser rcv count times %zu", prsr->count);
         }
 
-        LOG_DEBUG ("parser recv: %d/%d,\taddr: %p, %p",
-            pkt->hdr->caplen, pkt->hdr->len, pkt->hdr, pkt->data);
+        LOG_DEBUG ("parser recv: %d/%d,\taddr: %p",
+            pkt->hdr.caplen, pkt->hdr.len, pkt->data);
         // packet_dump(pkt);
 
         packet_free(pkt);

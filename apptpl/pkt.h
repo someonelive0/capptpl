@@ -6,8 +6,11 @@
 #include "sds.h"
 
 
+/*
+ * sizeof struct packet is 24
+ */
 struct packet {
-    struct pcap_pkthdr *hdr;
+    struct pcap_pkthdr hdr;  // 16 bytes
     // u_char             *data;
     sds                data; // typedef char *sds; from sds.h
 };
