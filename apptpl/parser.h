@@ -18,8 +18,6 @@ struct parser {
 
 // arg is struct parser*
 void* parser_loop(void *arg);
-inline void parser_time_ev(struct parser* prsr, int seconds) {
-    prsr->timer_interval = seconds;
-}
+void parser_time_ev(struct parser* prsr, int seconds);
 
 #endif // PARSER_H

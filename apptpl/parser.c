@@ -50,3 +50,7 @@ void* parser_loop(void *arg)
 
     return ((void*)0);
 }
+
+inline void parser_time_ev(struct parser* prsr, int seconds) {
+    prsr->timer_interval = seconds;
+}
