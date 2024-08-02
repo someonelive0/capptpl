@@ -29,14 +29,16 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    struct config myconfig = {{0}, 0, {0}, 0, {0}};
+    struct config myconfig;
+    memset(&myconfig, 0, sizeof(struct config));
     if (load_config_ini(config_filename, ini_callback, &myconfig) < 0) {
         exit(1);
     }
-    LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, redis_host=%s, redis_port=%d",
+    UT_string* s = config2json(&myconfig);
+    LOG_INFO ("BEGIN at %s\tconfig_filename=%s\t%s",
               asctime(localtime( &begin_time )), // ctime(&begin_time),
-              config_filename, myconfig.version, myconfig.http_port, myconfig.redis_host, myconfig.redis_port);
-
+              config_filename, utstring_body(s));
+    utstring_free(s);
 
     // pthread_t tid_magt;
     cchan_t *chan_msg = cchan_new(sizeof(void*));    /* producers -> consumers */

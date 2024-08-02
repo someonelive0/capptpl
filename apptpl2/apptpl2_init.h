@@ -9,11 +9,14 @@
 
 
 struct config {
-    char version[8];
+    char      version[8];
     uint16_t  http_port;
-    char redis_host[46]; // max 45 bytes, such as 0000:0000:0000:0000:0000:ffff:192.168.100.228
+    uint16_t  enable_ssl;
+    char      crt_file[128];
+    char      key_file[128];
+    char      redis_host[46]; // max 45 bytes, such as 0000:0000:0000:0000:0000:ffff:192.168.100.228
     uint16_t  redis_port;
-    char redis_passwd[64];
+    char      redis_passwd[64];
 };
 
 UT_string* config2json(const struct config* p);

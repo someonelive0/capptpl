@@ -34,7 +34,7 @@ CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 \
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 
 #LDFLAGS += 
-LDLIBS = -levent -lhiredis -lwsock32
+LDLIBS = -levent -levent_openssl -lhiredis -lwsock32 -lcrypto -lssl
 else
 CFLAGS += -D_BSD_SOURCE \
 		-I/usr/local/libevent-2.1.12/include \
@@ -42,7 +42,7 @@ CFLAGS += -D_BSD_SOURCE \
 #LDFLAGS += 
 LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
 	/usr/local/hiredis-1.2.0/lib64/libhiredis.a \
-	-lpthread -ldl -lunwind
+	-lpthread -ldl -lunwind -lcrypto -lssl
 endif
 
 # CFLAGS += -fprofile-arcs -ftest-coverage

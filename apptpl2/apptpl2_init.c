@@ -13,8 +13,12 @@ UT_string* config2json(const struct config* p)
 {
     UT_string *s;
     utstring_new(s);
-    utstring_printf(s, "{\"versin\": \"%s\", \"http_port\": %d, \"redis_host\": \"%s\",  \"redis_port\": %d}",
-                    p->version, p->http_port, p->redis_host, p->redis_port);
+    utstring_printf(s, "{\"versin\": \"%s\", \"http_port\": %d, "
+"\"enable_ssl\": %d, \"crt_file\": \"%s\", \"key_file\": \"%s\", "
+"\"redis_host\": \"%s\",  \"redis_port\": %d}",
+    p->version, p->http_port, 
+    p->enable_ssl, p->crt_file, p->key_file,
+    p->redis_host, p->redis_port);
     // printf("%s\n", utstring_body(s));
 
     // should remember to free s by utstring_free(s);
@@ -32,6 +36,16 @@ int ini_callback(void* arg, const char* section, const char* name, const char* v
         strncpy(pconfig->version, value, sizeof(pconfig->version)-1);
     } else if (MATCH("http", "port")) {
         pconfig->http_port = atoi(value);
+    } else if (MATCH("http", "enable_ssl")) {
+        if (0 == strcasecmp(value, "true") || 0 == strcmp(value, "1")) {
+            pconfig->enable_ssl = 1;
+        } else {
+            pconfig->enable_ssl = 0;
+        }
+    } else if (MATCH("http", "crt_file")) {
+        strncpy(pconfig->crt_file, value, sizeof(pconfig->crt_file)-1);
+    } else if (MATCH("http", "key_file")) {
+        strncpy(pconfig->key_file, value, sizeof(pconfig->crt_file)-1);
     } else if (MATCH("redis", "host")) {
         strncpy(pconfig->redis_host, value, sizeof(pconfig->redis_host)-1);
     } else if (MATCH("redis", "port")) {
