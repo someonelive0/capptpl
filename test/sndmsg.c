@@ -16,9 +16,15 @@ int main(int argc, char** argv)
 {
     UNUSED(argc);
     UNUSED(argv);
-    char addr[24] = {0};
+    char addr[64] = {0};
+    char host[30] = "localhost";
     int port = 3001;
     int rc, count = 0;
+
+    if (argc > 2) {
+        strncpy(host, argv[1], sizeof(host)-1);
+        port = atoi(argv[2]);
+    }
 
     if (load_config("sndmsg.ini") < 0) {
         exit(1);
@@ -28,7 +34,8 @@ int main(int argc, char** argv)
 
     void *context = zmq_ctx_new();
     void *pusher = zmq_socket (context, ZMQ_PUSH);
-    snprintf(addr, sizeof(addr)-1, "tcp://localhost:%d", port);
+    snprintf(addr, sizeof(addr)-1, "tcp://%s:%d", host, port);
+    printf("connect zmq addr %s\n", addr);
     if (zmq_connect(pusher, addr) == -1) {
         printf("E: connect %s failed: %s\n", addr,  zmq_strerror(zmq_errno()));
         exit(1);
