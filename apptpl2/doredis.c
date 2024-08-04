@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <hiredis/hiredis.h>
 #include <hiredis/async.h>
@@ -70,8 +71,10 @@ static void on_redis_connect(const struct redisAsyncContext *ctx, int status)
     redis_status = status;
     if (status == REDIS_ERR) {
         LOG_ERROR ("Redis connect error %s, should reconnect", ctx->errstr);
-        redisAsyncDisconnect(redis_ctx);
+        //redisAsyncDisconnect(redis_ctx);
+        redisAsyncFree(redis_ctx);
         redis_ctx = NULL;
+	sleep(1);
         redis_connect(redis_host, redis_port, redis_passwd, redis_evbase);
         return;
     }

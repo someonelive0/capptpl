@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     logger_close();
 
     // restart program itself.
-    restart(argv);
+    //restart(argv);
 
     // not reach here.
     exit(0);

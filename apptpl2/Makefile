@@ -41,6 +41,7 @@ CFLAGS += -D_BSD_SOURCE \
 		-I/usr/local/hiredis-1.2.0/include
 #LDFLAGS += 
 LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
+	/usr/local/libevent-2.1.12/lib/libevent_openssl.a \
 	/usr/local/hiredis-1.2.0/lib64/libhiredis.a \
 	-lpthread -ldl -lunwind -lcrypto -lssl
 endif

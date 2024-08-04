@@ -179,7 +179,7 @@ SSL_CTX* ssl_init(const struct config* myconfig)
     OpenSSL_add_all_algorithms ();
     /* We MUST have entropy, or else there's no point to crypto. */
     if (!RAND_poll()) {
-        LOG_ERROR ("RAND_poll failed %d: %s", ERR_get_error(), ERR_load_crypto_strings());
+        LOG_ERROR ("RAND_poll failed %d: %s", ERR_get_error(), ERR_error_string(ERR_get_error(), NULL));
         goto err;
     }
 
@@ -189,7 +189,7 @@ SSL_CTX* ssl_init(const struct config* myconfig)
     /* 创建SSL上下文环境 ，可以理解为 SSL句柄 */
     ctx = SSL_CTX_new (SSLv23_server_method ());
     if (NULL == ctx) {
-        LOG_ERROR ("SSL_CTX_new failed %d: %s", ERR_get_error(), ERR_load_crypto_strings());
+        LOG_ERROR ("SSL_CTX_new failed %d: %s", ERR_get_error(), ERR_error_string(ERR_get_error(), NULL));
         goto err;
     }
 
@@ -224,18 +224,18 @@ SSL_CTX* ssl_init(const struct config* myconfig)
               "'%s'", myconfig->crt_file, myconfig->key_file);
 
     if (1 != SSL_CTX_use_certificate_chain_file (ctx, myconfig->crt_file)) {
-        LOG_ERROR ("SSL_CTX_use_certificate_chain_file failed %d: %s", ERR_get_error(), ERR_load_crypto_strings());
+        LOG_ERROR ("SSL_CTX_use_certificate_chain_file failed %d: %s", ERR_get_error(), ERR_error_string(ERR_get_error(), NULL));
         goto err;
     }
 
     if (1 != SSL_CTX_use_PrivateKey_file (ctx, myconfig->key_file, SSL_FILETYPE_PEM)) {
-        LOG_ERROR ("SSL_CTX_use_PrivateKey_file failed %d: %s", ERR_get_error(), ERR_load_crypto_strings());
+        LOG_ERROR ("SSL_CTX_use_PrivateKey_file failed %d: %s", ERR_get_error(), ERR_error_string(ERR_get_error(), NULL));
         goto err;
     }
     ERR_print_errors_fp (stderr);
 
     if (1 != SSL_CTX_check_private_key (ctx)) {
-        LOG_ERROR ("SSL_CTX_check_private_key failed %d: %s", ERR_get_error(), ERR_load_crypto_strings());
+        LOG_ERROR ("SSL_CTX_check_private_key failed %d: %s", ERR_get_error(), ERR_error_string(ERR_get_error(), NULL));
         goto err;
     }
 
@@ -263,3 +263,4 @@ static struct bufferevent* bufev_ssl_cb (struct event_base *base, void *arg)
                                         BEV_OPT_CLOSE_ON_FREE);
     return r;
 }
+
