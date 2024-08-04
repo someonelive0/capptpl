@@ -21,6 +21,7 @@ static void on_redis_close(const struct redisAsyncContext *ctx, int status);
 static void on_redis_auth(struct redisAsyncContext *ctx, void *reply, void* arg);
 static void on_redis_pop(struct redisAsyncContext *ctx, void *reply, void* arg);
 static void do_redis_pop(evutil_socket_t fd, short arg, void * ctx);
+static void redis_reconnect(evutil_socket_t fd, short arg, void * ctx);
 
 
 int redis_connect(char* host, int port, char* passwd, struct event_base* evbase)
@@ -40,6 +41,7 @@ int redis_connect(char* host, int port, char* passwd, struct event_base* evbase)
     if (0 != redisLibeventAttach(ctx, evbase)) {
         LOG_ERROR ("redisLibeventAttach failed");
         redisAsyncDisconnect(ctx);
+        redisAsyncFree(ctx);
         return -1;
     }
     redis_ctx = ctx;
@@ -70,12 +72,15 @@ static void on_redis_connect(const struct redisAsyncContext *ctx, int status)
 {
     redis_status = status;
     if (status == REDIS_ERR) {
-        LOG_ERROR ("Redis connect error %s, should reconnect", ctx->errstr);
-        //redisAsyncDisconnect(redis_ctx);
+        LOG_ERROR ("Redis connect error %s, should reconnect after 5 seconds", ctx->errstr);
+        // redisAsyncDisconnect(redis_ctx);
         redisAsyncFree(redis_ctx);
         redis_ctx = NULL;
-	sleep(1);
-        redis_connect(redis_host, redis_port, redis_passwd, redis_evbase);
+
+        // after 5 second to reconnect redis
+        struct timeval timeout = {5, 0};
+        event_base_once(redis_evbase, -1, EV_TIMEOUT, redis_reconnect, (void*)ctx, &timeout);
+        // redis_connect(redis_host, redis_port, redis_passwd, redis_evbase);
         return;
     }
 
@@ -164,4 +169,12 @@ static void on_redis_pop(struct redisAsyncContext *ctx, void *reply, void *arg)
                                       "BRPOP queue1 queue2 queue3 10")) {
         LOG_ERROR ("Redis async BRPOP error %s", ctx->errstr);
     }
+}
+
+static void redis_reconnect(evutil_socket_t fd, short arg, void * ctx)
+{
+    UNUSED(fd);
+    UNUSED(arg);
+    UNUSED(ctx);
+    redis_connect(redis_host, redis_port, redis_passwd, redis_evbase);
 }
