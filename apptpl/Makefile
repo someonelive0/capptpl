@@ -40,14 +40,17 @@ else
 CFLAGS += -D_BSD_SOURCE \
 		-I/usr/local/libevent-2.1.12/include \
 		-I/usr/local/zeromq-4.3.5/include \
-		-I/usr/local/libpcap-1.10.4/include
+		-I/usr/local/libpcap-1.10.4/include \
+		-I/usr/local/openssl-3.3.1/include
 #LDFLAGS += 
 LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
 	/usr/local/libevent-2.1.12/lib/libevent_openssl.a \
 	/usr/local/zeromq-4.3.5/lib/libzmq.a \
 	/usr/local/libpcap-1.10.4/lib/libpcap.a \
 	/usr/local/gcc-7.4.0/lib64/libstdc++.a \
-	-lpthread -ldl -lunwind -lcrypto -lssl
+	/usr/local/openssl-3.3.1/lib64/libssl.a \
+	/usr/local/openssl-3.3.1/lib64/libcrypto.a \
+	-lpthread -ldl -lunwind -lz
 endif
 
 # CFLAGS += -fprofile-arcs -ftest-coverage

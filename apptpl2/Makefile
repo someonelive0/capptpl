@@ -38,12 +38,15 @@ LDLIBS = -levent -levent_openssl -lhiredis -lwsock32 -lcrypto -lssl
 else
 CFLAGS += -D_BSD_SOURCE \
 		-I/usr/local/libevent-2.1.12/include \
-		-I/usr/local/hiredis-1.2.0/include
+		-I/usr/local/hiredis-1.2.0/include \
+		-I/usr/local/openssl-3.3.1/include
 #LDFLAGS += 
 LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
 	/usr/local/libevent-2.1.12/lib/libevent_openssl.a \
 	/usr/local/hiredis-1.2.0/lib64/libhiredis.a \
-	-lpthread -ldl -lunwind -lcrypto -lssl
+	/usr/local/openssl-3.3.1/lib64/libssl.a \
+	/usr/local/openssl-3.3.1/lib64/libcrypto.a \
+	-lpthread -ldl -lunwind -lz
 endif
 
 # CFLAGS += -fprofile-arcs -ftest-coverage
