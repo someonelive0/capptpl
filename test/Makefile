@@ -63,8 +63,12 @@ teststr_srcs = teststr.c \
 	sds.c
 teststr_objs = $(teststr_srcs:%.c=$(OBJDIR)/%.o)
 
+testpidstat_srcs = testpidstat.c \
+	pidstat.c
+testpidstat_objs = $(testpidstat_srcs:%.c=$(OBJDIR)/%.o)
 
-all: sndmsg teststr testut testklib
+
+all: sndmsg teststr testut testklib testpidstat procstat
 
 
 sndmsg: $(sndmsg_objs)
@@ -96,10 +100,21 @@ obj/testklib.o: testklib.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+testpidstat: $(testpidstat_objs)
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+$(testpidstat_objs): $(OBJDIR)/%.o : %.c
+	@mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+procstat: procstat.c
+	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
+
 
 clean:
-	rm -f $(sndmsg_objs) $(teststr_objs) obj/testut.o obj/testklib.o
-	rm -f sndmsg teststr testut testklib
+	rm -f $(sndmsg_objs) $(teststr_objs) obj/testut.o obj/testklib.o \
+		$(testpidstat_objs)
+	rm -f sndmsg teststr testut testklib testpidstat procstat
 
 install:
 	mkdir -p ../bin
