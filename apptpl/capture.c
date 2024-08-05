@@ -1,6 +1,8 @@
 /*
  * Wrapper libpcap or npcap on windows
  */
+#include "capture.h"
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -14,7 +16,6 @@
 #include "logger.h"
 
 #include "pkt.h"
-#include "capture.h"
 
 
 int capture_open(struct capture* captr, const char *device, 

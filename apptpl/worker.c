@@ -1,10 +1,10 @@
+#include "worker.h"
+
 #include <zmq.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include "logger.h"
-
-#include "worker.h"
 
 
 // arg is struct worker*

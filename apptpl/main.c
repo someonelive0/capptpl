@@ -35,15 +35,17 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    struct config myconfig = {{0}, 0, 0, {0}, 0, 0, {0}};
+    struct config myconfig;
+    memset(&myconfig, 0, sizeof(struct config));
     if (load_config_ini(config_filename, ini_callback, &myconfig) < 0) {
         exit(1);
     }
     myapp.myconfig = &myconfig;
-    LOG_INFO ("BEGIN at %s\tmyconfig=%s, version=%s, http_port=%d, zmq_port=%d, pcap_device=%s, pcap_snaplen=%d, pcap_buffer_size=%d, pcap_filter=%s",
+    UT_string* s = config2json(&myconfig);
+    LOG_INFO ("BEGIN at %s\tconfig_filename=%s\t%s",
               asctime(localtime( &myapp.run_time )), // ctime(&myapp.run_time),
-              config_filename, myconfig.version, myconfig.http_port, myconfig.zmq_port,
-              myconfig.pcap_device, myconfig.pcap_snaplen, myconfig.pcap_buffer_size, myconfig.pcap_filter);
+              config_filename, utstring_body(s));
+    utstring_free(s);
 
     // init something
     if (-1 == magt_init(&myapp)) {

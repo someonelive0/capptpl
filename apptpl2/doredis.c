@@ -1,13 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
+#include "doredis.h"
+
 #include <hiredis/hiredis.h>
 #include <hiredis/async.h>
 #include <hiredis/adapters/libevent.h>
-#include <event2/event.h>
 
 #include "logger.h"
+
 
 static char *redis_host;
 static int redis_port;

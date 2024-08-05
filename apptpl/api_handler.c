@@ -1,3 +1,5 @@
+#include "magt.h"
+
 #include <event.h>
 
 #include "logger.h"
@@ -5,7 +7,6 @@
 #include "cJSON.h"
 
 #include "version.h"
-#include "magt.h"
 #include "capture.h"
 #include "parser.h"
 #include "inputer.h"

@@ -1,10 +1,6 @@
-// #include <stdlib.h>
-// #include <unistd.h>
-// #include <string.h>
+#include "init_log.h"
 
 #include "logger.h"
-
-#include "init_log.h"
 
 
 int init_log(const char* filename, int debug, int filesize, int filenumber)

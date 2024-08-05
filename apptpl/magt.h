@@ -12,9 +12,9 @@
 
 extern struct event_base *magt_evbase;
 
-int magt_init(struct app* myapp);
+int magt_init(const struct app* myapp);
 int magt_close();
-void* magt_loop(struct config* myconfig);
+void* magt_loop(const struct config* myconfig);
 
 int api_route_init();
 void api_route_free();

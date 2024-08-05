@@ -7,12 +7,12 @@
 
 #include "cchan_pthread.h"
 #include "logger.h"
-
-#include "apptpl2_init.h"
 #include "init_log.h"
 #include "load_config.h"
-#include "doredis.h"
+
+#include "apptpl2_init.h"
 #include "magt.h"
+#include "doredis.h"
 
 
 int main(int argc, char** argv)

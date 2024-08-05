@@ -1,3 +1,5 @@
+#include "hex.h"
+
 #include <stdio.h>
 
 

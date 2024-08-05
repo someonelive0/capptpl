@@ -35,7 +35,7 @@ ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 \
 		-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
 LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
-LDLIBS = -levent -lzmq -lwsock32 -lws2_32 -lwpcap
+LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl
 else
 CFLAGS += -D_BSD_SOURCE \
 		-I/usr/local/libevent-2.1.12/include \
@@ -43,10 +43,11 @@ CFLAGS += -D_BSD_SOURCE \
 		-I/usr/local/libpcap-1.10.4/include
 #LDFLAGS += 
 LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
+	/usr/local/libevent-2.1.12/lib/libevent_openssl.a \
 	/usr/local/zeromq-4.3.5/lib/libzmq.a \
 	/usr/local/libpcap-1.10.4/lib/libpcap.a \
 	/usr/local/gcc-7.4.0/lib64/libstdc++.a \
-	-lpthread -ldl -lunwind
+	-lpthread -ldl -lunwind -lcrypto -lssl
 endif
 
 # CFLAGS += -fprofile-arcs -ftest-coverage

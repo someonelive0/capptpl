@@ -1,6 +1,8 @@
 #ifndef WORKER_H
 #define WORKER_H
 
+#include <stdint.h>
+
 #include "cchan_pthread.h"
 
 #define WORKER_WAIT_MS 200

@@ -1,10 +1,11 @@
+#include "parser.h"
+
 #include <stdlib.h>
 // #include <stdatomic.h>
 
 #include "logger.h"
 
 #include "pkt.h"
-#include "parser.h"
 
 
 // arg is struct parser*

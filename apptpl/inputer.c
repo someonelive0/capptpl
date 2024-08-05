@@ -1,10 +1,10 @@
+#include "inputer.h"
+
 #include <zmq.h>
 #include <unistd.h>
 #include <stdlib.h>
 
 #include "logger.h"
-
-#include "inputer.h"
 
 
 int inputer_open(struct inputer* inptr, int port, cchan_t *chan_msg)

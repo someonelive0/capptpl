@@ -1,3 +1,5 @@
+#include "load_config.h"
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -8,8 +10,6 @@
 #endif
 
 #include "logger.h"
-
-#include "load_config.h"
 
 
 #if 0

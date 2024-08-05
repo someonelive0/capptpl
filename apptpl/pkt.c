@@ -1,8 +1,9 @@
+#include "pkt.h"
+
 #include <stdlib.h>
 #include <string.h>
 
 #include "hex.h"
-#include "pkt.h"
 
 
 struct packet* packet_new(const struct pcap_pkthdr *pkthdr, const u_char *pktdata)

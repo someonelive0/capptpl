@@ -1,12 +1,12 @@
+#include "apptpl2_init.h"
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 
 #include "logger.h"
 #include "argparse.h"
-
 #include "version.h"
-#include "apptpl2_init.h"
 
 
 UT_string* config2json(const struct config* p)
@@ -16,9 +16,9 @@ UT_string* config2json(const struct config* p)
     utstring_printf(s, "{\"versin\": \"%s\", \"http_port\": %d, "
 "\"enable_ssl\": %d, \"crt_file\": \"%s\", \"key_file\": \"%s\", "
 "\"redis_host\": \"%s\",  \"redis_port\": %d}",
-    p->version, p->http_port, 
-    p->enable_ssl, p->crt_file, p->key_file,
-    p->redis_host, p->redis_port);
+        p->version, p->http_port, 
+        p->enable_ssl, p->crt_file, p->key_file,
+        p->redis_host, p->redis_port);
     // printf("%s\n", utstring_body(s));
 
     // should remember to free s by utstring_free(s);

@@ -1,6 +1,8 @@
 #ifndef INPUTER_H
 #define INPUTER_H
 
+#include <stdint.h>
+
 #include "cchan_pthread.h"
 
 
