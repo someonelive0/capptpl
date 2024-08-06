@@ -105,10 +105,9 @@ int main(int argc, char** argv)
     LOG_DEBUG ("join thread inputer with tid %lld", tid_inputer);
 
     // capture_shutdown = 1;
-    captr.shutdown = 1;
+    capture_loop_stop(&captr);
     pthread_join(tid_capture, NULL);
     LOG_DEBUG ("join thread capture with tid %lld", tid_capture);
-    // capture_close_device();
     capture_close(&captr);
 
     wrkr.shutdown = 1;

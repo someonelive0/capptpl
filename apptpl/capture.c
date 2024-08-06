@@ -58,8 +58,8 @@ int capture_open(struct capture* captr, const char *device,
         LOG_WARN ("pcap_set_immediate_mode %d failed:%s", 0, pcap_geterr(handle));
     }
 
-    // 设置缓存大小，单位 KBytes
-    if (0 != pcap_set_buffer_size(handle, buffer_size)) {
+    // 设置缓存大小，单位 KBytes, pcap_set_buffer_size() in bytes.
+    if (0 != pcap_set_buffer_size(handle, buffer_size * 1024)) {
         LOG_WARN ("pcap_set_buffer_size failed, size %d KB, %s",
                   buffer_size, pcap_geterr(handle));
     }
@@ -188,8 +188,8 @@ void* capture_loop(void *arg)
     captr->pkts = 0;
     captr->bytes = 0;
 
-    LOG_INFO ("capture begin loop, size of struct pcap_pkthdr %zu, struct packet %zu",
-                sizeof(struct pcap_pkthdr), sizeof(struct packet));
+    LOG_INFO ("capture begin loop, size of struct pcap_pkthdr %zu, struct packet %zu, struct pcap_stat %zu",
+                sizeof(struct pcap_pkthdr), sizeof(struct packet), sizeof(struct pcap_stat));
     while (!captr->shutdown) {
         rc = pcap_dispatch(captr->handle, -1, pkt_cb, (u_char *)captr);
         if (rc == -1) {
@@ -209,6 +209,15 @@ void* capture_loop(void *arg)
     LOG_INFO ("END capture loop, capture pkts %zu, bytes %zu", captr->pkts, captr->bytes);
 
     return ((void*)0);
+}
+
+int capture_loop_stop(struct capture* captr)
+{
+    if (captr->handle != NULL) {
+        captr->shutdown = 1;
+        pcap_breakloop(captr->handle);
+    }
+    return 0;
 }
 
 void pkt_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata)

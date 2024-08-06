@@ -28,6 +28,7 @@ int capture_stats(struct capture* captr);
 
 // arg is struct capture*
 void* capture_loop(void *arg);
+int capture_loop_stop(struct capture* captr);
 // when capture packet to callback function;
 void pkt_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata);
 
