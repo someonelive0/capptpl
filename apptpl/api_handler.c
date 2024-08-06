@@ -188,7 +188,6 @@ static void version_handler(struct evhttp_request *req, void *arg)
 
 static void stats_handler(struct evhttp_request *req, void *arg)
 {
-    UNUSED(arg);
     enum evhttp_cmd_type cmd = evhttp_request_get_command(req);
     LOG_DEBUG ("stats_handler %d", cmd);
     if (cmd != EVHTTP_REQ_GET) {
@@ -201,12 +200,26 @@ static void stats_handler(struct evhttp_request *req, void *arg)
     evhttp_add_header(req->output_headers, "Connection", "close");
 
     struct app* myapp = arg;
-    char s[256] = {0};
-    snprintf(s, sizeof(s)-1, "{ \"capture\": { \"pkts\": %zu, \"bytes\": %zu }, \
-            \"parser\": { \"pkts\": %zu, \"bytes\": %zu }, \
-            \"inputer\": { \"count\": %zu },  \"worker\": { \"count\": %zu } }",
-            myapp->captr->pkts, myapp->captr->bytes, myapp->prsr->count, \
-            myapp->prsr->bytes, myapp->inptr->count, myapp->wrkr->count);
+    capture_stats(myapp->captr);
+
+    char s[512] = {0};
+    snprintf(s, sizeof(s)-1, 
+"{ \"capture\": { \"pkts\": %zu, \"bytes\": %zu, "
+"\"pcap\": { \"ps_recv\": %d, \"ps_drop\": %d, \"ps_ifdrop\": %d"
+#ifdef _WIN32
+", \"ps_capt\": %d, \"ps_sent\": %d, \"ps_netdrop\": %d"
+#endif
+" } },"
+"\"parser\": { \"pkts\": %zu, \"bytes\": %zu }, "
+"\"inputer\": { \"count\": %zu },  "
+"\"worker\": { \"count\": %zu } }",
+        myapp->captr->pkts, myapp->captr->bytes,
+        myapp->captr->ps.ps_recv, myapp->captr->ps.ps_drop, myapp->captr->ps.ps_ifdrop,
+#ifdef _WIN32
+        myapp->captr->ps.ps_capt, myapp->captr->ps.ps_sent, myapp->captr->ps.ps_netdrop,
+#endif
+        myapp->prsr->count,
+        myapp->prsr->bytes, myapp->inptr->count, myapp->wrkr->count);
     struct evbuffer *buf;
     buf = evbuffer_new();
     evbuffer_add(buf, s, strlen(s));

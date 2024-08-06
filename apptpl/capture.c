@@ -149,20 +149,33 @@ int capture_close(struct capture* captr)
     return 0;
 }
 
+/*
+ * WIN32 to use pcap_stats_ex() to get more pcap stat
+ * struct pcap_stat on linux has 12 bytes, and win32 has 24 bytes.
+ */
 int capture_stats(struct capture* captr)
 {
-    struct pcap_stat ps;
-
     if (captr->handle == NULL) {
         LOG_ERROR ("capturer pcap_stats failed, handle is not opened");
         return -1;
     }
-    if (0 != pcap_stats(captr->handle, &ps)) {
+
+#ifdef _WIN32
+    struct pcap_stat* ps = NULL;
+    int len = 0;
+    if (NULL == (ps = pcap_stats_ex(captr->handle, &len))) {
+        LOG_ERROR ("capturer pcap_stats_ex failed:%s", pcap_geterr(captr->handle));
+        return -1;
+    }
+    memcpy(&captr->ps, ps, sizeof(struct pcap_stat));
+    // printf("pcap_stats_ex len %d, %zu\n", len, sizeof(struct pcap_stat)); // win32 is 24 bytes.
+#else
+    if (0 != pcap_stats(captr->handle, &captr->ps)) {
         LOG_ERROR ("capturer pcap_stats failed:%s", pcap_geterr(captr->handle));
         return -1;
     }
-    LOG_INFO ("pcap stats, ps_recv=%d, ps_drop=%d, ps_ifdrop=%d",
-                ps.ps_recv, ps.ps_drop, ps.ps_ifdrop);
+#endif
+
     return 0;
 }
 
@@ -184,7 +197,15 @@ void* capture_loop(void *arg)
             break;
         }
     }
-    capture_stats(captr);
+
+    if (0 == capture_stats(captr)) {
+        LOG_INFO ("pcap stat, ps_recv=%d, ps_drop=%d, ps_ifdrop=%d",
+                captr->ps.ps_recv, captr->ps.ps_drop, captr->ps.ps_ifdrop);
+#ifdef _WIN32
+        LOG_INFO ("pcap stat_ex, ps_capt=%d, ps_sent=%d, ps_netdrop=%d",
+                captr->ps.ps_capt, captr->ps.ps_sent, captr->ps.ps_netdrop);
+#endif
+    }
     LOG_INFO ("END capture loop, capture pkts %zu, bytes %zu", captr->pkts, captr->bytes);
 
     return ((void*)0);

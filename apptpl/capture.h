@@ -16,6 +16,7 @@ struct capture {
     int      shutdown;
     uint64_t pkts;     // total packet number
     uint64_t bytes;    // total byte number
+    struct pcap_stat ps;
     pcap_t*  handle;
     struct bpf_program* bpf;
 };
