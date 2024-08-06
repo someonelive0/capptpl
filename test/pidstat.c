@@ -1,4 +1,7 @@
-// get_cpu.c
+/*
+ * get_cpu.c
+ * only work on linux
+ */
 #include "pidstat.h"
 
 #include <stdio.h>

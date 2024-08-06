@@ -68,7 +68,7 @@ testpidstat_srcs = testpidstat.c \
 testpidstat_objs = $(testpidstat_srcs:%.c=$(OBJDIR)/%.o)
 
 
-all: sndmsg teststr testut testklib testpidstat procstat
+all: sndmsg teststr testut testklib testpool
 
 
 sndmsg: $(sndmsg_objs)
@@ -80,41 +80,44 @@ $(sndmsg_objs): $(OBJDIR)/%.o : %.c
 
 
 teststr: $(teststr_objs)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(LDFLAGS) $^ -o $@
 
 $(teststr_objs): $(OBJDIR)/%.o : %.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 testut: obj/testut.o
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(LDFLAGS) $^ -o $@
 
 obj/testut.o: testut.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 testklib: obj/testklib.o
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(LDFLAGS) $^ -o $@
 
 obj/testklib.o: testklib.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+testpool: testpool.c
+	$(CC) $(CFLAGS) $^ -o $@
+
 testpidstat: $(testpidstat_objs)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(LDFLAGS) $^ -o $@
 
 $(testpidstat_objs): $(OBJDIR)/%.o : %.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 procstat: procstat.c
-	$(CC) $(CFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(CFLAGS) $^ -o $@
 
 
 clean:
 	rm -f $(sndmsg_objs) $(teststr_objs) obj/testut.o obj/testklib.o \
 		$(testpidstat_objs)
-	rm -f sndmsg teststr testut testklib testpidstat procstat
+	rm -f sndmsg teststr testut testklib testpool testpidstat procstat
 
 install:
 	mkdir -p ../bin

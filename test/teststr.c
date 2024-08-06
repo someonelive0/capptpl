@@ -15,7 +15,7 @@ int main()
     buf[1] = 'B';
     buf[2] = 'C';
     mystring = sdsnewlen(buf, 6);
-    printf("%s of len %d\n", mystring, (int) sdslen(mystring));
+    printf("'%s' has len %d\n", mystring, (int) sdslen(mystring));
 
     sds s1 = sdsempty();
     printf("empty s1 len is %d\n", (int) sdslen(s1));
@@ -26,6 +26,7 @@ int main()
         s1 = sdscatlen(s1, mystring, 6);
     printf("sdscat s1 len is %d\n", (int) sdslen(s1));
 
+    printf("\nhexdump str with len %zu\n", sdslen(s1));
     dump_hex(s1, (int) sdslen(s1));
 
     sdsfree(s1);

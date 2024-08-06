@@ -12,5 +12,6 @@ test/sndmsg
 test/teststr
 test/testut
 test/testklib
+test/testpool
 test/testpidstat
 test/procstat

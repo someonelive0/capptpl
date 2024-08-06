@@ -83,7 +83,7 @@ int packet_pool_free(struct packet_pool* pool)
 int main()
 {
     struct packet_pool *pkt_pool = packet_pool_new(10);
-    if (NULL == packet_pool_new) {
+    if (NULL == pkt_pool) {
         printf("new pool failed\n");
         exit(1);
     }
