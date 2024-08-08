@@ -43,13 +43,19 @@ int main(int argc, char** argv)
 
     zmq_msg_t msg;
     for (int i=0; i<1000000; i++) {
-        if (0 != zmq_msg_init_size (&msg, strlen(addr))) {
+        if (0 != zmq_msg_init_size (&msg, strlen(addr)+1)) {
             printf("zmq zmq_msg_init failed: %d, %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
         }
-        memcpy (zmq_msg_data (&msg), addr, strlen(addr));
+        memcpy (zmq_msg_data (&msg), addr, strlen(addr)+1);
+        // if (0 != zmq_msg_init_data (&msg, addr, strlen(addr)+1, NULL, NULL)) {
+        //     printf("zmq zmq_msg_init_data failed: %d, %s\n", zmq_errno(), zmq_strerror(zmq_errno()));
+        // }
+        // zmq_msg_size (&msg) 在发送前是数据长度，在 zmq_msg_send() 后是0， 表示发送数据完成
+        // 在 zmq_msg_send() 后 zmq_msg_init_data() 的数据还会被混淆。
+
         rc = zmq_msg_send (&msg, pusher, 0);
         // printf("zmq_msg_send len %d\n", rc);
-        if (rc != (int)strlen(addr)) {
+        if (rc != (int)strlen(addr)+1) {
             printf("zmq_msg_send len %d not equle data len %zd\n", rc, strlen(addr));
         }
 
@@ -57,7 +63,7 @@ int main(int argc, char** argv)
         if ((count % 10000) == 0) {
             // printf("send msg count %d, len %lld: [%s]\n",
             //     count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
-            LOG_DEBUG("send msg count %d, len %lld: [%s]",
+            LOG_DEBUG("send msg count %d, left len %zu: [%s]",
                       count, zmq_msg_size (&msg), (char*)zmq_msg_data (&msg));
         }
 
