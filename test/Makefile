@@ -34,14 +34,13 @@ CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 \
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 
 #LDFLAGS += 
-LDLIBS = -levent -lzmq -lwsock32
+LDLIBS = -lzmq
 else
 CFLAGS += -D_BSD_SOURCE \
 		-I/usr/local/libevent-2.1.12/include \
 		-I/usr/local/zeromq-4.3.5/include
 #LDFLAGS += 
-LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
-	/usr/local/zeromq-4.3.5/lib/libzmq.a \
+LDLIBS = /usr/local/zeromq-4.3.5/lib/libzmq.a \
 	/usr/local/gcc-7.4.0/lib64/libstdc++.a \
 	-lpthread -ldl -lunwind
 endif
