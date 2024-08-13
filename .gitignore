@@ -15,3 +15,5 @@ test/testklib
 test/testpool
 test/testpidstat
 test/procstat
+test/words
+lib/aho-corasick/libacism.a

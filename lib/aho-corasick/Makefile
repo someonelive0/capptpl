@@ -22,7 +22,8 @@ $(info compile mode is debug)
 CFLAGS = -Wall -ggdb -std=c11
 else
 $(info compile mode is release)
-CFLAGS = -W -Wall -O2 -std=c11
+# must be -O0
+CFLAGS = -W -Wall -O0 -std=c11
 endif
 
 #CC     = clang
