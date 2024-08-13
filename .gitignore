@@ -6,6 +6,7 @@
 */obj
 .vscode
 bin
+lib/aho-corasick/libacism.a
 apptpl/apptpl
 apptpl2/apptpl2
 test/sndmsg
@@ -16,4 +17,5 @@ test/testpool
 test/testpidstat
 test/procstat
 test/words
-lib/aho-corasick/libacism.a
+test/testac
+test/testre2

@@ -1,5 +1,5 @@
 /*
- * gcc -O2 -W -Wall -I../lib/aho-corasick testac.o ../lib/aho-corasick/libacism.a -o testac
+ * gcc -O2 -W -Wall -std=c11 -I../lib/aho-corasick testac.c ../lib/aho-corasick/libacism.a -o testac
  * Usage: ./a.out words textfile
  */
 #include "msutil.h"
@@ -33,7 +33,7 @@ static int on_match(int strnum, int textpos, MEMREF const *pattv)
 int main(int argc, char** argv)
 {
     if (argc < 2 || argc > 4) {
-        printf("pattern_file target_file [[-]expected]\ne.g. %s patts act.txt -5", argv[0]);
+        printf("pattern_file target_file [[-]expected]\ne.g. %s patts act.txt -5\n", argv[0]);
         exit(1);
     }
 
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
             fprintf(stderr, "%11llu %s\n", psstat[i].val, psstat[i].name);
 
     FILE*	textfp = fopen(argv[2], "r");
-    if (!textfp) die("cannot open %s", argv[2]);
+    if (!textfp) die("cannot open argv[2]: %s", argv[2]);
 
     printf("3 ----> ac match...\n");
     static char buf[1024 * 1024];
