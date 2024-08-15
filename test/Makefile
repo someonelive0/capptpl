@@ -20,10 +20,12 @@ DEBUG = 1
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
 CFLAGS = -Wall -ggdb -std=c11
+CXXFLAGS = -Wall -ggdb
 LDFLAGS = -ggdb -std=c11
 else
 $(info compile mode is release)
 CFLAGS = -W -Wall -O2 -std=c11
+CXXFLAGS = -W -Wall -O2
 LDFLAGS = -O2 -std=c11
 endif
 
@@ -67,7 +69,7 @@ testpidstat_srcs = testpidstat.c \
 testpidstat_objs = $(testpidstat_srcs:%.c=$(OBJDIR)/%.o)
 
 
-all: sndmsg teststr testut testklib testpool
+all: sndmsg teststr testut testklib testpool testcre2
 
 
 sndmsg: $(sndmsg_objs)
@@ -111,6 +113,10 @@ $(testpidstat_objs): $(OBJDIR)/%.o : %.c
 
 procstat: procstat.c
 	$(CC) $(CFLAGS) $^ -o $@
+
+testcre2: testcre2.c ../lib/cre2/cre2.cpp
+	g++ $(CXXFLAGS) -I../lib/cre2 ../lib/cre2/cre2.cpp -c
+	gcc $(CFLAGS) -I../lib/cre2 cre2.o testcre2.c -lre2 -lstdc++ -o testcre2
 
 
 clean:
