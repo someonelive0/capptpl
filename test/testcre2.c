@@ -166,8 +166,8 @@ static int test_set_re()
             }
 
             if (cre2_set_compile(rex_set)) {
-                match_set(rex_set, i);
-                // match_set_thread((void*)rex_set);
+                // match_set(rex_set, i);
+                match_set_thread((void*)rex_set);
             } else {
                 printf("cre2_set_compile failed: %d, %s\n",
                    cre2_error_code(rex_set), cre2_error_string(rex_set));
@@ -222,9 +222,10 @@ void* match_set_thread(void *arg)
     return ((void*)0);
 }
 
+// on EL7 re2 not support pthread.
 static int match_set(cre2_set* rex_set, int nset)
 {
-    int t_num = 8;
+    int t_num = 1;
     pthread_t tids[t_num];
 
     setbuf(stdout, NULL);

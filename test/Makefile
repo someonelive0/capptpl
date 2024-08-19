@@ -115,8 +115,8 @@ procstat: procstat.c
 	$(CC) $(CFLAGS) $^ -o $@
 
 testcre2: testcre2.c ../lib/cre2/cre2.cpp
-	g++ $(CXXFLAGS) -I../lib/cre2 ../lib/cre2/cre2.cpp -c
-	gcc $(CFLAGS) -I../lib/cre2 cre2.o testcre2.c -lre2 -lstdc++ -o testcre2
+	g++ $(CXXFLAGS) -I../lib/cre2 -I/usr/local/re2-2024-07-02/include -I/usr/local/abseil-cpp-20240116.1/include ../lib/cre2/cre2.cpp -c
+	gcc -Wall -ggdb -std=c11 -I../lib/cre2 cre2.o testcre2.c -L/usr/local/re2-2024-07-02/lib -lre2 -lstdc++ -lpthread -o testcre2
 
 
 clean:
