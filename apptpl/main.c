@@ -137,6 +137,7 @@ err:
     magt_close();
     inputer_stop(&inptr);
     capture_close(&captr);
+    parser_destroy(&prsr);
     if (chan_msg) cchan_free(chan_msg);
     if (chan_pkt) cchan_free(chan_pkt);
     logger_close();

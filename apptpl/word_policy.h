@@ -7,7 +7,7 @@
 
 struct word_policy {
     int     npatts;  // number of words.
-    MEMBUF* patt;    // lines of policy file content.
+    MEMBUF  patt;    // lines of policy file content.
     MEMREF* pattv;   // split lines to words.
     ACISM*  psp;     // acism object.
 

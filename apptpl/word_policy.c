@@ -33,7 +33,7 @@ int word_policy_create(struct word_policy* wordp, const char* filename)
 
     LOG_INFO ("word_policy (pattv[%d]) compiled, in %.3f secs\n", npatts, t);
 
-    wordp->patt = &patt;
+    memcpy(&wordp->patt, &patt, sizeof(MEMBUF));
     wordp->pattv = pattv;
     wordp->psp = psp;
     wordp->npatts = npatts;
@@ -44,10 +44,9 @@ int word_policy_create(struct word_policy* wordp, const char* filename)
 int word_policy_destroy(struct word_policy* wordp)
 {
     if (wordp->psp) {
-        buffree(*wordp->patt);
+        buffree(wordp->patt);
         free(wordp->pattv);
         acism_destroy(wordp->psp);
-        wordp->patt = NULL;
         wordp->pattv = NULL;
         wordp->psp = NULL;
     }
