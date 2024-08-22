@@ -12,7 +12,7 @@ typedef struct {
     const char *name;
 } PSSTAT;
 extern PSSTAT psstat[];
-extern int pscand[];
+// extern int pscand[];
 
 
 static int actual = 0, details = 1;

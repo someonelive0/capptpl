@@ -21,3 +21,6 @@ snaplen = 65535
 # buffer_size in kilobytes (KB), default 2048 KBytes
 buffer_size = 2048
 filter = tcp
+
+[word_policy]
+    word_file = words

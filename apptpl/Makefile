@@ -29,7 +29,7 @@ endif
 CC     = gcc
 CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 \
 		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.18 -I../lib/sds \
-		-I../lib
+		-I../lib/aho-corasick -I../lib
 
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 \
@@ -61,7 +61,7 @@ OBJDIR = obj
 vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 \
 	../lib/cJSON-1.7.18 ../lib/sds ../lib
 apptpl_srcs = main.c apptpl_init.c magt.c api_handler.c \
-	inputer.c worker.c capture.c parser.c pkt.c \
+	inputer.c worker.c capture.c parser.c pkt.c word_policy.c \
 	init_log.c load_config.c \
 	cchan_pthread.c \
 	logger.c \
@@ -77,7 +77,7 @@ all: apptpl
 # apptpl: main.o init_log.o magt.o inputer.o worker.o capture.o \
 # 	cchan_pthread.o logger.o ini.o
 apptpl: $(apptpl_objs)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(LDFLAGS) $^ ../lib/aho-corasick/libacism.a $(LDLIBS) -o $@
 
 $(apptpl_objs): $(OBJDIR)/%.o : %.c
 	@mkdir -p $(OBJDIR)

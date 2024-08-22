@@ -58,15 +58,20 @@ int main(int argc, char** argv)
     struct worker wrkr = {0, chan_msg, 0};
     struct inputer inptr;
     memset(&inptr, 0, sizeof(struct inputer));
+    struct parser prsr;
+    memset(&prsr, 0, sizeof(struct parser));
+    struct capture captr;
+    memset(&captr, 0, sizeof(struct capture));
+
     if (0 != inputer_open(&inptr, myconfig.zmq_port, chan_msg)) {
         goto err;
     }
     myapp.inptr = &inptr;
     myapp.wrkr = & wrkr;
 
-    struct parser prsr = {0, chan_pkt, 0, 0, 0};
-    struct capture captr;
-    memset(&captr, 0, sizeof(struct capture));
+    if (0 != parser_create(&prsr, chan_pkt, myconfig.word_file)) {
+        goto err;
+    }
     captr.chan_pkt = chan_pkt;
     if (0 != capture_open(&captr, myconfig.pcap_device, myconfig.pcap_snaplen,
                           myconfig.pcap_buffer_size, myconfig.pcap_filter)) {
@@ -117,6 +122,7 @@ int main(int argc, char** argv)
     prsr.shutdown = 1;
     pthread_join(tid_parser, NULL);
     LOG_DEBUG ("join thread parser with tid %lld", tid_parser);
+    parser_destroy(&prsr);
 
     cchan_free(chan_msg);
     cchan_free(chan_pkt);

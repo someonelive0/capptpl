@@ -8,12 +8,43 @@
 #include "pkt.h"
 
 
-// arg is struct parser*
+// thread var
+static __thread struct parser* prsr;
+
+// word match call back
+static int match_cb(int strnum, int textpos, MEMREF const *pattv);
+
+
+int parser_create(struct parser* prsr, cchan_t *chan_pkt, const char* word_file)
+{
+    memset(&prsr->wordp, 0, sizeof(struct word_policy));
+    prsr->chan_pkt = chan_pkt;
+    if (-1 == word_policy_create(&prsr->wordp, word_file)) {
+        return -1;
+    }
+    prsr->wordp.match_cb = match_cb;
+
+    if (logger_getLevel() <= LogLevel_DEBUG)
+        word_policy_dump(&prsr->wordp);
+
+    return 0;
+}
+
+int parser_destroy(struct parser* prsr)
+{
+    prsr->shutdown = 1;
+    word_policy_destroy(&prsr->wordp);
+
+    return 0;
+}
+
+// arg is struct parser*, store it in thread var prsr.
 void* parser_loop(void *arg)
 {
     struct packet *pkt = NULL;
 
-    struct parser* prsr = arg;
+    // struct parser* prsr = arg;
+    prsr = arg;
     prsr->shutdown = 0;
     prsr->count = 0;
     prsr->bytes = 0;
@@ -45,6 +76,10 @@ void* parser_loop(void *arg)
             pkt->hdr.caplen, pkt->hdr.len, pkt->data);
         // packet_dump(pkt);
 
+        // packet_match_words(pkt);
+        MEMREF text = { pkt->data, pkt->hdr.caplen };
+        word_policy_match(&prsr->wordp, text);
+
         packet_free(pkt);
     }
     LOG_INFO ("END parser loop, parser count %zu", prsr->count);
@@ -54,4 +89,13 @@ void* parser_loop(void *arg)
 
 inline void parser_time_ev(struct parser* prsr, int seconds) {
     prsr->timer_interval = seconds;
+}
+
+static int match_cb(int strnum, int textpos, MEMREF const *pattv)
+{
+    (void)strnum, (void)textpos, (void)pattv;
+    prsr->word_match_count++;
+    LOG_INFO ("match word: %9d %7d '%.*s'", textpos, strnum,
+                (int)pattv[strnum].len, pattv[strnum].ptr);
+    return 0;
 }
