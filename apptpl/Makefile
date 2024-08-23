@@ -29,13 +29,13 @@ endif
 CC     = gcc
 CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 \
 		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.18 -I../lib/sds \
-		-I../lib/aho-corasick -I../lib
+		-I../lib/aho-corasick -I../lib/cre2 -I../lib
 
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 \
 		-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
 LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
-LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl
+LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl -lre2 -lstdc++
 else
 CFLAGS += -D_BSD_SOURCE \
 		-I/usr/local/libevent-2.1.12/include \
@@ -61,7 +61,8 @@ OBJDIR = obj
 vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 \
 	../lib/cJSON-1.7.18 ../lib/sds ../lib
 apptpl_srcs = main.c apptpl_init.c magt.c api_handler.c \
-	inputer.c worker.c capture.c parser.c pkt.c word_policy.c \
+	inputer.c worker.c capture.c parser.c pkt.c \
+	word_policy.c re_policy.c \
 	init_log.c load_config.c \
 	cchan_pthread.c \
 	logger.c \
@@ -76,12 +77,15 @@ all: apptpl
 
 # apptpl: main.o init_log.o magt.o inputer.o worker.o capture.o \
 # 	cchan_pthread.o logger.o ini.o
-apptpl: $(apptpl_objs)
+apptpl: $(apptpl_objs) cre2.o
 	$(CC) $(LDFLAGS) $^ ../lib/aho-corasick/libacism.a $(LDLIBS) -o $@
 
 $(apptpl_objs): $(OBJDIR)/%.o : %.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+cre2.o: ../lib/cre2/cre2.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(apptpl_objs)

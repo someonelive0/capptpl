@@ -1,5 +1,3 @@
-
-
 #include "word_policy.h"
 
 #include "logger.h"
@@ -77,10 +75,10 @@ void word_policy_match(struct word_policy* wordp, MEMREF text)
 {
     int state = 0;
     (void)acism_more(wordp->psp,
-                    text, 
-                    (ACISM_ACTION*)wordp->match_cb,
-                    wordp->pattv,
-                    &state);
+                     text,
+                     (ACISM_ACTION*)wordp->match_cb,
+                     wordp->pattv,
+                     &state);
 }
 
 /*
