@@ -1,6 +1,8 @@
 #ifndef RE_POLICY_H
 #define RE_POLICY_H
 
+#include <stddef.h>
+
 #include "cre2.h"
 
 

@@ -42,7 +42,9 @@ CFLAGS += -D_BSD_SOURCE \
 		-I/usr/local/zeromq-4.3.5/include \
 		-I/usr/local/libpcap-1.10.4/include \
 		-I/usr/local/openssl-3.3.1/include
-#LDFLAGS += 
+CXXFLAGS += -I/usr/local/re2-2024-07-02/include \
+		-I/usr/local/abseil-cpp-20240116.1/include
+LDFLAGS += -L/usr/local/re2-2024-07-02/lib
 LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
 	/usr/local/libevent-2.1.12/lib/libevent_openssl.a \
 	/usr/local/zeromq-4.3.5/lib/libzmq.a \
@@ -50,7 +52,7 @@ LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
 	/usr/local/gcc-7.4.0/lib64/libstdc++.a \
 	/usr/local/openssl-3.3.1/lib64/libssl.a \
 	/usr/local/openssl-3.3.1/lib64/libcrypto.a \
-	-lpthread -ldl -lunwind -lz
+	-lpthread -ldl -lunwind -lz -lm -lre2
 endif
 
 # CFLAGS += -fprofile-arcs -ftest-coverage
