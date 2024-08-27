@@ -2,6 +2,7 @@
 
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include "logger.h"
 
@@ -107,7 +108,7 @@ void re_policy_dump(struct re_policy* rep)
 
 void re_policy_match(struct re_policy* rep, char* text, size_t text_len)
 {
-    int            nmatch   = 3; // we has 3 regex strings.
+    int            nmatch   = rep->rule_num; // must be right bumber.
     int            match[nmatch];
 
     int rc = cre2_set_match(rep->rex_set, text, text_len,
@@ -148,6 +149,7 @@ static cre2_options_t* mk_cre2_opt()
     LOG_DEBUG ("cre2_opt_never_nl: %d", cre2_opt_never_nl(opt));
     LOG_DEBUG ("cre2_opt_dot_nl: %d", cre2_opt_dot_nl(opt));
     LOG_DEBUG ("cre2_opt_never_capture: %d", cre2_opt_never_capture(opt));
+    cre2_opt_set_case_sensitive(opt, 0);
     LOG_DEBUG ("cre2_opt_case_sensitive: %d", cre2_opt_case_sensitive(opt));
     LOG_DEBUG ("cre2_opt_max_mem: %zu", cre2_opt_max_mem(opt));
 
