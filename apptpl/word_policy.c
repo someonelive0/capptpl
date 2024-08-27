@@ -61,9 +61,9 @@ extern PSSTAT psstat[];
 
 void word_policy_dump(struct word_policy* wordp)
 {
-
     LOG_DEBUG ("acism dump");
-    acism_dump(wordp->psp, PS_ALL, stderr, wordp->pattv);
+    // on linux will cause coredump.
+    // acism_dump(wordp->psp, PS_ALL, stderr, wordp->pattv);
 
     LOG_DEBUG ("acism stat");
     for (int i = 1; i < (int)psstat[0].val; ++i)

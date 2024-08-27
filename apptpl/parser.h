@@ -17,6 +17,7 @@ struct parser {
     uint64_t count;     // total packet number
     uint64_t bytes;    // total byte number;
     uint64_t word_match_count;     // total word policy matched number
+    uint64_t regex_match_count;     // total regex policy matched number
     int      timer_interval; // when timer to call this. seconds
 
     struct word_policy wordp;

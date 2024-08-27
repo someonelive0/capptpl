@@ -29,7 +29,8 @@ int re_policy_create(struct re_policy* rep, const char* filename);
 int re_policy_destroy(struct re_policy* rep);
 void re_policy_dump(struct re_policy* rep);
 
-void re_policy_match(struct re_policy* rep, char* text, size_t text_len);
+// return matched number
+int re_policy_match(struct re_policy* rep, char* text, size_t text_len);
 
 // load regex from file.
 UT_array* re_policy_load(const char* filename);

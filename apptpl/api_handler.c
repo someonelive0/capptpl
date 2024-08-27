@@ -210,7 +210,8 @@ static void stats_handler(struct evhttp_request *req, void *arg)
 ", \"ps_capt\": %d, \"ps_sent\": %d, \"ps_netdrop\": %d"
 #endif
 " } },"
-"\"parser\": { \"pkts\": %zu, \"bytes\": %zu, \"word_match_count\": %zu }, "
+"\"parser\": { \"pkts\": %zu, \"bytes\": %zu, "
+"\"word_match_count\": %zu, \"regex_match_count\": %zu }, "
 "\"inputer\": { \"count\": %zu },  "
 "\"worker\": { \"count\": %zu } }",
         myapp->captr->pkts, myapp->captr->bytes,
@@ -218,7 +219,8 @@ static void stats_handler(struct evhttp_request *req, void *arg)
 #ifdef _WIN32
         myapp->captr->ps.ps_capt, myapp->captr->ps.ps_sent, myapp->captr->ps.ps_netdrop,
 #endif
-        myapp->prsr->count, myapp->prsr->bytes, myapp->prsr->word_match_count,
+        myapp->prsr->count, myapp->prsr->bytes,
+        myapp->prsr->word_match_count, myapp->prsr->regex_match_count,
         myapp->inptr->count, myapp->wrkr->count);
     struct evbuffer *buf;
     buf = evbuffer_new();

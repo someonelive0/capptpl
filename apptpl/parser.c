@@ -52,6 +52,7 @@ int parser_destroy(struct parser* prsr)
 void* parser_loop(void *arg)
 {
     struct packet *pkt = NULL;
+    int rc = 0;
 
     // struct parser* prsr = arg;
     prsr = arg;
@@ -90,7 +91,9 @@ void* parser_loop(void *arg)
         MEMREF text = { pkt->data, pkt->hdr.caplen };
         word_policy_match(&prsr->wordp, text);
 
-        re_policy_match(&prsr->rep, pkt->data, pkt->hdr.caplen);
+        if (0 != (rc = re_policy_match(&prsr->rep, pkt->data, pkt->hdr.caplen))) {
+            prsr->regex_match_count += rc;
+        }
 
         packet_free(pkt);
     }
@@ -106,7 +109,7 @@ inline void parser_time_ev(struct parser* prsr, int seconds) {
 static int match_cb(int strnum, int textpos, MEMREF const *pattv)
 {
     (void)strnum, (void)textpos, (void)pattv;
-    prsr->word_match_count++;
+    prsr->word_match_count ++;
     LOG_INFO ("match word: %9d %7d '%.*s'", textpos, strnum,
                 (int)pattv[strnum].len, pattv[strnum].ptr);
     return 0;

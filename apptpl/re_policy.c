@@ -106,19 +106,21 @@ void re_policy_dump(struct re_policy* rep)
     LOG_INFO ("rule num: %d", rep->rule_num);
 }
 
-void re_policy_match(struct re_policy* rep, char* text, size_t text_len)
+// return matched number
+int re_policy_match(struct re_policy* rep, char* text, size_t text_len)
 {
     int            nmatch   = rep->rule_num; // must be right bumber.
     int            match[nmatch];
 
     int rc = cre2_set_match(rep->rex_set, text, text_len,
                     match, nmatch);
-    if (rc == 0) return;
+    if (rc == 0) return 0;
 
     for (int i=0; i<rc; i++) {
         LOG_INFO ("re_policy_match %d patterns  --> %d: %s",
                 rc, match[i], rep->rules[match[i]].pattern);
     }
+    return rc;
 }
 
 
