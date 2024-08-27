@@ -23,6 +23,7 @@ struct config {
     int       pcap_buffer_size;
     char      pcap_filter[256];
     char      word_file[256];
+    char      regex_file[256];
 };
 
 UT_string* config2json(const struct config* p);

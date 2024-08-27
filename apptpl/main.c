@@ -69,7 +69,8 @@ int main(int argc, char** argv)
     myapp.inptr = &inptr;
     myapp.wrkr = & wrkr;
 
-    if (0 != parser_create(&prsr, chan_pkt, myconfig.word_file)) {
+    if (0 != parser_create(&prsr, chan_pkt, 
+                        myconfig.word_file, myconfig.regex_file)) {
         goto err;
     }
     captr.chan_pkt = chan_pkt;

@@ -24,11 +24,11 @@ UT_string* config2json(const struct config* p)
 "\"enable_ssl\": %d, \"crt_file\": \"%s\", \"key_file\": \"%s\", "
 "\"zmq_port\": %d, \"pcap_device\": \"%s\", \"pcap_snaplen\": %d, "
 "\"pcap_buffer_size\": %d, \"pcap_filter\": \"%s\", "
-"\"word_file\": \"%s\""
+"\"word_file\": \"%s\", \"regex_file\": \"%s\""
 "}",
         p->version, p->http_port, p->enable_ssl, p->crt_file, p->key_file,
         p->zmq_port, device, p->pcap_snaplen, p->pcap_buffer_size, p->pcap_filter,
-        p->word_file);
+        p->word_file, p->regex_file);
     // printf("%s\n", utstring_body(s));
 
     // should remember to free s by utstring_free(s);
@@ -68,6 +68,8 @@ int ini_callback(void* arg, const char* section, const char* name, const char* v
         strncpy(pconfig->pcap_filter, value, sizeof(pconfig->pcap_filter)-1);
     } else if (MATCH("word_policy", "word_file")) {
         strncpy(pconfig->word_file, value, sizeof(pconfig->word_file)-1);
+    } else if (MATCH("regex_policy", "regex_file")) {
+        strncpy(pconfig->regex_file, value, sizeof(pconfig->regex_file)-1);
     } else {
         LOG_ERROR ("unknown ini section %s, name %s, value %s", section, name, value);
         return 0;  /* unknown section/name, error */

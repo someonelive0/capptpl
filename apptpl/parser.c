@@ -15,7 +15,8 @@ static __thread struct parser* prsr;
 static int match_cb(int strnum, int textpos, MEMREF const *pattv);
 
 
-int parser_create(struct parser* prsr, cchan_t *chan_pkt, const char* word_file)
+int parser_create(struct parser* prsr, cchan_t *chan_pkt, 
+                const char* word_file, const char* regex_file)
 {
     memset(&prsr->wordp, 0, sizeof(struct word_policy));
     prsr->chan_pkt = chan_pkt;
@@ -27,6 +28,14 @@ int parser_create(struct parser* prsr, cchan_t *chan_pkt, const char* word_file)
     if (logger_getLevel() <= LogLevel_DEBUG)
         word_policy_dump(&prsr->wordp);
 
+    if (-1 == re_policy_create(&prsr->rep, regex_file)) {
+        word_policy_destroy(&prsr->wordp);
+        return -1;
+    }
+    
+    if (logger_getLevel() <= LogLevel_DEBUG)
+        re_policy_dump(&prsr->rep);
+
     return 0;
 }
 
@@ -34,6 +43,7 @@ int parser_destroy(struct parser* prsr)
 {
     prsr->shutdown = 1;
     word_policy_destroy(&prsr->wordp);
+    re_policy_destroy(&prsr->rep);
 
     return 0;
 }
@@ -79,6 +89,8 @@ void* parser_loop(void *arg)
         // packet_match_words(pkt);
         MEMREF text = { pkt->data, pkt->hdr.caplen };
         word_policy_match(&prsr->wordp, text);
+
+        re_policy_match(&prsr->rep, pkt->data, pkt->hdr.caplen);
 
         packet_free(pkt);
     }

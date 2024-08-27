@@ -6,6 +6,7 @@
 #include "cchan_pthread.h"
 
 #include "word_policy.h"
+#include "re_policy.h"
 
 #define PARSER_WAIT_MS 200
 
@@ -19,9 +20,11 @@ struct parser {
     int      timer_interval; // when timer to call this. seconds
 
     struct word_policy wordp;
+    struct re_policy   rep;
 };
 
-int parser_create(struct parser* prsr, cchan_t *chan_pkt, const char* word_file);
+int parser_create(struct parser* prsr, cchan_t *chan_pkt, 
+                const char* word_file, const char* regex_file);
 int parser_destroy(struct parser* prsr);
 // arg is struct parser*
 void* parser_loop(void *arg);

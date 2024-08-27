@@ -23,4 +23,7 @@ buffer_size = 2048
 filter = tcp
 
 [word_policy]
-    word_file = words
+word_file = word_policy.txt
+
+[regex_policy]
+regex_file = regex_policy.txt
