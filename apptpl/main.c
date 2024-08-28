@@ -63,6 +63,9 @@ int main(int argc, char** argv)
     struct capture captr;
     memset(&captr, 0, sizeof(struct capture));
 
+    int parser_num = 4;
+    pthread_t tid_inputer, tid_worker, tid_capture, tid_parser[parser_num];
+
     if (0 != inputer_open(&inptr, myconfig.zmq_port, chan_msg)) {
         goto err;
     }
@@ -81,7 +84,6 @@ int main(int argc, char** argv)
     myapp.captr = &captr;
     myapp.prsr = & prsr;
 
-    pthread_t tid_inputer, tid_worker, tid_capture, tid_parser;
 
     // pthread_create(&tid_magt, NULL, magt, ((void *)&myconfig));
     // LOG_INFO ("start thread magt with tid %lld", tid_magt);
@@ -92,8 +94,10 @@ int main(int argc, char** argv)
     pthread_create(&tid_inputer, NULL, inputer_loop, ((void *)&inptr));
     LOG_INFO ("start thread inputer with tid %lld", tid_inputer);
 
-    pthread_create(&tid_parser, NULL, parser_loop, ((void *)&prsr));
-    LOG_INFO ("start thread parser with tid %lld", tid_parser);
+    for (int i=0; i<parser_num; i++) {
+        pthread_create(&tid_parser[i], NULL, parser_loop, ((void *)&prsr));
+        LOG_INFO ("start thread parser with tid %lld", tid_parser[i]);
+    }
 
     pthread_create(&tid_capture, NULL, capture_loop, ((void *)&captr));
     LOG_INFO ("start thread capture with tid %lld", tid_capture);
@@ -121,8 +125,10 @@ int main(int argc, char** argv)
     LOG_DEBUG ("join thread worker with tid %lld", tid_worker);
 
     prsr.shutdown = 1;
-    pthread_join(tid_parser, NULL);
-    LOG_DEBUG ("join thread parser with tid %lld", tid_parser);
+    for (int i=0; i<parser_num; i++) {
+        pthread_join(tid_parser[i], NULL);
+        LOG_DEBUG ("join thread parser with tid %lld", tid_parser[i]);
+    }
     parser_destroy(&prsr);
 
     cchan_free(chan_msg);

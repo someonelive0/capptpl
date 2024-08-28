@@ -59,6 +59,7 @@ void* parser_loop(void *arg)
     prsr->shutdown = 0;
     prsr->count = 0;
     prsr->bytes = 0;
+    int re_match[prsr->rep.rule_num];
 
     LOG_INFO ("parser loop");
     while (!prsr->shutdown) {
@@ -91,7 +92,13 @@ void* parser_loop(void *arg)
         MEMREF text = { pkt->data, pkt->hdr.caplen };
         word_policy_match(&prsr->wordp, text);
 
-        if (0 != (rc = re_policy_match(&prsr->rep, pkt->data, pkt->hdr.caplen))) {
+        // packet_match_regexs(pkt);
+        rc = re_policy_match(&prsr->rep, pkt->data, pkt->hdr.caplen, re_match);
+        if (0 != rc) {
+            for (int i=0; i<rc; i++) {
+                LOG_INFO ("re_policy_match %d patterns  --> %d: %s",
+                        rc, re_match[i], prsr->rep.rules[re_match[i]].pattern);
+            }
             prsr->regex_match_count += rc;
         }
 
@@ -110,7 +117,7 @@ static int match_cb(int strnum, int textpos, MEMREF const *pattv)
 {
     (void)strnum, (void)textpos, (void)pattv;
     prsr->word_match_count ++;
-    LOG_INFO ("match word: %9d %7d '%.*s'", textpos, strnum,
+    LOG_DEBUG ("match word: %9d %7d '%.*s'", textpos, strnum,
                 (int)pattv[strnum].len, pattv[strnum].ptr);
     return 0;
 }
