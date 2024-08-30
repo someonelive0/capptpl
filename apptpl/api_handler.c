@@ -1,5 +1,6 @@
 #include "magt.h"
 
+#include <stdatomic.h>
 #include <event.h>
 
 #include "logger.h"
@@ -219,8 +220,8 @@ static void stats_handler(struct evhttp_request *req, void *arg)
 #ifdef _WIN32
         myapp->captr->ps.ps_capt, myapp->captr->ps.ps_sent, myapp->captr->ps.ps_netdrop,
 #endif
-        myapp->prsr->count, myapp->prsr->bytes,
-        myapp->prsr->word_match_count, myapp->prsr->regex_match_count,
+        atomic_load(&myapp->prsr->count), atomic_load(&myapp->prsr->bytes),
+        atomic_load(&myapp->prsr->word_match_count), atomic_load(&myapp->prsr->regex_match_count),
         myapp->inptr->count, myapp->wrkr->count);
     struct evbuffer *buf;
     buf = evbuffer_new();

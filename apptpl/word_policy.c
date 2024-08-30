@@ -59,8 +59,10 @@ typedef struct {
 } PSSTAT;
 extern PSSTAT psstat[];
 
+#define UNUSED(x) (void)(x)
 void word_policy_dump(struct word_policy* wordp)
 {
+    UNUSED(wordp);
     LOG_DEBUG ("acism dump");
     // on linux will cause coredump.
     // acism_dump(wordp->psp, PS_ALL, stderr, wordp->pattv);

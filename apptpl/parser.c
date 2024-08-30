@@ -1,7 +1,6 @@
 #include "parser.h"
 
 #include <stdlib.h>
-// #include <stdatomic.h>
 
 #include "logger.h"
 
@@ -55,10 +54,12 @@ void* parser_loop(void *arg)
     int rc = 0;
 
     // struct parser* prsr = arg;
-    prsr = arg;
+    prsr = arg; // use thread local var
     prsr->shutdown = 0;
-    prsr->count = 0;
-    prsr->bytes = 0;
+    prsr->count = ATOMIC_VAR_INIT(0);
+    prsr->bytes = ATOMIC_VAR_INIT(0);
+    prsr->word_match_count = ATOMIC_VAR_INIT(0);
+    prsr->regex_match_count = ATOMIC_VAR_INIT(0);
     int re_match[prsr->rep.rule_num];
 
     LOG_INFO ("parser loop");
@@ -66,7 +67,8 @@ void* parser_loop(void *arg)
         // process timer_seconds first
         if (prsr->timer_interval) {
             LOG_DEBUG ("parser timer interval seconds %d, rcv count %zu, bytes %zu",
-                        prsr->timer_interval, prsr->count, prsr->bytes);
+                        prsr->timer_interval,
+                        atomic_load(&prsr->count), atomic_load(&prsr->bytes));
             prsr->timer_interval = 0;
         }
 
@@ -78,11 +80,11 @@ void* parser_loop(void *arg)
             continue;
         }
 
-        prsr->count ++;
-        prsr->bytes += pkt->hdr.caplen;
-        if ((prsr->count % 10000) == 0) {
-            LOG_DEBUG ("parser rcv count times %zu", prsr->count);
-        }
+        atomic_fetch_add(&prsr->count, 1);
+        atomic_fetch_add(&prsr->bytes, pkt->hdr.caplen);
+        // if ((atomic_load(&prsr->count) % 10000) == 0) {
+        //     LOG_DEBUG ("parser rcv count times %zu", atomic_load(&prsr->count));
+        // }
 
         LOG_DEBUG ("parser recv: %d/%d,\taddr: %p",
             pkt->hdr.caplen, pkt->hdr.len, pkt->data);
@@ -96,15 +98,15 @@ void* parser_loop(void *arg)
         rc = re_policy_match(&prsr->rep, pkt->data, pkt->hdr.caplen, re_match);
         if (0 != rc) {
             for (int i=0; i<rc; i++) {
-                LOG_INFO ("re_policy_match %d patterns  --> %d: %s",
+                LOG_DEBUG ("re_policy_match %d patterns  --> %d: %s",
                         rc, re_match[i], prsr->rep.rules[re_match[i]].pattern);
             }
-            prsr->regex_match_count += rc;
+            atomic_fetch_add(&prsr->regex_match_count, rc);
         }
 
         packet_free(pkt);
     }
-    LOG_INFO ("END parser loop, parser count %zu", prsr->count);
+    LOG_INFO ("END parser loop, parser count %zu", atomic_load(&prsr->count));
 
     return ((void*)0);
 }
@@ -116,7 +118,7 @@ inline void parser_time_ev(struct parser* prsr, int seconds) {
 static int match_cb(int strnum, int textpos, MEMREF const *pattv)
 {
     (void)strnum, (void)textpos, (void)pattv;
-    prsr->word_match_count ++;
+    atomic_fetch_add(&prsr->word_match_count, 1);
     LOG_DEBUG ("match word: %9d %7d '%.*s'", textpos, strnum,
                 (int)pattv[strnum].len, pattv[strnum].ptr);
     return 0;

@@ -2,6 +2,7 @@
 #define PARSER_H
 
 #include <stdint.h>
+#include <stdatomic.h>
 
 #include "cchan_pthread.h"
 
@@ -12,13 +13,13 @@
 
 
 struct parser {
-    int     shutdown;
-    cchan_t *chan_pkt;
-    uint64_t count;     // total packet number
-    uint64_t bytes;    // total byte number;
-    uint64_t word_match_count;     // total word policy matched number
-    uint64_t regex_match_count;     // total regex policy matched number
-    int      timer_interval; // when timer to call this. seconds
+    int           shutdown;
+    int           timer_interval; // when timer to call this. seconds
+    cchan_t*      chan_pkt;
+    atomic_ullong count;     // total packet number
+    atomic_ullong bytes;    // total byte number;
+    atomic_ullong word_match_count;     // total word policy matched number
+    atomic_ullong regex_match_count;     // total regex policy matched number
 
     struct word_policy wordp;
     struct re_policy   rep;
