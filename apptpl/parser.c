@@ -11,7 +11,7 @@
 static __thread struct parser* prsr;
 
 // word match call back
-static int match_cb(int strnum, int textpos, MEMREF const *pattv);
+static int match_word_cb(int strnum, int textpos, MEMREF const *pattv);
 
 
 int parser_create(struct parser* prsr, cchan_t *chan_pkt, 
@@ -22,7 +22,7 @@ int parser_create(struct parser* prsr, cchan_t *chan_pkt,
     if (-1 == word_policy_create(&prsr->wordp, word_file)) {
         return -1;
     }
-    prsr->wordp.match_cb = match_cb;
+    prsr->wordp.match_cb = match_word_cb;
 
     if (logger_getLevel() <= LogLevel_DEBUG)
         word_policy_dump(&prsr->wordp);
@@ -115,11 +115,26 @@ inline void parser_time_ev(struct parser* prsr, int seconds) {
     prsr->timer_interval = seconds;
 }
 
-static int match_cb(int strnum, int textpos, MEMREF const *pattv)
+static int match_word_cb(int strnum, int textpos, MEMREF const *pattv)
 {
     (void)strnum, (void)textpos, (void)pattv;
     atomic_fetch_add(&prsr->word_match_count, 1);
     LOG_DEBUG ("match word: %9d %7d '%.*s'", textpos, strnum,
                 (int)pattv[strnum].len, pattv[strnum].ptr);
     return 0;
+}
+
+// dump parser to json string, remember to free sds
+sds parser_dump(const struct parser* prsr)
+{
+    sds s = sdsnew("{");
+    s = sdscatprintf(s, " \"pkts\": %llu, \"bytes\": %llu, "
+        "\"word_match_count\": %llu, \"regex_match_count\": %llu, "
+        " \"chan_pkt\": { \"alloc\": %d, \"used\": %d } }",
+        atomic_load(&prsr->count), atomic_load(&prsr->bytes),
+        atomic_load(&prsr->word_match_count), atomic_load(&prsr->regex_match_count),
+        prsr->chan_pkt->alloc, prsr->chan_pkt->used
+    );
+    //s = sdscat(s, "}");
+    return s;
 }

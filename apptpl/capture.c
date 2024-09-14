@@ -242,6 +242,37 @@ void pkt_cb(u_char *arg, const struct pcap_pkthdr *pkthdr, const u_char *pktdata
     }
 }
 
+// dump capture to json string, remember to free sds
+sds capture_dump(struct capture* captr)
+{
+    char device[160] = {0};
+    for (size_t i=0, j=0; i<strlen(captr->device) && i<sizeof(device)-1; i++, j++) {
+        if (captr->device[i] == '\\' || captr->device[i] == '"')
+            device[j++] = '\\';
+        device[j] = captr->device[i];
+    }
+
+    capture_stats(captr);
+
+    sds s = sdsnew("{");
+    s = sdscatprintf(s, " \"pkts\": %lld, \"bytes\": %lld, "
+        "\"pcap\": { \"ps_recv\": %u, \"ps_drop\": %u, \"ps_ifdrop\": %u"
+#ifdef _WIN32
+        ", \"ps_capt\": %d, \"ps_sent\": %d, \"ps_netdrop\": %d"
+#endif
+        " }, \"device\": \"%s\", \"snaplen\": %d, \"buffer_size\": %d, \"filter\": \"%s\" "
+        "}",
+        captr->pkts, captr->bytes,
+        captr->ps.ps_recv, captr->ps.ps_drop, captr->ps.ps_ifdrop,
+#ifdef _WIN32
+        captr->ps.ps_capt, captr->ps.ps_sent, captr->ps.ps_netdrop,
+#endif
+        device, captr->snaplen, captr->buffer_size, captr->filter
+    );
+    //s = sdscat(s, "}");
+    return s;
+}
+
 
 #if 0
 // =============================================

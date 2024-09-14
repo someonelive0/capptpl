@@ -5,6 +5,7 @@
 #include <stdatomic.h>
 
 #include "cchan_pthread.h"
+#include "sds.h"
 
 #include "word_policy.h"
 #include "re_policy.h"
@@ -31,5 +32,8 @@ int parser_destroy(struct parser* prsr);
 // arg is struct parser*
 void* parser_loop(void *arg);
 void parser_time_ev(struct parser* prsr, int seconds);
+
+// dump parser to json string, remember to free sds
+sds parser_dump(const struct parser* prsr);
 
 #endif // PARSER_H

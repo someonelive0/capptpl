@@ -29,6 +29,7 @@ static void status_handler(struct evhttp_request *req, void *arg);
 static void version_handler(struct evhttp_request *req, void *arg);
 static void stats_handler(struct evhttp_request *req, void *arg);
 static void config_handler(struct evhttp_request *req, void *arg);
+static void dump_handler(struct evhttp_request *req, void *arg);
 
 
 int api_route_init()
@@ -58,6 +59,11 @@ int api_route_init()
     if (NULL == (r = malloc(sizeof *r))) return -1;
     strcpy(r->path, "/config");
     r->cb = config_handler;
+    HASH_ADD_STR(routes, path, r);
+
+    if (NULL == (r = malloc(sizeof *r))) return -1;
+    strcpy(r->path, "/dump");
+    r->cb = dump_handler;
     HASH_ADD_STR(routes, path, r);
 
     return 0;
@@ -201,6 +207,7 @@ static void stats_handler(struct evhttp_request *req, void *arg)
     evhttp_add_header(req->output_headers, "Connection", "close");
 
     struct app* myapp = arg;
+    // 这里取pcap统计后，会与后续的capture->count有差异,是因为时间差距，是正常的。
     capture_stats(myapp->captr);
 
     char s[512] = {0};
@@ -255,4 +262,42 @@ static void config_handler(struct evhttp_request *req, void *arg)
     evhttp_send_reply(req, HTTP_OK, "OK", buf);
     evbuffer_free(buf);
     utstring_free(s);
+}
+
+// dump internal data structure.
+static void dump_handler(struct evhttp_request *req, void *arg)
+{
+    enum evhttp_cmd_type cmd = evhttp_request_get_command(req);
+    if (cmd != EVHTTP_REQ_GET) {
+        evhttp_send_error(req, HTTP_NOTFOUND, NULL);
+        return;
+    }
+
+    evhttp_add_header(req->output_headers, "Server", MYHTTPD_SIGNATURE);
+    evhttp_add_header(req->output_headers, "Content-Type", "application/json; charset=UTF-8");
+    evhttp_add_header(req->output_headers, "Connection", "close");
+
+    struct app* myapp = arg;
+    sds s = parser_dump(myapp->prsr);
+    if (!s) {
+        evhttp_send_error(req, HTTP_INTERNAL, NULL);
+        return;
+    }
+
+    struct evbuffer *buf;
+    buf = evbuffer_new();
+    evbuffer_add_printf(buf, "{ \"parser\": %s", s);
+    sdsfree(s);
+
+    s = capture_dump(myapp->captr);
+    if (!s) {
+        evhttp_send_error(req, HTTP_INTERNAL, NULL);
+        evbuffer_free(buf);
+        return;
+    }
+    evbuffer_add_printf(buf, ", \"capture\": %s }", s);
+    sdsfree(s);
+
+    evhttp_send_reply(req, HTTP_OK, "OK", buf);
+    evbuffer_free(buf);
 }
