@@ -218,8 +218,8 @@ static void stats_handler(struct evhttp_request *req, void *arg)
 ", \"ps_capt\": %d, \"ps_sent\": %d, \"ps_netdrop\": %d"
 #endif
 " } },"
-"\"parser\": { \"pkts\": %zu, \"bytes\": %zu, "
-"\"word_match_count\": %zu, \"regex_match_count\": %zu }, "
+"\"parser\": { \"pkts\": %llu, \"bytes\": %llu, "
+"\"word_match_count\": %llu, \"regex_match_count\": %llu }, "
 "\"inputer\": { \"count\": %zu },  "
 "\"worker\": { \"count\": %zu } }",
         myapp->captr->pkts, myapp->captr->bytes,

@@ -255,7 +255,7 @@ sds capture_dump(struct capture* captr)
     capture_stats(captr);
 
     sds s = sdsnew("{");
-    s = sdscatprintf(s, " \"pkts\": %lld, \"bytes\": %lld, "
+    s = sdscatprintf(s, " \"pkts\": %llu, \"bytes\": %llu, "
         "\"pcap\": { \"ps_recv\": %u, \"ps_drop\": %u, \"ps_ifdrop\": %u"
 #ifdef _WIN32
         ", \"ps_capt\": %d, \"ps_sent\": %d, \"ps_netdrop\": %d"
