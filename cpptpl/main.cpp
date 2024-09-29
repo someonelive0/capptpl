@@ -46,5 +46,11 @@ int main(int argc, char* argv[])
     utstring_free(s);
 
 
+
+    time_t end_time = time(NULL);
+    LOG_INFO ("END at %s\tprogram is totally running time of seconds %f",
+              asctime(localtime( &end_time )), difftime(end_time, myapp.run_time));
+    logger_close();
+
     return 0;
 }

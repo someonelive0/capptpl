@@ -77,7 +77,8 @@ cpptpl_srcs_c = init_log.c load_config.c \
 	ini.c argparse.c hex.c
 cpptpl_objs = $(cpptpl_srcs:%.cpp=$(OBJDIR)/%.o)
 cpptpl_objs_c = $(cpptpl_srcs_c:%.c=$(OBJDIR)/%.o)
-cpptpl_libs = -lstdc++ -lboost_program_options-mt
+cpptpl_libs = -lstdc++
+
 
 all: cpptpl
 

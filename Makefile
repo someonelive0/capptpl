@@ -9,4 +9,5 @@ all:
 %:
 	make -C apptpl $@
 	make -C apptpl2 $@
+	make -C cpptpl $@
 	make -C test $@
