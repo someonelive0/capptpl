@@ -73,6 +73,10 @@ int magt_init(const struct config* myconfig)
     SSL_CTX* sslctx = NULL;
     if (myconfig->enable_ssl) {
         sslctx = ssl_init(myconfig);
+        if (!sslctx) {
+            LOG_ERROR ("ssl_init failed!");
+            return -1;
+        }
         /*
             使我们创建好的evhttp句柄 支持 SSL加密
             实际上，加密的动作和解密的动作都已经帮

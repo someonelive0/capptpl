@@ -14,6 +14,7 @@ extern "C" {
 }
 
 #include "cpptpl_init.h"
+#include "magt.h"
 
 
 int main(int argc, char* argv[])
@@ -45,7 +46,15 @@ int main(int argc, char* argv[])
               config_filename, utstring_body(s));
     utstring_free(s);
 
+    // init something
+    if (-1 == magt_init(&myapp)) {
+        LOG_ERROR ("msgt_init failed");
+        exit(1);
+    }
 
+    // main thread broke here.
+    magt_loop(&myconfig);
+    magt_close();
 
     time_t end_time = time(NULL);
     LOG_INFO ("END at %s\tprogram is totally running time of seconds %f",

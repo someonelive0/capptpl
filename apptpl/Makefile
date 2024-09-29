@@ -90,7 +90,7 @@ cre2.o: ../lib/cre2/cre2.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(apptpl_objs)
+	rm -f $(apptpl_objs) cre2.o
 	rm -f apptpl
 
 install:

@@ -145,7 +145,7 @@ static void signal_cb(int fd, short event, void *arg)
     if (event == EV_SIGNAL) { // should be EV_SIGNAL=8
         LOG_INFO ("%s: got signal %d", __func__, fd);
         if (fd == SIGINT || fd == SIGTERM)
-            event_base_loopbreak(arg);  // arg = evbase
+            event_base_loopbreak((event_base*)arg);  // arg = evbase
     }
 }
 
@@ -157,8 +157,8 @@ static void timer_cb(int fd, short event, void *arg)
 {
     UNUSED(fd);     // always -1
     UNUSED(event);  // always 1
-    struct app* myapp = arg;
-    parser_time_ev(myapp->prsr, TIMER_INTERVAL);
+    struct app* myapp = (struct app*)arg;
+    // parser_time_ev(myapp->prsr, TIMER_INTERVAL);
     // LOG_TRACE ("%s: got timeout with unix time: %lld\n", __func__, time(NULL));
     logger_flush();
 }

@@ -66,18 +66,20 @@ endif
 # LDFLAGS += -lgcov --coverage
 
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
+# c 和 cpp 文件分别编译成 .o 文件，分别使用不同的编译器 gcc 和 g++
 OBJDIR = obj
 vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 \
 	../lib/cJSON-1.7.18 ../lib/sds ../lib
-cpptpl_srcs = main.cpp cpptpl_init.cpp
+cpptpl_srcs = main.cpp cpptpl_init.cpp magt.cpp api_handler.cpp
 cpptpl_srcs_c = init_log.c load_config.c \
 	cchan_pthread.c \
 	logger.c \
 	cJSON.c \
+	sds.c \
 	ini.c argparse.c hex.c
 cpptpl_objs = $(cpptpl_srcs:%.cpp=$(OBJDIR)/%.o)
 cpptpl_objs_c = $(cpptpl_srcs_c:%.c=$(OBJDIR)/%.o)
-cpptpl_libs = -lstdc++
+cpptpl_libs = -lstdc++ $(LDLIBS)
 
 
 all: cpptpl
