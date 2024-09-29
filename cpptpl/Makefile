@@ -33,6 +33,9 @@ CXX    = g++
 CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 \
 		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.18 -I../lib/sds \
 		-I../lib/aho-corasick -I../lib
+CXXFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 \
+		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.18 -I../lib/sds \
+		-I../lib/aho-corasick -I../lib
 
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 \
@@ -66,8 +69,14 @@ endif
 OBJDIR = obj
 vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 \
 	../lib/cJSON-1.7.18 ../lib/sds ../lib
-cpptpl_srcs = main.cpp
+cpptpl_srcs = main.cpp cpptpl_init.cpp
+cpptpl_srcs_c = init_log.c load_config.c \
+	cchan_pthread.c \
+	logger.c \
+	cJSON.c \
+	ini.c argparse.c hex.c
 cpptpl_objs = $(cpptpl_srcs:%.cpp=$(OBJDIR)/%.o)
+cpptpl_objs_c = $(cpptpl_srcs_c:%.c=$(OBJDIR)/%.o)
 cpptpl_libs = -lstdc++ -lboost_program_options-mt
 
 all: cpptpl
@@ -75,16 +84,20 @@ all: cpptpl
 
 # cpptpl: main.o init_log.o magt.o inputer.o worker.o capture.o \
 # 	cchan_pthread.o logger.o ini.o
-cpptpl: $(cpptpl_objs)
+cpptpl: $(cpptpl_objs) $(cpptpl_objs_c)
 	$(CXX) $(LDFLAGS) $^ $(cpptpl_libs) -o $@
 
 $(cpptpl_objs): $(OBJDIR)/%.o : %.cpp
 	@mkdir -p $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+$(cpptpl_objs_c): $(OBJDIR)/%.o : %.c
+	@mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 
 clean:
-	rm -f $(cpptpl_objs)
+	rm -f $(cpptpl_objs) $(cpptpl_objs_c)
 	rm -f cpptpl
 
 install:
