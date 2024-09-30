@@ -24,6 +24,7 @@ int capture_open(struct capture* captr, const char *device,
     pcap_t* handle = NULL;
     struct bpf_program* bpf = NULL;
     char errbuf[PCAP_ERRBUF_SIZE];
+    int datalink = 0;
 
     if (captr->handle) {
         LOG_ERROR ("capture had opened");
@@ -106,7 +107,7 @@ int capture_open(struct capture* captr, const char *device,
     * network-layer protocol of the packet. DLT_LINUX_SLL: Linux "cooked"
     * capture encapsulation;
     */
-    int datalink = pcap_datalink(handle);
+    datalink = pcap_datalink(handle);
     if (datalink != DLT_EN10MB && datalink != DLT_NULL) {
         LOG_ERROR ("capturer device=%s data link is %d, only support ethernet type",
                    device, datalink);

@@ -287,8 +287,8 @@ static void dump_handler(struct evhttp_request *req, void *arg)
     //     return;
     // }
 
-    // struct evbuffer *buf;
-    // buf = evbuffer_new();
+    struct evbuffer *buf;
+    buf = evbuffer_new();
     // evbuffer_add_printf(buf, "{ \"parser\": %s", s);
     // sdsfree(s);
 
@@ -301,6 +301,6 @@ static void dump_handler(struct evhttp_request *req, void *arg)
     // evbuffer_add_printf(buf, ", \"capture\": %s }", s);
     // sdsfree(s);
 
-    // evhttp_send_reply(req, HTTP_OK, "OK", buf);
-    // evbuffer_free(buf);
+    evhttp_send_reply(req, HTTP_OK, "OK", buf);
+    evbuffer_free(buf);
 }
