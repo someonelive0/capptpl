@@ -30,13 +30,14 @@ int main(int argc, char* argv[])
     }
     if (NULL == config_filename) config_filename = DEFAULT_CONFIG_FILE;
 
-    if (0 != init_log("cpptpl.log", debug, 1024*1024, 5)) {
+    if (0 != init_log("cpptpl.log", debug, 1024*1024, 5)) { // call logger_close() to free
         exit(1);
     }
 
     struct config myconfig;
     memset(&myconfig, 0, sizeof(struct config));
     if (load_config_ini(config_filename, ini_callback, &myconfig) < 0) {
+        logger_close();
         exit(1);
     }
     myapp.myconfig = &myconfig;
@@ -48,7 +49,7 @@ int main(int argc, char* argv[])
 
     // init something
     if (-1 == magt_init(&myapp)) {
-        LOG_ERROR ("msgt_init failed");
+        logger_close();
         exit(1);
     }
 

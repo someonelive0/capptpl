@@ -1,6 +1,6 @@
 #include "magt.h"
 
-#include <stdatomic.h>
+//#include <stdatomic.h>
 #include <event.h>
 
 #include "logger.h"

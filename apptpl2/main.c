@@ -32,6 +32,7 @@ int main(int argc, char** argv)
     struct config myconfig;
     memset(&myconfig, 0, sizeof(struct config));
     if (load_config_ini(config_filename, ini_callback, &myconfig) < 0) {
+        logger_close();
         exit(1);
     }
     UT_string* s = config2json(&myconfig);
@@ -45,6 +46,8 @@ int main(int argc, char** argv)
 
     if (-1 == magt_init(&myconfig)) {
         LOG_ERROR ("msgt_init failed");
+        cchan_free(chan_msg);
+        logger_close();
         exit(1);
     }
     redis_connect(myconfig.redis_host, myconfig.redis_port, myconfig.redis_passwd, magt_evbase);

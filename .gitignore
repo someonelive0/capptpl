@@ -9,6 +9,7 @@ bin
 lib/aho-corasick/libacism.a
 apptpl/apptpl
 apptpl2/apptpl2
+cpptpl/cpptpl
 test/sndmsg
 test/teststr
 test/testut

@@ -16,7 +16,7 @@
 
 #include "logger.h"
 
-#include "parser.h"
+//#include "parser.h"
 
 #define TIMER_INTERVAL 2  // timer interval in seconds
 
@@ -35,7 +35,7 @@ static void signal_cb(int fd, short event, void *arg);
 static void timer_cb(int fd, short event, void *arg);
 #endif
 
-static SSL_CTX* ssl_init(const struct config* myconfig);
+static SSL_CTX* ssl_init(const char* crt_file, const char* key_file);
 static struct bufferevent* bufev_ssl_cb(struct event_base *base, void *arg);
 
 
@@ -47,38 +47,52 @@ int magt_init(const struct app* myapp)
     WSAStartup(0x0201, &wsa_data);
 #endif
 
-    struct event_base* base = event_base_new();
+    struct event_base* base = NULL;
+    struct event *evsigint = NULL;  // event signal SIGINT
+    struct event *evsigterm = NULL; // event signal SIGTERM
+    struct event *evtimer = NULL;   // event signal EV_TIMEOUT
+    struct timeval timeout = {TIMER_INTERVAL, 0};
+    struct evhttp* httpd = NULL;
+    SSL_CTX* sslctx = NULL;
+
+
+    base = event_base_new();
     if (!base) {
-        LOG_ERROR ("create event_base failed!");
+        LOG_ERROR ("magt_init create event_base failed!");
         return -1;
     }
 
     // struct event evsigint;
     // event_set(&evsigint, SIGINT, EV_SIGNAL|EV_PERSIST, signal_cb, &evsignal);
     // event_add(&evsigint, NULL);
-    struct event *evsigint = evsignal_new(base, SIGINT, signal_cb, base);
+    if (NULL == (evsigint = evsignal_new(base, SIGINT, signal_cb, base))) {
+        LOG_ERROR ("magt_init evsignal_new SIGINT failed!");
+        goto err;
+    }
     evsignal_add(evsigint, 0);
-    struct event *evsigterm = evsignal_new(base, SIGTERM, signal_cb, base);
+    if (NULL == (evsigterm = evsignal_new(base, SIGTERM, signal_cb, base))) {
+        LOG_ERROR ("magt_init evsignal_new SIGTERM failed!");
+        goto err;
+    }
     evsignal_add(evsigterm, 0);
 
     // struct event *evtimer = evtimer_new(base, timer_cb, base); // only call timer_cb once
-    struct event *evtimer = event_new(base, -1, EV_TIMEOUT|EV_PERSIST, timer_cb, (struct app*)myapp);
-    struct timeval timeout = {TIMER_INTERVAL, 0};
+    if (NULL == (evtimer = event_new(base, -1, EV_TIMEOUT|EV_PERSIST, timer_cb, (struct app*)myapp))) {
+        LOG_ERROR ("magt_init event_new EV_TIMEOUT failed!");
+        goto err;
+    }
     evtimer_add(evtimer, &timeout); //  event_add(evtimer, 0);
 
     // add httpd event
-    struct evhttp* httpd = evhttp_new(base);
-    if (!httpd) {
-        LOG_ERROR ("create evhttp failed!");
-        return -1;
+    if (NULL == (httpd = evhttp_new(base))) {
+        LOG_ERROR ("magt_init evhttp_new failed!");
+        goto err;
     }
 
-    SSL_CTX* sslctx = NULL;
     if (myapp->myconfig->enable_ssl) {
-        sslctx = ssl_init(myapp->myconfig);
-        if (!sslctx) {
-            LOG_ERROR ("ssl_init failed!");
-            return -1;
+        if (NULL == (sslctx = ssl_init(myapp->myconfig->crt_file, myapp->myconfig->key_file))) {
+            LOG_ERROR ("magt_init ssl_init failed!");
+            goto err;
         }
         /*
             使我们创建好的evhttp句柄 支持 SSL加密
@@ -89,12 +103,13 @@ int magt_init(const struct app* myapp)
     }
 
     if (evhttp_bind_socket(httpd, "0.0.0.0", myapp->myconfig->http_port) != 0) {
-        LOG_ERROR ("bind socket failed! port:%d", myapp->myconfig->http_port);
-        return -1;
+        LOG_ERROR ("bind socket failed! port: %d, errno: %d, %s",
+            myapp->myconfig->http_port, errno, strerror(errno));
+        goto err;
     }
 
     if (-1 == api_route_init())
-        return -1;
+        goto err;
     evhttp_set_gencb(httpd, api_handler, (struct app*)myapp);
 
     magt_evbase = base;
@@ -104,6 +119,21 @@ int magt_init(const struct app* myapp)
     magt_timer = evtimer;
     magt_sslctx = sslctx;
     return 0;
+
+err:
+    if (evsigint) {
+        evsignal_del(evsigint);
+        event_free(evsigint);
+    }
+    if (evsigterm) {
+        evsignal_del(evsigterm);
+        event_free(evsigterm);
+    }
+    if (evtimer) event_free(evtimer);
+    if (httpd) evhttp_free(httpd);
+    if (base)  event_base_free(base);
+    if (sslctx) SSL_CTX_free(sslctx);
+    return -1;
 }
 
 int magt_close()
@@ -175,7 +205,7 @@ static void timer_cb(int fd, short event, void *arg)
 //     return calloc (1, howmuch);
 // }
 
-SSL_CTX* ssl_init(const struct config* myconfig)
+SSL_CTX* ssl_init(const char* crt_file, const char* key_file)
 {
     SSL_CTX *ctx = NULL;
 
@@ -229,17 +259,17 @@ SSL_CTX* ssl_init(const struct config* myconfig)
       私钥转非加密 openssl rsa -in server1.key -passin pass:123456 -out server.key
      */
     LOG_INFO ("Loading SSL certificate chain and key from files '%s', "
-              "'%s'", myconfig->crt_file, myconfig->key_file);
+              "'%s'", crt_file, key_file);
 
-    if (1 != SSL_CTX_use_certificate_chain_file (ctx, myconfig->crt_file)) {
-        LOG_ERROR ("SSL_CTX_use_certificate_chain_file failed %d: %s",
-                    ERR_get_error(), ERR_error_string(ERR_get_error(), NULL));
+    if (1 != SSL_CTX_use_certificate_chain_file (ctx, crt_file)) {
+        LOG_ERROR ("SSL_CTX_use_certificate_chain_file '%s' failed %d: %s",
+                    crt_file, ERR_get_error(), ERR_error_string(ERR_get_error(), NULL));
         goto err;
     }
 
-    if (1 != SSL_CTX_use_PrivateKey_file (ctx, myconfig->key_file, SSL_FILETYPE_PEM)) {
-        LOG_ERROR ("SSL_CTX_use_PrivateKey_file failed %d: %s",
-                    ERR_get_error(), ERR_error_string(ERR_get_error(), NULL));
+    if (1 != SSL_CTX_use_PrivateKey_file (ctx, key_file, SSL_FILETYPE_PEM)) {
+        LOG_ERROR ("SSL_CTX_use_PrivateKey_file '%s' failed %d: %s",
+                    key_file, ERR_get_error(), ERR_error_string(ERR_get_error(), NULL));
         goto err;
     }
 
