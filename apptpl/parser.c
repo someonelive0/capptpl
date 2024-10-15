@@ -66,7 +66,7 @@ void* parser_loop(void *arg)
     while (!prsr->shutdown) {
         // process timer_seconds first
         if (prsr->timer_interval) {
-            LOG_DEBUG ("parser timer interval seconds %d, rcv count %zu, bytes %zu",
+            LOG_TRACE ("parser timer interval seconds %d, rcv count %zu, bytes %zu",
                         prsr->timer_interval,
                         atomic_load(&prsr->count), atomic_load(&prsr->bytes));
             prsr->timer_interval = 0;
@@ -83,10 +83,10 @@ void* parser_loop(void *arg)
         atomic_fetch_add(&prsr->count, 1);
         atomic_fetch_add(&prsr->bytes, pkt->hdr.caplen);
         // if ((atomic_load(&prsr->count) % 10000) == 0) {
-        //     LOG_DEBUG ("parser rcv count times %zu", atomic_load(&prsr->count));
+        //     LOG_TRACE ("parser rcv count times %zu", atomic_load(&prsr->count));
         // }
 
-        LOG_DEBUG ("parser recv: %d/%d,\taddr: %p",
+        LOG_TRACE ("parser recv: %d/%d,\taddr: %p",
             pkt->hdr.caplen, pkt->hdr.len, pkt->data);
         // packet_dump(pkt);
 
@@ -98,7 +98,7 @@ void* parser_loop(void *arg)
         rc = re_policy_match(&prsr->rep, pkt->data, pkt->hdr.caplen, re_match);
         if (0 != rc) {
             for (int i=0; i<rc; i++) {
-                LOG_DEBUG ("re_policy_match %d patterns  --> %d: %s",
+                LOG_TRACE ("re_policy_match %d patterns  --> %d: %s",
                         rc, re_match[i], prsr->rep.rules[re_match[i]].pattern);
             }
             atomic_fetch_add(&prsr->regex_match_count, rc);

@@ -95,7 +95,10 @@ int parse_args(int argc, const char** argv, int* debug, const char** config_file
         OPT_GROUP("Basic options"),
         OPT_BOOLEAN('v', "version", &version, "show version", NULL, 0, 0),
         OPT_BOOLEAN('l', "list", &list, "list network devices", NULL, 0, 0),
-        OPT_BOOLEAN('D', "debug", debug, "set log level to debug", NULL, 0, 0),
+        // OPT_BOOLEAN('D', "debug", debug, "set log level to debug", NULL, 0, 0),
+        OPT_INTEGER('D', "debug", debug, 
+            "set log level, TRACE=0, DEBUG=1, INFO=2, WARN=3, ERROR=4, FATAL=5, default is INFO",
+            NULL, 0, 0),
         OPT_STRING('f', "config", config_filename, "set ini config filename", NULL, 0, 0),
         OPT_END(),
     };
