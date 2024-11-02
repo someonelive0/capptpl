@@ -16,14 +16,14 @@ else
 endif
 
 # default use DEBUG, or make DEBUG=0 to disable it
-# MSYS2 must be -O0, so MSYS should compile with DEBUG
+# MSYS2 must be -O0, so MSYS should compile with DEBUG. Or release not use -O2, just with -O0
 DEBUG = 0
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
 CFLAGS = -Wall -ggdb -std=c11
 else
 $(info compile mode is release)
-CFLAGS = -W -Wall -O2 -std=c11
+CFLAGS = -W -Wall -O0 -std=c11
 endif
 
 #CC     = clang
