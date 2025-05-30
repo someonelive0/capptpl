@@ -68,7 +68,7 @@ int capture_open(struct capture* captr, const char *device,
 
     // 激活句柄
     if (0 != pcap_activate(handle)) {
-        LOG_ERROR ("pcap_activate failed:%s", pcap_geterr(handle));
+        LOG_ERROR ("pcap_activate '%s' failed: %s", device, pcap_geterr(handle));
         goto err;
     }
     LOG_INFO ("pcap snapshot: %d", pcap_snapshot(handle));
