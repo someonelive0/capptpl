@@ -5,6 +5,7 @@
 #include <errno.h>
 
 #include "logger.h"
+#include "load_config.h"
 
 
 static cre2_options_t* mk_cre2_opt();
@@ -20,6 +21,11 @@ int re_policy_create(struct re_policy* rep, const char* filename)
     // const char *      patterns[] = { "select", "insert", "update", NULL };
     char error[128];
     size_t errlen = sizeof(error);
+
+    if (0 != copy_file_from_tpl(filename)) {
+        LOG_ERROR ("regex_policy '%s' or '%s.tpl' not existed", filename, filename);
+        return -1;
+    }
 
     UT_array* lines = re_policy_load(filename);
     if (NULL == lines) {

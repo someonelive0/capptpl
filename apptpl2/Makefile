@@ -36,7 +36,7 @@ CFLAGS += -D_WIN32
 #LDFLAGS += 
 LDLIBS = -levent -levent_openssl -lhiredis -lwsock32 -lcrypto -lssl
 else
-CFLAGS += -D_BSD_SOURCE \
+CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
 		-I/usr/local/libevent-2.1.12/include \
 		-I/usr/local/hiredis-1.2.0/include \
 		-I/usr/local/openssl-3.3.1/include

@@ -37,7 +37,7 @@ CFLAGS += -D_WIN32 \
 LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
 LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl -lre2 -lstdc++
 else
-CFLAGS += -D_BSD_SOURCE \
+CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
 		-I/usr/local/libevent-2.1.12/include \
 		-I/usr/local/zeromq-4.3.5/include \
 		-I/usr/local/libpcap-1.10.4/include \

@@ -66,13 +66,39 @@ int copy_file(const char* in_path, const char* out_path)
     size_t n;
     FILE* in=NULL, * out=NULL;
     char buf[64];
+    int rc = 0;
 
     if ((in = fopen(in_path, "rb")) && (out = fopen(out_path, "wb")))
         while ((n = fread(buf, 1, sizeof(buf), in)) && fwrite(buf, 1, n, out));
-    else return -1;
+    else rc = -1;
 
     if (in) fclose(in);
     if (out) fclose(out);
+    return rc;
+}
+
+/*
+ * try copy file from file.tpl
+ */
+int copy_file_from_tpl(const char* filename)
+{
+    char* tpl_filename;
+    int rc;
+
+    rc = access(filename, F_OK);
+    if (0 != rc) {
+        printf("file '%s' not exists, try copy from tpl\n", filename);
+        tpl_filename = malloc(strlen(filename) + 5);
+        strcpy(tpl_filename, filename);
+        strcat(tpl_filename, ".tpl");
+        rc = copy_file(tpl_filename, filename);
+        free(tpl_filename);
+        if (0 != rc) {
+            printf("copy file '%s' from '%s.tpl' failed\n", filename, filename);
+            return -1;
+        }
+    }
+
     return 0;
 }
 

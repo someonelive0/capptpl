@@ -1,12 +1,18 @@
 #include "word_policy.h"
 
 #include "logger.h"
+#include "load_config.h"
 
 
 int word_policy_create(struct word_policy* wordp, const char* filename)
 {
     if (wordp->psp) {
         LOG_ERROR ("word_policy had created");
+        return -1;
+    }
+
+    if (0 != copy_file_from_tpl(filename)) {
+        LOG_ERROR ("word_policy '%s' or '%s.tpl' not existed", filename, filename);
         return -1;
     }
 
@@ -29,7 +35,7 @@ int word_policy_create(struct word_policy* wordp, const char* filename)
         return -1;
     }
 
-    LOG_INFO ("word_policy (pattv[%d]) compiled, in %.3f secs\n", npatts, t);
+    LOG_INFO ("word_policy (pattv[%d]) compiled, in %.3f seconds", npatts, t);
 
     memcpy(&wordp->patt, &patt, sizeof(MEMBUF));
     wordp->pattv = pattv;
