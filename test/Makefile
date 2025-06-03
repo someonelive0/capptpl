@@ -38,7 +38,7 @@ CFLAGS += -D_WIN32
 #LDFLAGS += 
 LDLIBS = -lzmq
 else
-CFLAGS += -D_BSD_SOURCE \
+CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
 		-I/usr/local/libevent-2.1.12/include \
 		-I/usr/local/zeromq-4.3.5/include
 #LDFLAGS += 

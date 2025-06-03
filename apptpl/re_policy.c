@@ -18,6 +18,7 @@ int re_policy_create(struct re_policy* rep, const char* filename)
     cre2_options_t *  rex_opt = NULL;
     int               rule_num = 0;
     struct re_rule*   rules;
+    UT_array*         lines;
     // const char *      patterns[] = { "select", "insert", "update", NULL };
     char error[128];
     size_t errlen = sizeof(error);
@@ -27,15 +28,18 @@ int re_policy_create(struct re_policy* rep, const char* filename)
         return -1;
     }
 
-    UT_array* lines = re_policy_load(filename);
+    lines = re_policy_load(filename);
     if (NULL == lines) {
-        return -1;
+        goto err;
     }
     rules = (struct re_rule*)malloc(utarray_len(lines) * sizeof(struct re_rule));
+    if (NULL == rules) {
+        goto err;
+    }
 
     rex_opt = mk_cre2_opt();
     if (NULL == rex_opt) {
-        return -1;
+        goto err;
     }
 
     rex_set = cre2_set_new(rex_opt, CRE2_UNANCHORED);
@@ -87,6 +91,7 @@ err:
     if (rex_set) cre2_set_delete(rex_set);
     if (rex_opt) cre2_opt_delete(rex_opt);
     if (lines) utarray_free(lines);
+    if (rules) free(rules);
     return -1;
 }
 
@@ -203,7 +208,7 @@ UT_array* re_policy_load(const char* filename)
 
     if (NULL == (line = malloc(sb.st_size))) {
         LOG_ERROR ("malloc line to read regex policy failed");
-        return NULL;
+        goto err;
     }
 
     if (NULL == (rex_opt = mk_cre2_opt())) {
