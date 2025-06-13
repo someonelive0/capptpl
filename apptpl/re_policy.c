@@ -17,10 +17,10 @@ int re_policy_create(struct re_policy* rep, const char* filename)
     cre2_set *        rex_set = NULL;
     cre2_options_t *  rex_opt = NULL;
     int               rule_num = 0;
-    struct re_rule*   rules;
-    UT_array*         lines;
+    struct re_rule*   rules = NULL;
+    UT_array*         lines = NULL;
     // const char *      patterns[] = { "select", "insert", "update", NULL };
-    char error[128];
+    char error[128] = {0};
     size_t errlen = sizeof(error);
 
     if (0 != copy_file_from_tpl(filename)) {

@@ -12,6 +12,7 @@ Alse with arg parser and rotating logging.
 ## Code
 
 C11 standard with -std=c11.
+gcc > 4.8
 
 Linux style code of C, and indent use space=4, use tool astyle to format codes.
 
@@ -101,4 +102,10 @@ strace -p $(pidof apptpl)
 
 ```
 ltrace -f ./apptpl
+```
+
+### source check
+
+```
+cppcheck --enable=information --force .
 ```
