@@ -1,6 +1,8 @@
 # Makefile for apptpl
 # run 'make' to build release mode
 # run 'make DEBUG=1' to build debug mode
+# run 'make STATIC=1' to link static mode
+# run 'make DEBUG=1 STATIC=1' to build debug mode and link static mode
 #
 
 .POSIX:
@@ -14,7 +16,9 @@ else
     detected_OS := $(patsubst MSYS%,MSYS,$(detected_OS))
     detected_OS := $(patsubst MINGW%,MSYS,$(detected_OS))
 endif
+$(info detected_OS is $(detected_OS))
 
+# make DEBUG=1
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
 CFLAGS = -Wall -ggdb -std=c11
@@ -36,18 +40,37 @@ CFLAGS += -D_WIN32 \
 		-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
 LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
 LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl -lre2 -lstdc++
-else
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE 
-LDFLAGS += 
-LDLIBS = -Wl,-Bdynamic -lssl -lcrypto \
-		-Wl,-Bdynamic -levent -levent_openssl -lzmq -lpcap \
-		-lre2 -lstdc++ -lpthread
 
-		# -ldl -lunwind -lz -lm 
-endif
+else # detected_OS = Linux
 
-# CFLAGS += -fprofile-arcs -ftest-coverage
-# LDFLAGS += -lgcov --coverage
+# make STATIC=1
+ifeq ($(STATIC), 1) # static link
+$(info link mode is static)
+CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
+		-I/usr/local/libevent-2.1.12/include \
+		-I/usr/local/zeromq-4.3.5/include \
+		-I/usr/local/re2-2019-12-01/include \
+		-I/usr/local/libpcap-1.10.4/include
+LDFLAGS += -static \
+		-L/usr/local/libevent-2.1.12/lib \
+		-L/usr/local/zeromq-4.3.5/lib \
+		-L/usr/local/re2-2019-12-01/lib \
+		-L/usr/local/libpcap-1.10.4/lib
+LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl -lzmq -lre2 -lpcap \
+		-Wl,-Bstatic -lstdc++ -lpthread -ldl -lz 
+
+else # dynamic link
+$(info link mode is dynamic)
+CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE
+LDFLAGS += -Wl,-rpath=/usr/local/lib64
+LDLIBS = -lssl -lcrypto -levent -levent_openssl -lzmq -lre2 -lpcap \
+		-lstdc++ -lpthread -ldl -lz 
+
+endif # endof dynamic link
+
+endif # endof detected_OS = Linux
+
+
 
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 OBJDIR = obj

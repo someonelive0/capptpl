@@ -1,6 +1,8 @@
 # Makefile for apptpl2
 # run 'make' to build release mode
 # run 'make DEBUG=1' to build debug mode
+# run 'make STATIC=1' to link static mode
+# run 'make DEBUG=1 STATIC=1' to build debug mode and link static mode
 #
 
 .POSIX:
@@ -14,7 +16,9 @@ else
     detected_OS := $(patsubst MSYS%,MSYS,$(detected_OS))
     detected_OS := $(patsubst MINGW%,MSYS,$(detected_OS))
 endif
+$(info detected_OS is $(detected_OS))
 
+# make DEBUG=1
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
 CFLAGS = -Wall -ggdb -std=c11
@@ -35,17 +39,32 @@ ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 
 #LDFLAGS += 
 LDLIBS = -levent -levent_openssl -lhiredis -lwsock32 -lcrypto -lssl
-else
+
+else # detected_OS = Linux
+
+# make STATIC=1
+ifeq ($(STATIC), 1) # static link
+$(info link mode is static)
 CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE 
-#LDFLAGS += 
-LDLIBS = -Wl,-Bdynamic -lssl -lcrypto \
-		-Wl,-Bdynamic -levent -levent_openssl -lhiredis 
+LDFLAGS += -static \
+		-L/usr/local/libevent-2.1.12/lib 
+LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl -lz \
+		-Wl,-Bdynamic -lhiredis -lpthread -ldl 
+
+else # dynamic link
+$(info link mode is dynamic)
+CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE 
+LDFLAGS += -Wl,-rpath=/usr/local/lib64
+LDLIBS = -Wl,-Bdynamic -lssl -lcrypto -levent -levent_openssl \
+		-Wl,-Bdynamic -lhiredis 
 
 		#-lpthread -ldl -lunwind -lz
-endif
 
-# CFLAGS += -fprofile-arcs -ftest-coverage
-# LDFLAGS += -lgcov --coverage
+endif # endof dynamic link
+
+endif # endof detected_OS = Linux
+
+
 
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 OBJDIR = obj

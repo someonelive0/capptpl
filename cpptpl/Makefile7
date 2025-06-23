@@ -1,8 +1,6 @@
 # Makefile for cpptpl
 # run 'make' to build release mode
 # run 'make DEBUG=1' to build debug mode
-# run 'make STATIC=1' to link static mode
-# run 'make DEBUG=1 STATIC=1' to build debug mode and link static mode
 #
 
 .POSIX:
@@ -16,9 +14,7 @@ else
     detected_OS := $(patsubst MSYS%,MSYS,$(detected_OS))
     detected_OS := $(patsubst MINGW%,MSYS,$(detected_OS))
 endif
-$(info detected_OS is $(detected_OS))
 
-# make DEBUG=1
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
 CFLAGS = -Wall -ggdb -std=c11
@@ -46,37 +42,27 @@ CFLAGS += -D_WIN32 \
 		-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
 CXXFLAGS += -D_WIN32
 LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
-LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl -lstdc++
-
-else # detected_OS = Linux
-
-# make STATIC=1
-ifeq ($(STATIC), 1) # static link
-$(info link mode is static)
+LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl -lre2 -lstdc++
+else
 CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
-		-I/usr/local/libevent-2.1.12/include 
-CXXFLAGS += -I/usr/local/libevent-2.1.12/include 
-LDFLAGS += -static \
-		-L/usr/local/libevent-2.1.12/lib 
-LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl \
-		-Wl,-Bstatic -lstdc++ -lz \
-		-Wl,-Bstatic -lpthread -ldl 
+		-I/usr/local/libevent-2.1.12/include \
+		-I/usr/local/zeromq-4.3.5/include \
+		-I/usr/local/libpcap-1.10.4/include \
+		-I/usr/local/openssl-3.3.1/include
+CXXFLAGS += -I/usr/local/re2-2024-07-02/include \
+		-I/usr/local/abseil-cpp-20240116.1/include \
+		-I/usr/local/libevent-2.1.12/include \
+		-I/usr/local/openssl-3.3.1/include
+LDFLAGS += -L/usr/local/re2-2024-07-02/lib
+LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
+	/usr/local/libevent-2.1.12/lib/libevent_openssl.a \
+	/usr/local/openssl-3.3.1/lib64/libssl.a \
+	/usr/local/openssl-3.3.1/lib64/libcrypto.a \
+	-lpthread -ldl -lunwind -lz -lm -lre2
+endif
 
-else # dynamic link
-$(info link mode is dynamic)
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
-		-I/usr/local/libevent-2.1.12/include 
-CXXFLAGS += -I/usr/local/libevent-2.1.12/include 
-LDFLAGS += -Wl,-rpath=/usr/local/lib64
-LDLIBS = -Wl,-Bdynamic -lssl -lcrypto -levent -levent_openssl \
-		-lstdc++ -lz \
-		-lpthread -ldl
-
-endif # endof dynamic link
-
-endif # endof detected_OS = Linux
-
-
+# CFLAGS += -fprofile-arcs -ftest-coverage
+# LDFLAGS += -lgcov --coverage
 
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 # c 和 cpp 文件分别编译成 .o 文件，分别使用不同的编译器 gcc 和 g++
