@@ -24,3 +24,7 @@ test/testcre2
 
 apptpl/word_policy.txt
 apptpl/regex_policy.txt
+apptpl/config.h
+apptpl/config.status
+apptpl/config.log
+apptpl/autom4te.cache/
