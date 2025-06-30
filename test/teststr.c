@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "sds.h"
 
@@ -28,6 +29,19 @@ int main()
 
     printf("\nhexdump str with len %zu\n", sdslen(s1));
     dump_hex(s1, (int) sdslen(s1));
+
+    // test string to hex
+    char* strhex = (char*)malloc(sdslen(mystring)*2+1);
+    to_hex(mystring, sdslen(mystring), strhex);
+    strhex[sdslen(mystring) * 2]  = '\0';
+    printf("hex %ld: '%s'\n", sdslen(mystring), strhex);
+
+    char* str = (char*)malloc(strlen(strhex)/2+1);
+    from_hex(strhex, strlen(strhex), str);
+    str[strlen(strhex)/2] = '\0';
+    printf("from_hex %ld: '%s'\n", sdslen(mystring), str);
+    free(str);
+    free(strhex);
 
     sdsfree(s1);
     sdsfree(mystring);
