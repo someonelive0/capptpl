@@ -30,7 +30,7 @@ UT_string* config2json(const struct config* p);
 
 int ini_callback(void* arg, const char* section, const char* name, const char* value);
 int parse_args(int argc, const char** argv, int* debug, const char** config_filename);
-
+int test_config(const char* config_filename);
 
 /*
  * struct app of this program, means apptpl

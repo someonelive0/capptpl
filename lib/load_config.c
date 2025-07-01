@@ -123,6 +123,6 @@ int ch_exec_cwd(char* argv0)
         printf("change cwd to [%s] failed: %d, %s\n", pwd, errno, strerror(errno));
         return -1;
     }
-    printf ("chdir to %s\n", pwd);
+    // printf ("chdir to %s\n", pwd);
     return 0;
 }

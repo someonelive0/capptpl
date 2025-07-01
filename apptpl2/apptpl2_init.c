@@ -13,7 +13,7 @@ UT_string* config2json(const struct config* p)
 {
     UT_string *s;
     utstring_new(s);
-    utstring_printf(s, "{\"versin\": \"%s\", \"http_port\": %d, "
+    utstring_printf(s, "{\"version\": \"%s\", \"http_port\": %d, "
 "\"enable_ssl\": %d, \"crt_file\": \"%s\", \"key_file\": \"%s\", "
 "\"redis_host\": \"%s\",  \"redis_port\": %d}",
         p->version, p->http_port, 

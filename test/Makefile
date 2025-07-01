@@ -65,7 +65,8 @@ testpidstat_srcs = testpidstat.c \
 testpidstat_objs = $(testpidstat_srcs:%.c=$(OBJDIR)/%.o)
 
 
-all: sndmsg teststr testut testklib testpool testcre2
+all: sndmsg teststr testut testklib testpool testcre2 \
+	testint 
 
 
 sndmsg: $(sndmsg_objs)
@@ -114,12 +115,16 @@ testcre2: testcre2.c ../lib/cre2/cre2.cpp
 	g++ $(CXXFLAGS) -I../lib/cre2 -I/usr/local/re2-2024-07-02/include -I/usr/local/abseil-cpp-20240116.1/include ../lib/cre2/cre2.cpp -c
 	gcc -Wall -ggdb -std=c11 -I../lib/cre2 cre2.o testcre2.c -L/usr/local/re2-2024-07-02/lib -lre2 -lstdc++ -lpthread -o testcre2
 
+testint: testint.c
+	$(CC) $(CFLAGS) $^ -o $@
+
 
 clean:
 	rm -f $(sndmsg_objs) $(teststr_objs) obj/testut.o obj/testklib.o \
 		$(testpidstat_objs)
 	rm -f sndmsg teststr testut testklib testpool testpidstat procstat
-	rm -f testcre2 cre2.o
+	rm -f testcre2 cre2.o testint 
+
 
 install:
 	mkdir -p ../bin

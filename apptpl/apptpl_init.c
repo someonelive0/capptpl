@@ -5,6 +5,7 @@
 #include "logger.h"
 #include "argparse.h"
 #include "version.h"
+#include "load_config.h"
 
 #include "capture.h"
 
@@ -20,7 +21,7 @@ UT_string* config2json(const struct config* p)
     }
 
     utstring_new(s);
-    utstring_printf(s, "{\"versin\": \"%s\", \"http_port\": %d, "
+    utstring_printf(s, "{\"version\": \"%s\", \"http_port\": %d, "
 "\"enable_ssl\": %d, \"crt_file\": \"%s\", \"key_file\": \"%s\", "
 "\"zmq_port\": %d, \"pcap_device\": \"%s\", \"pcap_snaplen\": %d, "
 "\"pcap_buffer_size\": %d, \"pcap_filter\": \"%s\", "
@@ -88,18 +89,18 @@ int parse_args(int argc, const char** argv, int* debug, const char** config_file
 {
     int version = 0;
     int list = 0;
-    // int debug = 0;
+    int test = 0;
     // const char *config_filename = NULL;
     struct argparse_option options[] = {
         OPT_HELP(),
         OPT_GROUP("Basic options"),
         OPT_BOOLEAN('v', "version", &version, "show version", NULL, 0, 0),
         OPT_BOOLEAN('l', "list", &list, "list network devices", NULL, 0, 0),
-        // OPT_BOOLEAN('D', "debug", debug, "set log level to debug", NULL, 0, 0),
+        OPT_BOOLEAN('T', "test", &test, "test configuration file", NULL, 0, 0),
         OPT_INTEGER('D', "debug", debug, 
             "set log level, TRACE=0, DEBUG=1, INFO=2, WARN=3, ERROR=4, FATAL=5, default is INFO",
             NULL, 0, 0),
-        OPT_STRING('f', "config", config_filename, "set ini config filename", NULL, 0, 0),
+        OPT_STRING('c', "config", config_filename, "set ini config filename", NULL, 0, 0),
         OPT_END(),
     };
 
@@ -116,6 +117,10 @@ int parse_args(int argc, const char** argv, int* debug, const char** config_file
         list_devices();
         return 1;
     }
+     if (test != 0) {
+        test_config(*config_filename);
+        return 1;
+    }
 
     if (argc != 0) {
         printf("there are more unknown argc %d: ", argc);
@@ -126,6 +131,21 @@ int parse_args(int argc, const char** argv, int* debug, const char** config_file
         printf("\n");
         return -1;
     }
+
+    return 0;
+}
+
+int test_config(const char* config_filename) {
+    if (NULL == config_filename) config_filename = DEFAULT_CONFIG_FILE;
+    struct config myconfig;
+    memset(&myconfig, 0, sizeof(struct config));
+    if (load_config_ini(config_filename, ini_callback, &myconfig) < 0) {
+        return -1;
+    }
+
+    UT_string* s = config2json(&myconfig);
+    printf ("%s", utstring_body(s));
+    utstring_free(s);
 
     return 0;
 }

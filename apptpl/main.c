@@ -7,10 +7,10 @@
 
 #include "cchan_pthread.h"
 #include "logger.h"
+#include "load_config.h"
 
 #include "apptpl_init.h"
 #include "init_log.h"
-#include "load_config.h"
 #include "magt.h"
 #include "inputer.h"
 #include "worker.h"

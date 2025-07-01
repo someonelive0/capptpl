@@ -20,7 +20,7 @@ UT_string* config2json(const struct config* p)
     }
 
     utstring_new(s);
-    utstring_printf(s, "{\"versin\": \"%s\", \"http_port\": %d, "
+    utstring_printf(s, "{\"version\": \"%s\", \"http_port\": %d, "
 "\"enable_ssl\": %d, \"crt_file\": \"%s\", \"key_file\": \"%s\", "
 "\"zmq_port\": %d, \"pcap_device\": \"%s\", \"pcap_snaplen\": %d, "
 "\"pcap_buffer_size\": %d, \"pcap_filter\": \"%s\", "
