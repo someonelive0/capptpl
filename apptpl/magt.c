@@ -16,6 +16,7 @@
 
 #include "logger.h"
 
+#include "myconfig.h"
 #include "parser.h"
 
 #define TIMER_INTERVAL 2  // timer interval in seconds

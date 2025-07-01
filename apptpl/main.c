@@ -10,6 +10,7 @@
 #include "load_config.h"
 
 #include "apptpl_init.h"
+#include "myconfig.h"
 #include "init_log.h"
 #include "magt.h"
 #include "inputer.h"
@@ -29,15 +30,13 @@ int main(int argc, char** argv)
     if (0 != parse_args(argc, (const char**)argv, &debug, &config_filename)) {
         exit(1);
     }
-    if (NULL == config_filename) config_filename = DEFAULT_CONFIG_FILE;
 
     if (0 != init_log("apptpl.log", debug, 1024*1024, 5)) {
         exit(1);
     }
 
     struct config myconfig;
-    memset(&myconfig, 0, sizeof(struct config));
-    if (load_config_ini(config_filename, ini_callback, &myconfig) < 0) {
+    if (load_config(&myconfig, config_filename) < 0) {
         exit(1);
     }
     myapp.myconfig = &myconfig;

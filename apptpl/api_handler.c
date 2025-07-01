@@ -6,8 +6,9 @@
 #include "logger.h"
 #include "uthash.h"
 #include "cJSON.h"
-
 #include "version.h"
+
+#include "myconfig.h"
 #include "capture.h"
 #include "parser.h"
 #include "inputer.h"

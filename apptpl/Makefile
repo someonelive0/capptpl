@@ -77,7 +77,7 @@ OBJDIR = obj
 vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 \
 	../lib/cJSON-1.7.18 ../lib/sds ../lib
 apptpl_srcs = main.c apptpl_init.c magt.c api_handler.c \
-	inputer.c worker.c capture.c parser.c pkt.c \
+	inputer.c worker.c capture.c myconfig.c parser.c pkt.c \
 	word_policy.c re_policy.c \
 	init_log.c load_config.c \
 	cchan_pthread.c \

@@ -81,7 +81,7 @@ int parse_args(int argc, const char** argv, int* debug, const char** config_file
         OPT_INTEGER('D', "debug", debug, 
             "set log level, TRACE=0, DEBUG=1, INFO=2, WARN=3, ERROR=4, FATAL=5, default is INFO",
             NULL, 0, 0),
-        OPT_STRING('f', "config", config_filename, "set ini config filename", NULL, 0, 0),
+        OPT_STRING('c', "config", config_filename, "set ini config filename", NULL, 0, 0),
         OPT_END(),
     };
 
