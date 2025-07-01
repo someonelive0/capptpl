@@ -13,16 +13,14 @@
 */
 void dump_hex(const void* data, size_t size);
 
-/* string to hex
-需要确保输出缓冲区足够大，以存储转换后的16进制字符串。
-输出字符串的大小是输入字符串长度的两倍，因为每个字符转换为16进制后占用两个字符的位置。
-在实际应用中，可能需要考虑字符串的终止符\0，确保在转换后的字符串末尾添加终止符。
-*/
-void to_hex(char *s, int l, char *d);
+// bytes to hex string
+// out should be sizeof(bin)*2 + 1
+// out should add '\0' at the end by youself
+void bin2hex(char *out, const char *bin, size_t binlen);
 
-/* hex to string
-在实际应用中，可能需要考虑字符串的终止符\0，确保在转换后的字符串末尾添加终止符。
-*/
-void from_hex(char *s, int l, char *d);
+// hex string to bytes
+// out should be sizeof(hex)/2+1
+// out should add '\0' at the end by youself
+size_t hex2bin(char *out, const char *hex, size_t hexlen);
 
 #endif // HEX_H

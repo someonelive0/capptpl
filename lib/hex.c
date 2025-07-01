@@ -1,6 +1,7 @@
 #include "hex.h"
 
 #include <stdio.h>
+#include <string.h>
 
 
 /* print mem to hex with 16 char in one line, looks like:
@@ -46,88 +47,59 @@ void dump_hex(const void* data, size_t size)
     }
 }
 
-/*
-这个其实很简单，追求速度的话，查表就好了
-从0-16对应0-F即可：
-*/
-const char hex_table[] = {
-    '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
-};
 
-/* string to hex
-需要确保输出缓冲区足够大，以存储转换后的16进制字符串。
-输出字符串的大小是输入字符串长度的两倍，因为每个字符转换为16进制后占用两个字符的位置。
-在实际应用中，可能需要考虑字符串的终止符\0，确保在转换后的字符串末尾添加终止符。
-*/
-/* all ok, the 3rd function is more quickly
-void to_hex(char *s, int l, char *d)
+
+// ======================================================================
+// bytes to hex string
+// out should be sizeof(bin)*2 + 1
+// out should add '\0' at the end by youself
+void bin2hex(char *out, const char *bin, size_t binlen)
 {
-    while(l--)
-    {
-        *(d+2*l+1) = hex_table[(*(s+l))&0x0f];
-        *(d+2*l) = hex_table[(*(s+l))>>4];
-    }
+	size_t  i;
+
+	for (i=0; i<binlen; i++) {
+		out[i*2]   = "0123456789ABCDEF"[bin[i] >> 4];
+		out[i*2+1] = "0123456789ABCDEF"[bin[i] & 0x0F];
+	}
 }
 
-void to_hex(char *s, int l, char *d)
+//  hex string to bytes
+int hexchr2bin(const char hex, char *out)
 {
-    while(l--)
-    {
-        *d = hex_table[*s >> 4];
-        d++;
-        *d = hex_table[*s & 0x0f];
-        s++;
-        d++;
-    }
-}
-*/
+	if (out == NULL)
+		return 0;
 
-void to_hex(char *s, int l, char *d)
-{
-    while(l--)
-    {
-        *(d++) = hex_table[*s >> 4];
-        *(d++) = hex_table[*(s++) & 0x0f];
-    }
+	if (hex >= '0' && hex <= '9') {
+		*out = hex - '0';
+	} else if (hex >= 'A' && hex <= 'F') {
+		*out = hex - 'A' + 10;
+	} else if (hex >= 'a' && hex <= 'f') {
+		*out = hex - 'a' + 10;
+	} else {
+		return 0;
+	}
+
+	return 1;
 }
 
-/* hex to string
-在实际应用中，可能需要考虑字符串的终止符\0，确保在转换后的字符串末尾添加终止符。
-*/
-/* all ok, the 3rd function is more quickly
-void from_hex(char *s, int l, char *d)
+size_t hex2bin(char *out, const char *hex, size_t hexlen)
 {
-    while(l--)
-    {
-        char* p = s+l;
-        char* p2 = p-1;
-        *(d+l/2) =
-        ( (*p>'9'? *p+9 : *p) & 0x0f ) |
-        ( (*p2>'9'? *p2+9 : *p2) << 4 );
-        l--;
-    }
-}
-*/
-void from_hex(char *s, int l, char *d)
-{
-    while(l--)
-    {
-        *d = (*s>'9' ? *s+9 : *s) << 4;
-        ++s;
-        *d |= (*s>'9' ? *s+9 : *s) & 0x0F;
-        ++s;
-        ++d;
-    }
-}
+	size_t len;
+	char   b1;
+	char   b2;
+	size_t i;
 
-/* because 内嵌“++”操作比单独写一行运行要快
- * but warning: operation on ‘s’ may be undefined [-Wsequence-point]
-void from_hex(char *s, int l, char *d)
-{
-    while(l--)
-    {
-        *(d++) = ( (*s>'9' ? *(s++)+9 : *(s++)) << 4 )
-        | ( (*s>'9' ? *(s++)+9 : *(s++)) & 0x0F );
-    }
+	if (hexlen % 2 != 0)
+		return 0;
+	len = hexlen/2;
+
+	memset(out, 'A', len);
+	for (i=0; i<len; i++) {
+		if (!hexchr2bin(hex[i*2], &b1) || !hexchr2bin(hex[i*2+1], &b2)) {
+			return 0;
+		}
+		out[i] = (b1 << 4) | b2;
+	}
+
+	return len;
 }
-*/

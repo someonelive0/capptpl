@@ -30,21 +30,23 @@ int main()
     printf("\nhexdump str with len %zu\n", sdslen(s1));
     dump_hex(s1, (int) sdslen(s1));
 
-    // test string to hex
-    char* strhex = (char*)malloc(sdslen(mystring)*2+1);
-    to_hex(mystring, sdslen(mystring), strhex);
-    strhex[sdslen(mystring) * 2]  = '\0';
-    printf("hex %ld: '%s'\n", sdslen(mystring), strhex);
-
-    char* str = (char*)malloc(strlen(strhex)/2+1);
-    from_hex(strhex, strlen(strhex), str);
-    str[strlen(strhex)/2] = '\0';
-    printf("from_hex %ld: '%s'\n", sdslen(mystring), str);
-    free(str);
-    free(strhex);
-
     sdsfree(s1);
     sdsfree(mystring);
+
+
+    printf("bin2hex ===================\n");
+    const char    *a = "Test 123! -\x00 jklmn";
+	size_t         binlen = strlen(a)+7;
+    printf("orig bin %d: %s\n", (int)binlen, a);
+
+    char hex[64] = {0};
+	bin2hex(hex, a, binlen);
+	printf("hex %d: %s\n", (int)strlen(hex), hex);
+
+    char bin[64] = {0};
+	binlen = hex2bin(bin, hex, strlen(hex));
+	printf("%.*s\n", (int)binlen, (char *)bin);
+    dump_hex(bin, binlen);
 
     exit(0);
 }
