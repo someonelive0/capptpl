@@ -21,6 +21,7 @@ test/words
 test/testac
 test/testre2
 test/testcre2
+test/testint
 
 apptpl/word_policy.txt
 apptpl/regex_policy.txt
