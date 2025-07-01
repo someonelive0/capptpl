@@ -174,8 +174,9 @@ static int test_set_re()
             }
             // match(rex_set);
         } else {
-            printf("cre2_set_new failed: %d, %s\n",
-                   cre2_error_code(rex_set), cre2_error_string(rex_set));
+            // here cre2_error_string(rex_set) will cause coredump
+            printf("cre2_set_new failed: %d\n",
+                   cre2_error_code(rex_set));
         }
         cre2_set_delete(rex_set);
     } else {

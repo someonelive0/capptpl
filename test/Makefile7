@@ -38,9 +38,13 @@ CFLAGS += -D_WIN32
 #LDFLAGS += 
 LDLIBS = -lzmq
 else
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE 
+CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
+		-I/usr/local/libevent-2.1.12/include \
+		-I/usr/local/zeromq-4.3.5/include
 #LDFLAGS += 
-LDLIBS = -lpthread -ldl -lunwind -lzmq 
+LDLIBS = /usr/local/zeromq-4.3.5/lib/libzmq.a \
+	/usr/local/gcc-7.4.0/lib64/libstdc++.a \
+	-lpthread -ldl -lunwind
 endif
 
 # CFLAGS += -fprofile-arcs -ftest-coverage
@@ -119,7 +123,6 @@ clean:
 	rm -f $(sndmsg_objs) $(teststr_objs) obj/testut.o obj/testklib.o \
 		$(testpidstat_objs)
 	rm -f sndmsg teststr testut testklib testpool testpidstat procstat
-	rm -f testcre2 cre2.o
 
 install:
 	mkdir -p ../bin
