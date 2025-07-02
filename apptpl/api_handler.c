@@ -27,6 +27,7 @@ struct api_route {
 
 struct api_route *routes = NULL;    /* important! initialize to NULL */
 static void status_handler(struct evhttp_request *req, void *arg);
+static void help_handler(struct evhttp_request *req, void *arg);
 static void version_handler(struct evhttp_request *req, void *arg);
 static void stats_handler(struct evhttp_request *req, void *arg);
 static void config_handler(struct evhttp_request *req, void *arg);
@@ -40,6 +41,11 @@ int api_route_init()
     if (NULL == (r = malloc(sizeof *r))) return -1;
     strcpy(r->path, "/");
     r->cb = status_handler;
+    HASH_ADD_STR(routes, path, r);
+
+    if (NULL == (r = malloc(sizeof *r))) return -1;
+    strcpy(r->path, "/help");
+    r->cb = help_handler;
     HASH_ADD_STR(routes, path, r);
 
     if (NULL == (r = malloc(sizeof *r))) return -1;
@@ -172,6 +178,32 @@ static void status_handler(struct evhttp_request *req, void *arg)
 err:
     evhttp_send_error(req, HTTP_INTERNAL, NULL);
 done:
+    if (buf) evbuffer_free(buf);
+}
+
+static void help_handler(struct evhttp_request *req, void *arg)
+{
+    UNUSED(arg);
+    struct evbuffer *buf = NULL;
+
+    enum evhttp_cmd_type cmd = evhttp_request_get_command(req);
+    LOG_DEBUG ("status_handler %d", cmd);
+
+    evhttp_add_header(req->output_headers, "Server", MYHTTPD_SIGNATURE);
+    evhttp_add_header(req->output_headers, "Content-Type", "text/html; charset=UTF-8");
+    evhttp_add_header(req->output_headers, "Connection", "close");
+
+    buf = evbuffer_new();
+    evbuffer_add_printf(buf, "<html><head><title>apptpl api interface</title></head>\n<body>\n");
+    evbuffer_add_printf(buf, "<a href=\"/status\">/status</a>  show status</br>\n");
+    evbuffer_add_printf(buf, "<a href=\"/help\">/help</a>  show this page</br>\n");
+    evbuffer_add_printf(buf, "<a href=\"/version\">/version</a>  show version</br>\n");
+    evbuffer_add_printf(buf, "<a href=\"/stats\">/stats</a>  show statistics</br>\n");
+    evbuffer_add_printf(buf, "<a href=\"/config\">/config</a>  show config</br>\n");
+    evbuffer_add_printf(buf, "<a href=\"/dump\">/dump</a>  dump app inner infomations</br>\n");
+    evbuffer_add_printf(buf, "</body></html>");
+
+    evhttp_send_reply(req, HTTP_OK, "OK", buf);
     if (buf) evbuffer_free(buf);
 }
 

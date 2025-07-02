@@ -32,7 +32,7 @@ UT_string* config2json(const struct config* p)
 {
     UT_string *s;
     char device[160] = {0};
-    for (size_t i=0, j=0; i<strlen(p->pcap_device) && i<sizeof(device)-1; i++, j++) {
+    for (size_t i=0, j=0; i<strlen(p->pcap_device) && j<sizeof(device)-1; i++, j++) {
         if (p->pcap_device[i] == '\\' || p->pcap_device[i] == '"')
             device[j++] = '\\';
         device[j] = p->pcap_device[i];
