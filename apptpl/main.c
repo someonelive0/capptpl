@@ -88,17 +88,23 @@ int main(int argc, char** argv)
     // LOG_INFO ("start thread magt with tid %lld", tid_magt);
 
     pthread_create(&tid_worker, NULL, worker_loop, ((void *)&wrkr));
+    pthread_setname_np(tid_worker, "worker"); // #if ((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
     LOG_INFO ("start thread worker with tid %lld", tid_worker);
 
     pthread_create(&tid_inputer, NULL, inputer_loop, ((void *)&inptr));
+    pthread_setname_np(tid_inputer, "inputer");
     LOG_INFO ("start thread inputer with tid %lld", tid_inputer);
 
     for (int i=0; i<parser_num; i++) {
         pthread_create(&tid_parser[i], NULL, parser_loop, ((void *)&prsr));
+        char thname[16] = {0};
+        snprintf(thname, sizeof(thname)-1, "parser%d", i);
+        pthread_setname_np(tid_parser[i], thname);
         LOG_INFO ("start thread parser with tid %lld", tid_parser[i]);
     }
 
     pthread_create(&tid_capture, NULL, capture_loop, ((void *)&captr));
+    pthread_setname_np(tid_capture, "capture");
     LOG_INFO ("start thread capture with tid %lld", tid_capture);
 
     // broke here to wait

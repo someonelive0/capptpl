@@ -5,9 +5,9 @@
 #include <string.h>
 #include <libgen.h>
 #include <errno.h>
-#ifdef __linux__
-#include <linux/limits.h>
-#endif
+// #ifdef __linux__
+// #include <linux/limits.h> // PATH_MAX=4096
+// #endif
 
 #include "logger.h"
 
@@ -106,7 +106,7 @@ int copy_file_from_tpl(const char* filename)
 #define UNUSED(x) (void)(x)
 int ch_exec_cwd(char* argv0)
 {
-    char path[PATH_MAX] = {0};
+    char path[4096] = {0}; // PATH_MAX=4096
 
 #ifdef _WIN32
     strncpy(path, argv0, sizeof(path)-1);

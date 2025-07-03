@@ -42,12 +42,12 @@ LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
 LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl -lre2 -lstdc++
 
 else # detected_OS = Linux
+CFLAGS += -D_BSD_SOURCE -D_GNU_SOURCE -D_DEFAULT_SOURCE  
 
 # make STATIC=1
 ifeq ($(STATIC), 1) # static link
 $(info link mode is static)
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
-		-I/usr/local/libevent-2.1.12/include \
+CFLAGS += -I/usr/local/libevent-2.1.12/include \
 		-I/usr/local/zeromq-4.3.5/include \
 		-I/usr/local/re2-2019-12-01/include \
 		-I/usr/local/libpcap-1.10.4/include
@@ -61,7 +61,7 @@ LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl -lzmq -lre2 -lpcap 
 
 else # dynamic link
 $(info link mode is dynamic)
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE
+CFLAGS += 
 LDFLAGS += -Wl,-rpath=/usr/local/lib64
 LDLIBS = -lssl -lcrypto -levent -levent_openssl -lzmq -lre2 -lpcap \
 		-lstdc++ -lpthread -ldl -lz 

@@ -14,6 +14,7 @@ else
     detected_OS := $(patsubst MSYS%,MSYS,$(detected_OS))
     detected_OS := $(patsubst MINGW%,MSYS,$(detected_OS))
 endif
+$(info detected_OS is $(detected_OS))
 
 # default use DEBUG, or make DEBUG=0 to disable it
 DEBUG = 1
@@ -21,15 +22,16 @@ ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
 CFLAGS = -Wall -ggdb -std=c11
 CXXFLAGS = -Wall -ggdb
-LDFLAGS = -ggdb -std=c11
+LDFLAGS = -ggdb -std=c11 
 else
 $(info compile mode is release)
 CFLAGS = -W -Wall -O2 -std=c11
 CXXFLAGS = -W -Wall -O2
-LDFLAGS = -O2 -std=c11
+LDFLAGS = -O2 -std=c11 -static 
 endif
 
 #CC     = clang
+#CC     = /usr/local/musl-1.2.5/bin/musl-gcc
 CC     = gcc
 CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 \
 		-I../lib/uthash-2.3.0 -I../lib/sds -I../lib
@@ -70,7 +72,9 @@ all: sndmsg teststr testut testklib testpool testcre2 \
 
 
 sndmsg: $(sndmsg_objs)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(LDFLAGS) $^ \
+		-L/usr/local/zeromq-4.3.5/lib \
+		-lpthread -ldl -lzmq -lstdc++ -o $@
 
 $(sndmsg_objs): $(OBJDIR)/%.o : %.c
 	@mkdir -p $(OBJDIR)
@@ -99,7 +103,7 @@ obj/testklib.o: testklib.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 testpool: testpool.c
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 testpidstat: $(testpidstat_objs)
 	$(CC) $(LDFLAGS) $^ -o $@
@@ -109,14 +113,14 @@ $(testpidstat_objs): $(OBJDIR)/%.o : %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 procstat: procstat.c
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 testcre2: testcre2.c ../lib/cre2/cre2.cpp
-	g++ $(CXXFLAGS) -I../lib/cre2 -I/usr/local/re2-2024-07-02/include -I/usr/local/abseil-cpp-20240116.1/include ../lib/cre2/cre2.cpp -c
-	gcc -Wall -ggdb -std=c11 -I../lib/cre2 cre2.o testcre2.c -L/usr/local/re2-2024-07-02/lib -lre2 -lstdc++ -lpthread -o testcre2
+	g++ $(CXXFLAGS) -I../lib/cre2 -I/usr/local/re2-2019-12-01/include -I/usr/local/abseil-cpp-20240116.1/include ../lib/cre2/cre2.cpp -c
+	$(CC) $(LDFLAGS) -I../lib/cre2 cre2.o testcre2.c -L/usr/local/re2-2019-12-01/lib -lre2 -lstdc++ -lpthread -o testcre2
 
 testint: testint.c
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 
 clean:
