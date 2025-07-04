@@ -10,6 +10,12 @@ int load_config(struct config* myconfig, const char* config_filename) {
     if (load_config_ini(config_filename, ini_callback, myconfig) < 0) {
         return -1;
     }
+
+    // valide items of config
+    if (myconfig->parser_thread_num < 0 || myconfig->parser_thread_num > PARSER_THREAD_MAX) {
+        myconfig->parser_thread_num = PARSER_THREAD_DEFAULT;
+    }
+
     return 0;
 }
 
@@ -43,11 +49,11 @@ UT_string* config2json(const struct config* p)
 "\"enable_ssl\": %d, \"crt_file\": \"%s\", \"key_file\": \"%s\", "
 "\"zmq_port\": %d, \"pcap_device\": \"%s\", \"pcap_snaplen\": %d, "
 "\"pcap_buffer_size\": %d, \"pcap_filter\": \"%s\", "
-"\"word_file\": \"%s\", \"regex_file\": \"%s\""
+"\"parser_thread_num\": %d, \"word_file\": \"%s\", \"regex_file\": \"%s\""
 "}",
         p->version, p->http_port, p->enable_ssl, p->crt_file, p->key_file,
         p->zmq_port, device, p->pcap_snaplen, p->pcap_buffer_size, p->pcap_filter,
-        p->word_file, p->regex_file);
+        p->parser_thread_num, p->word_file, p->regex_file);
     // printf("%s\n", utstring_body(s));
 
     // should remember to free s by utstring_free(s);
@@ -85,6 +91,8 @@ int ini_callback(void* arg, const char* section, const char* name, const char* v
         pconfig->pcap_buffer_size = atoi(value);
     } else if (MATCH("pcap", "filter")) {
         strncpy(pconfig->pcap_filter, value, sizeof(pconfig->pcap_filter)-1);
+    } else if (MATCH("parser", "thread_num")) {
+        pconfig->parser_thread_num = atoi(value);
     } else if (MATCH("word_policy", "word_file")) {
         strncpy(pconfig->word_file, value, sizeof(pconfig->word_file)-1);
     } else if (MATCH("regex_policy", "regex_file")) {

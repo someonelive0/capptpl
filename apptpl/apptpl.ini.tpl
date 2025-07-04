@@ -22,6 +22,10 @@ snaplen = 65535
 buffer_size = 2048
 filter = tcp
 
+
+[parser]
+thread_num = 4
+
 [word_policy]
 word_file = word_policy.txt
 

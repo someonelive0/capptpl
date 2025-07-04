@@ -5,7 +5,9 @@
 
 #include "utstring.h"
 
-#define DEFAULT_CONFIG_FILE "apptpl.ini"
+#define DEFAULT_CONFIG_FILE    "apptpl.ini"
+#define PARSER_THREAD_DEFAULT  4
+#define PARSER_THREAD_MAX      256
 
 
 /*
@@ -22,6 +24,7 @@ struct config {
     int       pcap_snaplen;
     int       pcap_buffer_size;
     char      pcap_filter[256];
+    int       parser_thread_num;
     char      word_file[256];
     char      regex_file[256];
 };

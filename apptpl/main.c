@@ -46,7 +46,7 @@ int main(int argc, char** argv)
               config_filename, utstring_body(s));
     utstring_free(s);
 
-    // init something
+    // init http api interface
     if (-1 == magt_init(&myapp)) {
         LOG_ERROR ("msgt_init failed");
         exit(1);
@@ -62,8 +62,9 @@ int main(int argc, char** argv)
     struct capture captr;
     memset(&captr, 0, sizeof(struct capture));
 
-    int parser_num = 4;
-    pthread_t tid_inputer, tid_worker, tid_capture, tid_parser[parser_num];
+
+    // init thread
+    pthread_t tid_inputer, tid_worker, tid_capture, tid_parser[myconfig.parser_thread_num];
 
     if (0 != inputer_open(&inptr, myconfig.zmq_port, chan_msg)) {
         goto err;
@@ -95,7 +96,7 @@ int main(int argc, char** argv)
     pthread_setname_np(tid_inputer, "inputer");
     LOG_INFO ("start thread inputer with tid %lld", tid_inputer);
 
-    for (int i=0; i<parser_num; i++) {
+    for (int i=0; i<myconfig.parser_thread_num; i++) {
         pthread_create(&tid_parser[i], NULL, parser_loop, ((void *)&prsr));
         char thname[16] = {0};
         snprintf(thname, sizeof(thname)-1, "parser%d", i);
@@ -112,6 +113,7 @@ int main(int argc, char** argv)
     // LOG_INFO ("join thread magt with tid %lld", tid_magt);
 
     // main thread broke here.
+    pthread_setname_np(pthread_self(), "apptplMain");
     magt_loop(&myconfig);
     magt_close();
 
@@ -130,7 +132,7 @@ int main(int argc, char** argv)
     LOG_DEBUG ("join thread worker with tid %lld", tid_worker);
 
     prsr.shutdown = 1;
-    for (int i=0; i<parser_num; i++) {
+    for (int i=0; i<myconfig.parser_thread_num; i++) {
         pthread_join(tid_parser[i], NULL);
         LOG_DEBUG ("join thread parser with tid %lld", tid_parser[i]);
     }
