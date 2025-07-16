@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     }
     redis_connect(myconfig.redis_host, myconfig.redis_port, myconfig.redis_passwd, magt_evbase);
 
-    // main thread broke here.
+    // main thread break here.
     magt_loop(&myconfig);
 
     redis_close();

@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
         exit(1);
     }
 
-    // main thread broke here.
+    // main thread break here.
     magt_loop(&myconfig);
     magt_close();
 

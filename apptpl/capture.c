@@ -70,7 +70,7 @@ int capture_open(struct capture* captr, const char *device,
     if (0 != pcap_activate(handle)) {
         LOG_ERROR ("pcap_activate '%s' failed: %s", device, pcap_geterr(handle));
         if (NULL != strstr(pcap_geterr(handle), "Operation not permitted"))
-            LOG_WARN("fix not permitted to run:\n\tsudo setcap 'CAP_NET_RAW,CAP_NET_ADMIN,CAP_DAC_OVERRIDE+ep' apptpl");
+            LOG_WARN("fix not permitted to run:\n\tsudo setcap 'CAP_IPC_LOCK,CAP_NET_RAW,CAP_NET_ADMIN,CAP_DAC_OVERRIDE+ep' apptpl");
         goto err;
     }
     LOG_INFO ("pcap snapshot: %d", pcap_snapshot(handle));

@@ -108,11 +108,11 @@ int main(int argc, char** argv)
     pthread_setname_np(tid_capture, "capture");
     LOG_INFO ("start thread capture with tid %lld", tid_capture);
 
-    // broke here to wait
+    // break here to wait
     // pthread_join(tid_magt, NULL);
     // LOG_INFO ("join thread magt with tid %lld", tid_magt);
 
-    // main thread broke here.
+    // main thread break here.
     pthread_setname_np(pthread_self(), "apptplMain");
     magt_loop(&myconfig);
     magt_close();

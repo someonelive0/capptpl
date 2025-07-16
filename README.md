@@ -54,7 +54,7 @@ make install
 If not root user, first use setcap to enable CAP* ability to program.
 
 ```
-setcap 'CAP_NET_RAW,CAP_NET_ADMIN,CAP_DAC_OVERRIDE+ep' ./apptpl
+setcap 'CAP_IPC_LOCK,CAP_NET_RAW,CAP_NET_ADMIN,CAP_DAC_OVERRIDE+ep' ./apptpl
 ./apptpl
 ```
 
