@@ -9,8 +9,6 @@
 // #include <linux/limits.h> // PATH_MAX=4096
 // #endif
 
-#include "logger.h"
-
 
 #if 0
 int ini_cb(void* arg, const char* section, const char* name, const char* value)

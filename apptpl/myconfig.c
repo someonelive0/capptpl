@@ -1,6 +1,5 @@
 #include "myconfig.h"
 
-#include "logger.h"
 #include "load_config.h"
 
 
@@ -28,7 +27,7 @@ int test_config(const char* config_filename) {
     }
 
     UT_string* s = config2json(&myconfig);
-    printf ("%s", utstring_body(s));
+    printf ("%s\n", utstring_body(s));
     utstring_free(s);
 
     return 0;
@@ -64,7 +63,7 @@ int ini_callback(void* arg, const char* section, const char* name, const char* v
 {
     struct config* pconfig = (struct config*)arg;
 
-    // LOG_TRACE ("ini global %s, name %s, value %s", section, name, value);
+    // printf ("ini global %s, name %s, value %s\n", section, name, value);
 
 #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
     if (MATCH("global", "version")) {
@@ -98,7 +97,7 @@ int ini_callback(void* arg, const char* section, const char* name, const char* v
     } else if (MATCH("regex_policy", "regex_file")) {
         strncpy(pconfig->regex_file, value, sizeof(pconfig->regex_file)-1);
     } else {
-        LOG_ERROR ("unknown ini section %s, name %s, value %s", section, name, value);
+        printf ("unknown ini section %s, name %s, value %s\n", section, name, value);
         return 0;  /* unknown section/name, error */
     }
     return 1;

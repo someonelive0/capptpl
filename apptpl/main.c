@@ -8,6 +8,7 @@
 #include "cchan_pthread.h"
 #include "logger.h"
 #include "load_config.h"
+#include "version.h"
 
 #include "apptpl_init.h"
 #include "myconfig.h"
@@ -30,6 +31,8 @@ int main(int argc, char** argv)
     if (0 != parse_args(argc, (const char**)argv, &debug, &config_filename)) {
         exit(1);
     }
+
+    show_banner("banner.txt");
 
     if (0 != init_log("apptpl.log", debug, 1024*1024, 5)) {
         exit(1);
