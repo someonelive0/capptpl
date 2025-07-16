@@ -49,8 +49,8 @@ ifeq ($(STATIC), 1) # static link
 $(info link mode is static)
 CFLAGS += -I/usr/local/libevent-2.1.12/include \
 		-I/usr/local/zeromq-4.3.5/include \
-		-I/usr/local/re2-2019-12-01/include \
 		-I/usr/local/libpcap-1.10.4/include
+CXXFLAGS += -I/usr/local/re2-2019-12-01/include
 LDFLAGS += -static \
 		-L/usr/local/libevent-2.1.12/lib \
 		-L/usr/local/zeromq-4.3.5/lib \
