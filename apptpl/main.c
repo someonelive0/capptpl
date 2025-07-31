@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 
     for (int i=0; i<myconfig.parser_thread_num; i++) {
         pthread_create(&tid_parser[i], NULL, parser_loop, ((void *)&prsr));
-        char thname[16] = {0};
+        char thname[32] = {0};
         snprintf(thname, sizeof(thname)-1, "parser%d", i);
         pthread_setname_np(tid_parser[i], thname);
         LOG_INFO ("start thread parser with tid %lld", tid_parser[i]);

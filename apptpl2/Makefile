@@ -45,11 +45,14 @@ else # detected_OS = Linux
 # make STATIC=1
 ifeq ($(STATIC), 1) # static link
 $(info link mode is static)
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE 
-LDFLAGS += -static \
-		-L/usr/local/libevent-2.1.12/lib 
-LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl -lz \
-		-Wl,-Bdynamic -lhiredis -lpthread -ldl 
+CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
+		-I/usr/local/hiredis-1.2.0/include
+# -static not mixed with -Wl,-Bdynamic, will cause interpreter use /lib/ld64.so.1
+LDFLAGS +=  \
+		-L/usr/local/libevent-2.1.12/lib \
+		-L/usr/local/hiredis-1.2.0/lib64
+LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl -lz -lhiredis \
+		-Wl,-Bdynamic -lpthread -ldl 
 
 else # dynamic link
 $(info link mode is dynamic)
