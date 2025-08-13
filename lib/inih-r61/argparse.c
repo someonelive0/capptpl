@@ -122,7 +122,6 @@ skipped:
     if (opt->callback) {
         return opt->callback(self, opt);
     }
-
     return 0;
 }
 
@@ -291,9 +290,10 @@ void
 argparse_usage(struct argparse *self)
 {
     if (self->usages) {
-        fprintf(stdout, "Usage: %s\n", *self->usages++);
-        while (*self->usages && **self->usages)
-            fprintf(stdout, "   or: %s\n", *self->usages++);
+        const char *const *usages = self->usages;
+        fprintf(stdout, "Usage: %s\n", *usages++);
+        while (*usages && **usages)
+            fprintf(stdout, "   or: %s\n", *usages++);
     } else {
         fprintf(stdout, "Usage:\n");
     }
@@ -369,7 +369,7 @@ argparse_usage(struct argparse *self)
             fputc('\n', stdout);
             pad = usage_opts_width;
         }
-        fprintf(stdout, "%*s%s\n", (int)pad + 2, "", options->help);
+        fprintf(stdout, "%*s%s\n", (int)pad + 2, "", options->help ? options->help : "");
     }
 
     // print epilog
@@ -378,9 +378,18 @@ argparse_usage(struct argparse *self)
 }
 
 int
-argparse_help_cb(struct argparse *self, const struct argparse_option *option)
+argparse_help_cb_no_exit(struct argparse *self,
+                         const struct argparse_option *option)
 {
     (void)option;
     argparse_usage(self);
+    return 0;
+}
+
+int
+argparse_help_cb(struct argparse *self, const struct argparse_option *option)
+{
+    argparse_help_cb_no_exit(self, option);
     exit(EXIT_SUCCESS);
 }
+

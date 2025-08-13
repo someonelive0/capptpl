@@ -24,11 +24,11 @@ astyle --style=linux --indent=spaces=4 --pad-header  main.c
 ## Depends
 
 Include in my project with source code in subpath ./lib. 
-- c-logger-0.4.1
-- cchan-0.1
-- inih-r58
-- uthash-2.3.0
-- cJSON-1.7.18
+- c-logger-0.4.1      https://github.com/yksz/c-logger
+- cchan-0.1           http://repo.hu/projects/cchan/
+- inih-r61            https://github.com/benhoyt/inih  https://github.com/cofyc/argparse
+- uthash-2.3.0        https://troydhanson.github.io/uthash/
+- cJSON-1.7.18        https://github.com/DaveGamble/cJSON
 
 Depend OS env.
 - gcc/clang with -std=c11

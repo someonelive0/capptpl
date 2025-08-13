@@ -33,7 +33,7 @@ endif
 #CC     = clang
 #CC     = /usr/local/musl-1.2.5/bin/musl-gcc
 CC     = gcc
-CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r58 \
+CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r61 \
 		-I../lib/uthash-2.3.0 -I../lib/sds -I../lib
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 
@@ -42,7 +42,7 @@ LDLIBS = -lzmq
 else
 CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE 
 #LDFLAGS += 
-LDLIBS = -lpthread -ldl -lunwind -lzmq 
+LDLIBS = -lpthread -ldl -lzmq 
 endif
 
 # CFLAGS += -fprofile-arcs -ftest-coverage
@@ -50,7 +50,7 @@ endif
 
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 OBJDIR = obj
-vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r58 \
+vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r61 \
 	../lib/sds ../lib
 sndmsg_srcs = sndmsg.c \
 	logger.c \
@@ -74,7 +74,7 @@ all: sndmsg teststr testut testklib testpool testcre2 \
 sndmsg: $(sndmsg_objs)
 	$(CC) $(LDFLAGS) $^ \
 		-L/usr/local/zeromq-4.3.5/lib \
-		-lpthread -ldl -lzmq -lstdc++ -o $@
+		$(LDLIBS) -lstdc++ -o $@
 
 $(sndmsg_objs): $(OBJDIR)/%.o : %.c
 	@mkdir -p $(OBJDIR)
