@@ -11,7 +11,7 @@ int load_config(struct config* myconfig, const char* config_filename) {
     }
 
     // valide items of config
-    if (myconfig->parser_thread_num < 0 || myconfig->parser_thread_num > PARSER_THREAD_MAX) {
+    if (myconfig->parser_thread_num <= 0 || myconfig->parser_thread_num > PARSER_THREAD_MAX) {
         myconfig->parser_thread_num = PARSER_THREAD_DEFAULT;
     }
 
@@ -24,6 +24,11 @@ int test_config(const char* config_filename) {
     memset(&myconfig, 0, sizeof(struct config));
     if (load_config_ini(config_filename, ini_callback, &myconfig) < 0) {
         return -1;
+    }
+
+    // valide items of config
+    if (myconfig.parser_thread_num <= 0 || myconfig.parser_thread_num > PARSER_THREAD_MAX) {
+        myconfig.parser_thread_num = PARSER_THREAD_DEFAULT;
     }
 
     UT_string* s = config2json(&myconfig);

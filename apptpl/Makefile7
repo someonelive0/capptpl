@@ -25,6 +25,7 @@ CFLAGS = -W -Wall -O2 -std=c11
 LDFLAGS = -O2 -std=c11
 endif
 
+# gcc should bigger than 4.8, here use gcc-7.4
 #CC     = clang
 CC     = gcc
 CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r61 \
@@ -44,7 +45,8 @@ CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
 		-I/usr/local/openssl-3.3.1/include
 CXXFLAGS += -I/usr/local/re2-2024-07-02/include \
 		-I/usr/local/abseil-cpp-20240116.1/include
-LDFLAGS += -L/usr/local/re2-2024-07-02/lib
+LDFLAGS += -L/usr/local/re2-2024-07-02/lib \
+		-Wl,-rpath=/usr/local/gcc-7.4.0/lib64
 LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
 	/usr/local/libevent-2.1.12/lib/libevent_openssl.a \
 	/usr/local/zeromq-4.3.5/lib/libzmq.a \
@@ -52,7 +54,7 @@ LDLIBS = /usr/local/libevent-2.1.12/lib/libevent.a \
 	/usr/local/gcc-7.4.0/lib64/libstdc++.a \
 	/usr/local/openssl-3.3.1/lib64/libssl.a \
 	/usr/local/openssl-3.3.1/lib64/libcrypto.a \
-	-lpthread -ldl -lunwind -lz -lm -lre2
+	-lpthread -ldl -lunwind -lz -lre2
 endif
 
 # CFLAGS += -fprofile-arcs -ftest-coverage
@@ -64,7 +66,7 @@ vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r61 \
 	../lib/cJSON-1.7.18 ../lib/sds ../lib
 apptpl_srcs = main.c apptpl_init.c magt.c api_handler.c \
 	inputer.c worker.c capture.c parser.c pkt.c \
-	word_policy.c re_policy.c \
+	word_policy.c re_policy.c myconfig.c \
 	init_log.c load_config.c \
 	cchan_pthread.c \
 	logger.c \
