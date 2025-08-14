@@ -15,3 +15,8 @@ key_file = server.key
 host = 127.0.0.1
 port = 6379
 passwd = 
+# redis cmd is: BRPOP <list> <expired>, such as 'BRPOP queue1 queue2 queue3 10'
+# so list is redis listnames as queue to BRPOP
+# default expired seconds is 10
+list = queue1 queue2 queue3 queue4
+

@@ -8,6 +8,12 @@
 .POSIX:
 .SUFFIXES:
 
+# include depends libs
+ifneq ($(wildcard Makefile.deps),)
+    include Makefile.deps
+endif
+
+# detect OS, now support MSYS/MINGW, and linux
 ifeq '$(findstring ;,$(PATH))' ';'
     detected_OS := Windows
 else
@@ -18,50 +24,64 @@ else
 endif
 $(info detected_OS is $(detected_OS))
 
-# make DEBUG=1
-ifeq ($(DEBUG), 1)
-$(info compile mode is debug)
-CFLAGS = -Wall -ggdb -std=c11
-LDFLAGS = -ggdb -std=c11
-else
-$(info compile mode is release)
-CFLAGS = -W -Wall -O2 -std=c11
-LDFLAGS = -O2 -std=c11
-endif
 
 #CC     = clang
 CC     = gcc
+CXX    = g++
+
+# make DEBUG=1
+ifeq ($(DEBUG), 1)
+$(info compile mode is debug)
+	CFLAGS = -Wall -ggdb -std=c11
+	LDFLAGS = -ggdb -std=c11
+else
+$(info compile mode is release)
+	CFLAGS = -W -Wall -O2 -std=c11
+	LDFLAGS = -O2 -std=c11
+endif
+
 CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 \
 		-I../lib/inih-r61 -I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.18 \
 		-I../lib
 
+
 ifeq ($(detected_OS),MSYS)
-CFLAGS += -D_WIN32 
-#LDFLAGS += 
-LDLIBS = -levent -levent_openssl -lhiredis -lwsock32 -lcrypto -lssl
+	CFLAGS += -D_WIN32 
+	#LDFLAGS += 
+	LDLIBS = -levent -levent_openssl -lhiredis -lwsock32 -lcrypto -lssl
 
 else # detected_OS = Linux
+	CFLAGS += -D_BSD_SOURCE -D_GNU_SOURCE -D_DEFAULT_SOURCE 
+
+	# add depends libs
+	ifneq ($(HIREDIS_INCLUDE),)
+		CFLAGS += -I$(HIREDIS_INCLUDE)
+	endif
+	ifneq ($(HIREDIS_LIB),)
+		LDFLAGS += -L$(HIREDIS_LIB)
+	endif
+	ifneq ($(LIBEVENT_INCLUDE),)
+		CFLAGS += -I$(LIBEVENT_INCLUDE)
+	endif
+	ifneq ($(LIBEVENT_LIB),)
+		LDFLAGS += -L$(LIBEVENT_LIB)
+	endif
 
 # make STATIC=1
 ifeq ($(STATIC), 1) # static link
 $(info link mode is static)
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
-		-I/usr/local/hiredis-1.2.0/include
-# -static not mixed with -Wl,-Bdynamic, will cause interpreter use /lib/ld64.so.1
-LDFLAGS +=  \
-		-L/usr/local/libevent-2.1.12/lib \
-		-L/usr/local/hiredis-1.2.0/lib64
-LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl -lz -lhiredis \
-		-Wl,-Bdynamic -lpthread -ldl 
+	# -static not mixed with -Wl,-Bdynamic, will cause interpreter use /lib/ld64.so.1
+	LDFLAGS +=  
+	LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl -lz -lhiredis \
+			-Wl,-Bdynamic -lpthread -ldl 
 
 else # dynamic link
 $(info link mode is dynamic)
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE 
-LDFLAGS += -Wl,-rpath=/usr/local/lib64
-LDLIBS = -Wl,-Bdynamic -lssl -lcrypto -levent -levent_openssl \
-		-Wl,-Bdynamic -lhiredis 
+	LDFLAGS += -Wl,-rpath=/usr/local/lib64
+	LDLIBS = -Wl,-Bdynamic -lssl -lcrypto -levent -levent_openssl \
+			-Wl,-Bdynamic -lhiredis 
 
-		#-lpthread -ldl -lunwind -lz
+			#-lpthread -ldl -lunwind -lz
 
 endif # endof dynamic link
 

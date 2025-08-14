@@ -15,10 +15,10 @@ UT_string* config2json(const struct config* p)
     utstring_new(s);
     utstring_printf(s, "{\"version\": \"%s\", \"http_port\": %d, "
 "\"enable_ssl\": %d, \"crt_file\": \"%s\", \"key_file\": \"%s\", "
-"\"redis_host\": \"%s\",  \"redis_port\": %d}",
+"\"redis_host\": \"%s\", \"redis_port\": %d, \"redis_list\": \"%s\"}",
         p->version, p->http_port, 
         p->enable_ssl, p->crt_file, p->key_file,
-        p->redis_host, p->redis_port);
+        p->redis_host, p->redis_port, p->redis_list);
     // printf("%s\n", utstring_body(s));
 
     // should remember to free s by utstring_free(s);
@@ -52,6 +52,8 @@ int ini_callback(void* arg, const char* section, const char* name, const char* v
         pconfig->redis_port = atoi(value);
     } else if (MATCH("redis", "passwd")) {
         strncpy(pconfig->redis_passwd, value, sizeof(pconfig->redis_passwd)-1);
+    } else if (MATCH("redis", "list")) {
+        strncpy(pconfig->redis_list, value, sizeof(pconfig->redis_list)-1);
     } else {
         LOG_ERROR ("unknown ini section %s, name %s, value %s", section, name, value);
         return 0;  /* unknown section/name, error */

@@ -25,6 +25,10 @@ endif
 $(info detected_OS is $(detected_OS))
 
 
+#CC     = clang
+CC     = gcc
+CXX    = g++
+
 # make DEBUG=1
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
@@ -36,22 +40,20 @@ $(info compile mode is release)
 	LDFLAGS = -O2 -std=c11
 endif
 
-
-#CC     = clang
-CC     = gcc
 CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r61 \
 		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.18 -I../lib/sds \
 		-I../lib/aho-corasick -I../lib/cre2 -I../lib
 
 
 ifeq ($(detected_OS),MSYS)
-CFLAGS += -D_WIN32 \
-		-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
-LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
-LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl -lre2 -lstdc++
+	CFLAGS += -D_WIN32 \
+			-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
+	LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
+	LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap \
+			-lcrypto -lssl -lre2 -lstdc++
 
 else # detected_OS = Linux
-	CFLAGS += -D_BSD_SOURCE -D_GNU_SOURCE -D_DEFAULT_SOURCE  
+	CFLAGS += -D_BSD_SOURCE -D_GNU_SOURCE -D_DEFAULT_SOURCE 
 
 	# add depends libs
 	ifneq ($(LIBZMQ_INCLUDE),)

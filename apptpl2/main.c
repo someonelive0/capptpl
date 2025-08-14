@@ -50,7 +50,8 @@ int main(int argc, char** argv)
         logger_close();
         exit(1);
     }
-    redis_connect(myconfig.redis_host, myconfig.redis_port, myconfig.redis_passwd, magt_evbase);
+    redis_connect(myconfig.redis_host, myconfig.redis_port, 
+        myconfig.redis_passwd, myconfig.redis_list, magt_evbase);
 
     // main thread break here.
     magt_loop(&myconfig);
