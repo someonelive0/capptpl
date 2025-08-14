@@ -1,0 +1,31 @@
+# Makefile for apptpl
+# set depends library, empty means use os include and lib path
+# if this file not existed, Makefile will not include this file.
+#
+
+# zeromq should >= 4.3
+LIBZMQ_INCLUDE = /usr/local/zeromq-4.3.5/include
+LIBZMQ_LIB = /usr/local/zeromq-4.3.5/lib
+
+
+# libevent should >= 2.1 and compatible with openssl-1.1.1
+LIBEVENT_INCLUDE = /usr/local/libevent-2.1.12/include
+LIBEVENT_LIB = /usr/local/libevent-2.1.12/lib
+
+
+# libpcap should >= 1.10
+LIBPCAP_INCLUDE = /usr/local/libpcap-1.10.4/include
+LIBPCAP_LIB = /usr/local/libpcap-1.10.4/lib
+
+
+# re2 should >= 2019-12-01
+LIBRE2_INCLUDE = /usr/local/re2-2019-12-01/include
+LIBRE2_LIB = /usr/local/re2-2019-12-01/lib
+
+
+# openssl should compatible with libevent_openssl
+# otherwise will get segment fault
+#OPENSSL_INCLUDE = /usr/local/openssl-3.3.1/include
+#OPENSSL_LIB = /usr/local/openssl-3.3.1/lib64
+
+

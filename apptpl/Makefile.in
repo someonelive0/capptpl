@@ -8,6 +8,12 @@
 .POSIX:
 .SUFFIXES:
 
+# include depends libs
+ifneq ($(wildcard Makefile.deps),)
+    include Makefile.deps
+endif
+
+# detect OS, now support MSYS/MINGW, and linux
 ifeq '$(findstring ;,$(PATH))' ';'
     detected_OS := Windows
 else
@@ -18,22 +24,25 @@ else
 endif
 $(info detected_OS is $(detected_OS))
 
+
 # make DEBUG=1
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
-CFLAGS = -Wall -ggdb -std=c11
-LDFLAGS = -ggdb -std=c11
+	CFLAGS = -Wall -ggdb -std=c11
+	LDFLAGS = -ggdb -std=c11
 else
 $(info compile mode is release)
-CFLAGS = -W -Wall -O2 -std=c11
-LDFLAGS = -O2 -std=c11
+	CFLAGS = -W -Wall -O2 -std=c11
+	LDFLAGS = -O2 -std=c11
 endif
+
 
 #CC     = clang
 CC     = gcc
 CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r61 \
 		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.18 -I../lib/sds \
 		-I../lib/aho-corasick -I../lib/cre2 -I../lib
+
 
 ifeq ($(detected_OS),MSYS)
 CFLAGS += -D_WIN32 \
@@ -42,29 +51,53 @@ LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
 LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl -lre2 -lstdc++
 
 else # detected_OS = Linux
+	CFLAGS += -D_BSD_SOURCE -D_GNU_SOURCE -D_DEFAULT_SOURCE  
+
+	# add depends libs
+	ifneq ($(LIBZMQ_INCLUDE),)
+		CFLAGS += -I$(LIBZMQ_INCLUDE)
+	endif
+	ifneq ($(LIBZMQ_LIB),)
+		LDFLAGS += -L$(LIBZMQ_LIB)
+	endif
+	ifneq ($(LIBEVENT_INCLUDE),)
+		CFLAGS += -I$(LIBEVENT_INCLUDE)
+	endif
+	ifneq ($(LIBEVENT_LIB),)
+		LDFLAGS += -L$(LIBEVENT_LIB)
+	endif
+	ifneq ($(LIBPCAP_INCLUDE),)
+		CFLAGS += -I$(LIBPCAP_INCLUDE)
+	endif
+	ifneq ($(LIBPCAP_LIB),)
+		LDFLAGS += -L$(LIBPCAP_LIB)
+	endif
+	ifneq ($(LIBRE2_INCLUDE),)
+		CXXFLAGS += -I$(LIBRE2_INCLUDE)
+	endif
+	ifneq ($(LIBRE2_LIB),)
+		LDFLAGS += -L$(LIBRE2_LIB)
+	endif
+	ifneq ($(OPENSSL_INCLUDE),)
+		CXXFLAGS += -I$(OPENSSL_INCLUDE)
+	endif
+	ifneq ($(OPENSSL_LIB),)
+		LDFLAGS += -L$(OPENSSL_LIB)
+	endif
+
 
 # make STATIC=1
 ifeq ($(STATIC), 1) # static link
 $(info link mode is static)
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
-		-I/usr/local/libevent-2.1.12/include \
-		-I/usr/local/zeromq-4.3.5/include \
-		-I/usr/local/re2-2019-12-01/include \
-		-I/usr/local/libpcap-1.10.4/include
-LDFLAGS += -static \
-		-L/usr/local/libevent-2.1.12/lib \
-		-L/usr/local/zeromq-4.3.5/lib \
-		-L/usr/local/re2-2019-12-01/lib \
-		-L/usr/local/libpcap-1.10.4/lib
-LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl -lzmq -lre2 -lpcap \
-		-Wl,-Bstatic -lstdc++ -lpthread -ldl -lz 
+	LDFLAGS += -static 
+	LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl -lzmq -lre2 -lpcap \
+			-Wl,-Bstatic -lstdc++ -lpthread -ldl -lz 
 
 else # dynamic link
 $(info link mode is dynamic)
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE
-LDFLAGS += -Wl,-rpath=/usr/local/lib64
-LDLIBS = -lssl -lcrypto -levent -levent_openssl -lzmq -lre2 -lpcap \
-		-lstdc++ -lpthread -ldl -lz 
+	LDFLAGS += -Wl,-rpath=/usr/local/lib64 
+	LDLIBS = -lssl -lcrypto -levent -levent_openssl -lzmq -lre2 -lpcap \
+			-lstdc++ -lpthread -ldl -lz 
 
 endif # endof dynamic link
 
@@ -77,7 +110,7 @@ OBJDIR = obj
 vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r61 \
 	../lib/cJSON-1.7.18 ../lib/sds ../lib
 apptpl_srcs = main.c apptpl_init.c magt.c api_handler.c \
-	inputer.c worker.c capture.c parser.c pkt.c \
+	inputer.c worker.c capture.c myconfig.c parser.c pkt.c \
 	word_policy.c re_policy.c \
 	init_log.c load_config.c \
 	cchan_pthread.c \
@@ -123,6 +156,21 @@ diag:
 	@echo "OS is $(detected_OS)"
 	@echo "apptpl_srcs: $(apptpl_srcs)"
 	@echo "apptpl_objs: $(apptpl_objs)"
+
+# if define depends, check path whether existed
+ifneq ($(LIBZMQ_INCLUDE),)
+	echo "check LIBZMQ_INCLUDE = $(LIBZMQ_INCLUDE)"
+	@if [ ! -d $(LIBZMQ_INCLUDE) ]; then \
+		echo "not existed: LIBZMQ_INCLUDE = $(LIBZMQ_INCLUDE)"; \
+	fi
+endif
+ifneq ($(LIBZMQ_LIB),)
+	echo "check LIBZMQ_LIB = $(LIBZMQ_LIB)"
+	@if [ ! -d $(LIBZMQ_LIB) ]; then \
+		echo "not existed: LIBZMQ_LIB = $(LIBZMQ_LIB)"; \
+	fi
+endif
+
 
 # .SUFFIXES: .c .o
 # .c.o:
