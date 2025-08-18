@@ -1,6 +1,6 @@
 # capptpl
 
-A C application template, with http management interface.
+A C application template, with http/https restful api management interface.
 
 Use libevent for http service on port 3000.
 A thread zmq to receive message on port 3001.
@@ -46,6 +46,7 @@ Three subdir can make, they are apptpl, apptpl2, test
 ```
 make
 make DEBUG=1
+make STATIC=1 # link static
 make install
 ```
 
@@ -109,3 +110,64 @@ ltrace -f ./apptpl
 ```
 cppcheck --enable=information --force .
 ```
+
+
+
+# Three sub programs
+
+## 1. apptpl
+
+App template of C. Use libevent+openssl to provide restful api.
+And recieve msg from zeromq. And capture ethernet frames from NIC.
+
+Usage:
+```
+# non root user to setcap to enable capture ability.
+sudo setcap 'CAP_IPC_LOCK,CAP_NET_RAW,CAP_NET_ADMIN,CAP_DAC_OVERRIDE+ep' apptpl
+
+# show version
+./apptpl -v
+
+# show help and usage
+./apptpl -h
+Usage: appctl [options] [[--] args]
+   or: appctl [options]
+
+A brief description of what the program does and how it works.
+
+    -h, --help            show this help message and exit
+
+Basic options
+    -v, --version         show version
+    -l, --list            list network devices
+    -T, --test            test configuration file
+    -D, --debug=<int>     set log level, TRACE=0, DEBUG=1, INFO=2, WARN=3, ERROR=4, FATAL=5, default is INFO
+    -c, --config=<str>    set ini config filename
+
+Additional description of the program after the description of the arguments.
+
+# list NIC intraces
+./apptpl -l
+
+# test apptpl.ini config file
+./apptpl -T
+
+# run apptpl, set log level to TRACE
+./apptpl -D0
+
+# see threads of apptpl
+top -H -p $(pidof apptpl)
+```
+
+
+## 2. apptpl2
+
+Another App template of C. Use libevent+openssl to provide restful api.
+And interactive with redis POP of list.
+
+
+## 3. cpptpl
+
+App template of C++. Use libevent+openssl to provide restful api.
+
+
