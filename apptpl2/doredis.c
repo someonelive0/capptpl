@@ -6,6 +6,11 @@
 
 #include "logger.h"
 
+/*
+ * on redis server, run RPUSH queue1  "are you ok"
+ * this file will BRPOP receive messages from lists, lists name is define in ini file
+ * BRPOP use libevent to async recv msg.
+ */
 
 static char *redis_host;
 static int redis_port;
