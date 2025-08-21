@@ -39,6 +39,19 @@ Depend OS env.
 
 Attention: zeromq need libstdc++
 
+
+
+## SubModules
+
+Use git submodules in path deps, something like
+
+```
+# git submodule add --depth 1 https://github.com/google/tcmalloc.git deps/tcmalloc
+git submodule add --depth 1 https://github.com/microsoft/mimalloc deps/mimalloc
+```
+
+
+
 ## Build
 
 Three subdir can make, they are apptpl, apptpl2, test
