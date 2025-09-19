@@ -11,3 +11,5 @@
 | 1.3.0 | 2024-08-05 | App use https, support openssl-1.0 or openssl-3.3 |
 | 1.4.0 | 2024-10-15 | Add cpp app template 'cpptl' for c++. <br> apptpl add word policy and regex policy|
 | 1.5.0 | 2025-07-01 | Add param -T to test config file|
+| 1.6.0 | 2025-08-21 | Add submodule mimalloc|
+

@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#define MY_VERSION "1.5.0"
+#define MY_VERSION "1.6.0"
 #define SHOW_VERSION() printf("versoin %s\n", MY_VERSION)
 
 // int show_version() {

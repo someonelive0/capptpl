@@ -48,6 +48,14 @@ Use git submodules in path deps, something like
 ```
 # git submodule add --depth 1 https://github.com/google/tcmalloc.git deps/tcmalloc
 git submodule add --depth 1 https://github.com/microsoft/mimalloc deps/mimalloc
+git submodule add --depth 1 https://github.com/concurrencykit/ck deps/ck
+
+# then clone all submodules
+git submodule init
+git submodule update
+
+# or clone all include submodules
+git clone https://github.com/someonelive0/capptpl --recursive
 ```
 
 
