@@ -133,6 +133,98 @@ cppcheck --enable=information --force .
 ```
 
 
+## IDE
+
+### vscode
+
+Add c_cpp_properties.json in subpath .vscode, content looks like follow
+
+```
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/deps/ck/include",
+                "/usr/local/zeromq-4.3.5/include"
+            ],
+            "defines": [
+                "_BSD_SOURCE"
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "gnu++11",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}
+```
+
+Add lauch.json in subpath .vscode for debug, content looks like follow
+```
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) apptpl",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/apptpl/apptpl",
+            "args": [ "-D0" ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/apptpl",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+
+        {
+            "name": "(gdb) apptpl2",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/apptpl2/apptpl2",
+            "args": [ "-D0" ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/apptpl2",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+
+    ]
+}
+```
+
+
 
 # Three sub programs
 
