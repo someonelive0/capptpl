@@ -128,30 +128,35 @@ all: apptpl
 
 # apptpl: main.o init_log.o magt.o inputer.o worker.o capture.o \
 # 	cchan_pthread.o logger.o ini.o
-apptpl: $(apptpl_objs) cre2.o
+apptpl: $(apptpl_objs) $(OBJDIR)/cre2.o
 	$(CC) $(LDFLAGS) $^ ../lib/aho-corasick/libacism.a $(LDLIBS) -o $@
 
 $(apptpl_objs): $(OBJDIR)/%.o : %.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-cre2.o: ../lib/cre2/cre2.cpp
+$(OBJDIR)/cre2.o: ../lib/cre2/cre2.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(apptpl_objs) cre2.o
+	rm -f $(apptpl_objs) $(OBJDIR)/cre2.o
 	rm -f apptpl
 
+
+PREFIX=../bin
 install:
-	mkdir -p ../bin
+	mkdir -p $(PREFIX)
 ifneq ($(DEBUG), 1)
 ifeq ($(detected_OS),MSYS)
 	strip apptpl.exe
 else
 	strip apptpl
+	# upx apptpl
 endif
 endif
-	cp apptpl apptpl.ini.tpl ../bin
+	cp apptpl apptpl.ini.tpl $(PREFIX)
+	cp server.crt server.key $(PREFIX)
+	cp regex_policy.txt.tpl word_policy.txt.tpl $(PREFIX)
 
 
 diag:
