@@ -10,11 +10,24 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <limits.h> // INT_MAX, INT_MIN, UINT_MAX
 
+#include "nanoid.h"
+
+
+void test_int();
+void test_nanoid();
 
 int main()
 {
+  test_int();
+  test_nanoid();
+}
+
+void test_int() {
+    puts("\ntest_nanid\n");
+
     // "无符号数会回绕 上面的代码会输出：0 （因为0xff + 1是256，与2^8求模后就是0
     unsigned char x = 0xff;
     printf("unsigned char 0xff + 1 = %d\n", ++x);
@@ -50,4 +63,19 @@ int main()
     // 1.*memcpy(void *dest, const void *src, size_t n)函数
     // 2.*strncpy(char *dest,const char *scr, size_t n)函数
     // ps说明：其中参数n，是size_t类型，size_t是一个无符号整型的类型
+}
+
+void test_nanoid() {
+  puts("\ntest_nanid\n");
+  int idlen = 10; // NANOIDLEN;
+
+  for (int i=0; i<10; i++) {
+    char *id = calloc(idlen + 1, 1);
+
+    if (!id || nanoidgen2(id, idlen))
+      return;
+
+    puts(id);
+    free(id);
+  }
 }

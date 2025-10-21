@@ -29,6 +29,7 @@ Include in my project with source code in subpath ./lib.
 - inih-r61            https://github.com/benhoyt/inih  https://github.com/cofyc/argparse
 - uthash-2.3.0        https://troydhanson.github.io/uthash/
 - cJSON-1.7.18        https://github.com/DaveGamble/cJSON
+- nanoid-2.0.0        https://github.com/lukateras/nanoid.h
 
 Depend OS env.
 - gcc/clang with -std=c11
