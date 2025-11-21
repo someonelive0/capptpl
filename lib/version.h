@@ -6,6 +6,7 @@
 #define MY_VERSION "1.6.0"
 #define SHOW_VERSION() printf("versoin %s\t build on %s %s\n", MY_VERSION, __DATE__, __TIME__)
 
+#ifdef __linux__
 #define SHOW_VERSION_LOCAL() { \
     struct tm t; \
     char date_time_str[64]; \
@@ -13,7 +14,9 @@
     strftime(date_time_str, sizeof(date_time_str), "%Y-%m-%dT%H:%M:%S", &t); \
     printf("versoin %s\t build on %s\n", MY_VERSION, date_time_str); \
 }
-
+#else
+#define SHOW_VERSION_LOCAL() printf("versoin %s\t build on %s %s\n", MY_VERSION, __DATE__, __TIME__)
+#endif
 
 // const char *BANNER = 
 // ""

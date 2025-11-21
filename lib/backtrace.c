@@ -4,12 +4,15 @@
 #include <errno.h>
 #include <stddef.h>   // NULL
 #include <setjmp.h>   // For potential recovery scenarios
+#ifdef __linux__
 #include <execinfo.h> // callstack()
 #include <dlfcn.h>    // callstack()
+#endif
 
 #include "logger.h"
 
 
+#ifdef __linux__
 /*
  * for print stack backtrace inside max_frames
  * first print to STDOUT, then to fp.
@@ -117,4 +120,10 @@ int set_sigsegv_handler() {
 
     return 0;
 }
+
+#else
+
+int set_sigsegv_handler() { return 0; }
+
+#endif // __linux__
 
