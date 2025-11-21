@@ -38,7 +38,7 @@ int parse_args(int argc, const char** argv, int* debug, const char** config_file
     argc = argparse_parse(&argparse, argc, argv);
 
     if (version != 0) {
-        SHOW_VERSION();
+        SHOW_VERSION_LOCAL();
         return 1;
     }
     if (list != 0) {

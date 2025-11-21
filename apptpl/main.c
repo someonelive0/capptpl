@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 
     struct app myapp = { time(NULL), NULL, NULL, NULL, NULL, NULL };
     int debug = LogLevel_INFO; // default LogLevel_INFO=2
-    const char *config_filename = NULL;
+    const char *config_filename = DEFAULT_CONFIG_FILE;
     if (0 != parse_args(argc, (const char**)argv, &debug, &config_filename)) {
         exit(1);
     }
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
     }
 
     // catch SIGSEGV after init_log
-    if (0 != set_sigsegv()) exit(1);
+    if (0 != set_sigsegv_handler()) exit(1);
 
     struct config myconfig;
     if (load_config(&myconfig, config_filename) < 0) {

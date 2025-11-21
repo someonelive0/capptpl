@@ -32,8 +32,8 @@ CXX    = g++
 # make DEBUG=1
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
-	CFLAGS = -Wall -ggdb -std=c11
-	LDFLAGS = -ggdb -std=c11
+	CFLAGS = -Wall -ggdb -std=c11 
+	LDFLAGS = -ggdb -std=c11 -rdynamic 
 else
 $(info compile mode is release)
 	CFLAGS = -W -Wall -O2 -std=c11

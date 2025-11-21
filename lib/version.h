@@ -4,12 +4,15 @@
 #include <stdio.h>
 
 #define MY_VERSION "1.6.0"
-#define SHOW_VERSION() printf("versoin %s\n", MY_VERSION)
+#define SHOW_VERSION() printf("versoin %s\t build on %s %s\n", MY_VERSION, __DATE__, __TIME__)
 
-// int show_version() {
-//     printf("versoin %s\n", MY_VERSION);
-//     return 0;
-// }
+#define SHOW_VERSION_LOCAL() { \
+    struct tm t; \
+    char date_time_str[64]; \
+    strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &t); \
+    strftime(date_time_str, sizeof(date_time_str), "%Y-%m-%dT%H:%M:%S", &t); \
+    printf("versoin %s\t build on %s\n", MY_VERSION, date_time_str); \
+}
 
 
 // const char *BANNER = 
@@ -37,7 +40,7 @@ static inline int show_banner(const char* banner_file) {
         ret = -1;
     }
 
-    printf("versoin %s\n\n", MY_VERSION);
+    SHOW_VERSION_LOCAL(); // printf("versoin %s\n\n", MY_VERSION);
 
     return ret;
 }
