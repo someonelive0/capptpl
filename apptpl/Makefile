@@ -119,7 +119,7 @@ apptpl_srcs = main.c apptpl_init.c magt.c api_handler.c \
 	logger.c \
 	cJSON.c \
 	sds.c \
-	ini.c argparse.c hex.c
+	ini.c argparse.c hex.c backtrace.c
 apptpl_objs = $(apptpl_srcs:%.c=$(OBJDIR)/%.o)
 
 

@@ -14,7 +14,7 @@ int init_log(const char* filename, int loglevel, int maxfilesize, int maxfilenum
         printf("logger_initConsoleLogger failed\n");
     }
     if (0 == logger_initFileLogger(filename, maxfilesize, maxfilenumber)) {
-        printf("logger_initFileLogger failed\n");
+        printf("logger_initFileLogger '%s' failed\n", filename);
     }
 
     // fulsh interval in milliseconds, 1 means always flush.

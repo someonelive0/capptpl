@@ -191,6 +191,13 @@ void logger_close() {
     }
 }
 
+/* return file logger fd, -1 means failed */
+int logger_filefd() {
+    if (s_flog.output == NULL) return -1;
+    return fileno(s_flog.output);
+}
+
+
 void logger_setLevel(enum LogLevel level)
 {
     s_logLevel = level;

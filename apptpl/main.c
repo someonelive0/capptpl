@@ -18,6 +18,7 @@
 #include "worker.h"
 #include "capture.h"
 #include "parser.h"
+#include "backtrace.h"
 
 
 int main(int argc, char** argv)
@@ -37,6 +38,9 @@ int main(int argc, char** argv)
     if (0 != init_log("apptpl.log", debug, 1024*1024, 5)) {
         exit(1);
     }
+
+    // catch SIGSEGV after init_log
+    if (0 != set_sigsegv()) exit(1);
 
     struct config myconfig;
     if (load_config(&myconfig, config_filename) < 0) {
@@ -117,6 +121,7 @@ int main(int argc, char** argv)
 
     // main thread break here.
     pthread_setname_np(pthread_self(), "apptplMain");
+    LOG_INFO ("Apptpl started ......");
     magt_loop(&myconfig);
     magt_close();
 
