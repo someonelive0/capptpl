@@ -40,7 +40,10 @@ int main(int argc, char** argv)
     }
 
     // catch SIGSEGV after init_log
-    if (0 != set_sigsegv_handler()) exit(1);
+    if (0 != set_sigsegv_handler()) {
+        LOG_FATAL("set_sigsegv_handler failed, errno=%d: %s", errno, strerror(errno));
+        exit(1);
+    }
 
     struct config myconfig;
     if (load_config(&myconfig, config_filename) < 0) {

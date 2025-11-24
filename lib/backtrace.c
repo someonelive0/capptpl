@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <stddef.h>   // NULL
+#include <unistd.h>   // getpid()
 #include <setjmp.h>   // For potential recovery scenarios
 #ifdef __linux__
 #include <execinfo.h> // callstack()
@@ -63,9 +64,9 @@ char* log_backtrace(const int max_frames, int fd) {
 /*
  * param sig should be SIGSEGV
  */
-#define UNUSED(x) (void)(x)
-static void segfault_handler(int sig, siginfo_t *info, void *secret) {
-    UNUSED(secret);
+// #define UNUSED(x) (void)(x)
+static void segfault_handler(int sig, siginfo_t *info, void *ucontext) {
+    // UNUSED(ucontext);
     LOG_FATAL("Crashed by signal: %d, si_code: %d", sig, info->si_code);
     if (sig == SIGSEGV || sig == SIGBUS) {
         LOG_FATAL("Caught segmentation fault (SIGSEGV | SIGBUS) %d !!!", sig);
@@ -77,12 +78,47 @@ static void segfault_handler(int sig, siginfo_t *info, void *secret) {
     }
     logger_flush();
 
+    /* dump registers, x64 CPU specific */
+    ucontext_t *context = (ucontext_t *)ucontext;
+    LOG_FATAL( "Signal = %d  Memory location = %p\n"
+            "RIP = %016llx  RSP = %016llx  RBP = %016llx\n"
+            "RAX = %016llx  RBX = %016llx  RCX = %016llx\n"
+            "RDX = %016llx  RSI = %016llx  RDI = %016llx\n"
+            "R8  = %016llx  R9  = %016llx  R10 = %016llx\n"
+            "R11 = %016llx  R12 = %016llx  R13 = %016llx\n"
+            "R14 = %016llx  R15 = %016llx  RFLAGS = %016llx\n",
+            sig, info->si_addr,
+            context->uc_mcontext.gregs[REG_RIP],
+            context->uc_mcontext.gregs[REG_RSP],
+            context->uc_mcontext.gregs[REG_RBP],
+            context->uc_mcontext.gregs[REG_RAX],
+            context->uc_mcontext.gregs[REG_RBX],
+            context->uc_mcontext.gregs[REG_RCX],
+            context->uc_mcontext.gregs[REG_RDX],
+            context->uc_mcontext.gregs[REG_RSI],
+            context->uc_mcontext.gregs[REG_RDI],
+            context->uc_mcontext.gregs[REG_R8],
+            context->uc_mcontext.gregs[REG_R9],
+            context->uc_mcontext.gregs[REG_R10],
+            context->uc_mcontext.gregs[REG_R11],
+            context->uc_mcontext.gregs[REG_R12],
+            context->uc_mcontext.gregs[REG_R13],
+            context->uc_mcontext.gregs[REG_R14],
+            context->uc_mcontext.gregs[REG_R15],
+            context->uc_mcontext.gregs[REG_EFL]);
+    logger_flush();
+
     // now print backtrce
     int fd = logger_filefd();
     if (fd == -1) {
         LOG_ERROR("get logger file fd failed: %d, %s", errno, strerror(errno));
     }
     log_backtrace(100, fd);
+
+    // signal capture + GDB
+    // char cmd[256]= {0};
+    // snprintf(cmd, sizeof(cmd)-1, "sudo gdb --pid=%d -ex bt -q", getpid());
+    // system(cmd);
 
     // Perform cleanup, log information, etc.
     // It's generally not safe to continue execution after a segfault.
@@ -102,7 +138,10 @@ int set_sigsegv_handler() {
     act.sa_flags = SA_NODEFER | SA_RESETHAND | SA_SIGINFO;
     act.sa_sigaction = segfault_handler;
 
-    sigaction(SIGSEGV, &act, NULL);
+    int rc = sigaction(SIGSEGV, &act, NULL);
+    if (rc == -1) {
+        return -1;
+    }
     sigaction(SIGBUS, &act, NULL);
     sigaction(SIGFPE, &act, NULL);
     sigaction(SIGILL, &act, NULL);

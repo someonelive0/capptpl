@@ -33,7 +33,8 @@ CXX    = g++
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
 	CFLAGS = -Wall -ggdb -std=c11 
-	LDFLAGS = -ggdb -std=c11 -rdynamic 
+	LDFLAGS = -ggdb -std=c11 
+	#-rdynamic -fsanitize=address
 else
 $(info compile mode is release)
 	CFLAGS = -W -Wall -O2 -std=c11
