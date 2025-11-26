@@ -52,8 +52,8 @@ int logger_initConsoleLogger(FILE* output);
 int logger_initFileLogger(const char* filename, long maxFileSize, unsigned char maxBackupFiles);
 void logger_close();
 
-/* return file logger fd, -1 means failed */
-int logger_filefd();
+/* return file logger fd(file number), -1 means failed */
+int logger_fileno();
 
 /**
  * Set the log level.

@@ -30,26 +30,48 @@ char* log_backtrace(const int max_frames, int fd) {
     printf("backtrace() returned %d addresses\n", n_frames);
     backtrace_symbols_fd(callstack, n_frames, 1); // STDOUT
 
-    // thenn output to fd if fd > 0(STDIN)
-    FILE* fp = NULL;
-    if (fd > 0) fp = fdopen(fd, "w");
-    if (fp != NULL) {
-        fflush(fp);
-        fprintf(fp, "backtrace() returned %d addresses\n", n_frames);
+    // then output to fd if fd > 1(STDOUT)
+    // FILE* fp = NULL;
+    // if (fd > 1) fp = fdopen(fd, "w");
+    // if (fp != NULL) {
+    //     fflush(fp);
+    //     fprintf(fp, "backtrace() returned %d addresses\n", n_frames);
 
+    //     char **symbols = backtrace_symbols(callstack, n_frames);
+    //     for (int i = 0; i < n_frames; i++) {
+    //         Dl_info info;
+    //         if (dladdr(callstack[i], &info) && info.dli_sname != NULL) {
+    //             fprintf(fp, "%-2d: %p\t%s\n", i, callstack[i], info.dli_sname);
+    //         } else {
+    //             fprintf(fp, "%-2d: %p\t%s\n", i, callstack[i], symbols[i]);
+    //         }
+    //     }
+    //     free(symbols);
+    //     if (n_frames >= max_frames)
+    //         fprintf(fp, "[truncated]\n");
+    //     fflush(fp);
+    // }
+
+    if (fd > 1) { // bigger than STDOUT 
+        char tmp[256] = {0};
+        int rc = snprintf(tmp, sizeof(tmp)-1, "backtrace() returned %d addresses\n", n_frames);
+        write(fd, tmp, rc);
         char **symbols = backtrace_symbols(callstack, n_frames);
         for (int i = 0; i < n_frames; i++) {
             Dl_info info;
             if (dladdr(callstack[i], &info) && info.dli_sname != NULL) {
-                fprintf(fp, "%-2d: %p\t%s\n", i, callstack[i], info.dli_sname);
+                rc = snprintf(tmp, sizeof(tmp)-1, "%-2d: %p\t%s\n", i, callstack[i], info.dli_sname);
             } else {
-                fprintf(fp, "%-2d: %p\t%s\n", i, callstack[i], symbols[i]);
+                rc = snprintf(tmp, sizeof(tmp)-1, "%-2d: %p\t%s\n", i, callstack[i], symbols[i]);
             }
+            write(fd, tmp, rc);
         }
         free(symbols);
-        if (n_frames >= max_frames)
-            fprintf(fp, "[truncated]\n");
-        fflush(fp);
+        if (n_frames >= max_frames) {
+            rc = snprintf(tmp, sizeof(tmp)-1, "[truncated]\n");
+            write(fd, tmp, rc);
+        }
+        fsync(fd);
     }
 
     return NULL;
@@ -122,7 +144,7 @@ static void segfault_handler(int sig, siginfo_t *info, void *ucontext) {
     logger_flush();
 
     // now print backtrce
-    int fd = logger_filefd();
+    int fd = logger_fileno();
     if (fd == -1) {
         LOG_ERROR("get logger file fd failed: %d, %s", errno, strerror(errno));
     }

@@ -191,8 +191,8 @@ void logger_close() {
     }
 }
 
-/* return file logger fd, -1 means failed */
-int logger_filefd() {
+/* return file logger fd(file number), -1 means failed */
+int logger_fileno() {
     if (s_flog.output == NULL) return -1;
     return fileno(s_flog.output);
 }
