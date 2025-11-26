@@ -2,6 +2,7 @@
 #define VERSION_H
 
 #include <stdio.h>
+#include <time.h>
 
 #define MY_VERSION "1.6.0"
 #define SHOW_VERSION() printf("versoin %s\t build on %s %s\n", MY_VERSION, __DATE__, __TIME__)

@@ -78,6 +78,7 @@ static void segfault_handler(int sig, siginfo_t *info, void *ucontext) {
     }
     logger_flush();
 
+    #ifdef __x86_64__
     /* dump registers, x64 CPU specific */
     ucontext_t *context = (ucontext_t *)ucontext;
     LOG_FATAL( "Signal = %d  Memory location = %p\n"
@@ -106,6 +107,18 @@ static void segfault_handler(int sig, siginfo_t *info, void *ucontext) {
             context->uc_mcontext.gregs[REG_R14],
             context->uc_mcontext.gregs[REG_R15],
             context->uc_mcontext.gregs[REG_EFL]);
+    #elif defined __aarch64__
+    ucontext_t *context = (ucontext_t *)ucontext;
+    LOG_FATAL( "Signal = %d  Memory location = %p\n"
+            "PC: 0x%llx\n"
+            "SP: 0x%llx\n"
+            "REGS = %016llx, %016llx\n",
+            sig, info->si_addr,
+            context->uc_mcontext.pc,
+            context->uc_mcontext.sp,
+            context->uc_mcontext.regs[0],
+            context->uc_mcontext.regs[1]);
+    #endif
     logger_flush();
 
     // now print backtrce
@@ -114,6 +127,7 @@ static void segfault_handler(int sig, siginfo_t *info, void *ucontext) {
         LOG_ERROR("get logger file fd failed: %d, %s", errno, strerror(errno));
     }
     log_backtrace(100, fd);
+    _exit(99); // when not set SA_RESETHAND, need exit() myslef. 
 
     // signal capture + GDB
     // char cmd[256]= {0};
@@ -135,17 +149,20 @@ int set_sigsegv_handler() {
 
     struct sigaction act;
     sigemptyset(&act.sa_mask);
-    act.sa_flags = SA_NODEFER | SA_RESETHAND | SA_SIGINFO;
+    // SA_RESETHAND: Restore the signal action to the default upon entry to the signal handler
+    // so disable SA_RESETHAND to make enouph time to log_backtrace(), but need _exit() youself.
+    // act.sa_flags = SA_NODEFER | SA_RESETHAND | SA_SIGINFO;
+    act.sa_flags =  SA_NODEFER | SA_SIGINFO;
     act.sa_sigaction = segfault_handler;
 
     int rc = sigaction(SIGSEGV, &act, NULL);
     if (rc == -1) {
         return -1;
     }
-    sigaction(SIGBUS, &act, NULL);
-    sigaction(SIGFPE, &act, NULL);
-    sigaction(SIGILL, &act, NULL);
-    sigaction(SIGABRT, &act, NULL);
+    // sigaction(SIGBUS, &act, NULL);
+    // sigaction(SIGFPE, &act, NULL);
+    // sigaction(SIGILL, &act, NULL);
+    // sigaction(SIGABRT, &act, NULL);
 
     // if (setjmp(catch_segfault) == 0) {
     //     LOG_DEBUG("set_sigsegv_handler ok.");
