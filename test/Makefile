@@ -6,6 +6,12 @@
 .POSIX:
 .SUFFIXES:
 
+# include depends libs
+ifneq ($(wildcard ../apptpl/Makefile.deps),)
+    include ../apptpl/Makefile.deps
+endif
+
+# detect OS, now support MSYS/MINGW, and linux
 ifeq '$(findstring ;,$(PATH))' ';'
     detected_OS := Windows
 else
@@ -20,14 +26,14 @@ $(info detected_OS is $(detected_OS))
 DEBUG = 1
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
-CFLAGS = -Wall -ggdb -std=c11
-CXXFLAGS = -Wall -ggdb
-LDFLAGS = -ggdb -std=c11 
+	CFLAGS = -Wall -ggdb -std=c11
+	CXXFLAGS = -Wall -ggdb
+	LDFLAGS = -ggdb -std=c11 
 else
 $(info compile mode is release)
-CFLAGS = -W -Wall -O2 -std=c11
-CXXFLAGS = -W -Wall -O2
-LDFLAGS = -O2 -std=c11 -static 
+	CFLAGS = -W -Wall -O2 -std=c11
+	CXXFLAGS = -W -Wall -O2
+	LDFLAGS = -O2 -std=c11 -static 
 endif
 
 #CC     = clang
@@ -35,18 +41,30 @@ endif
 CC     = gcc
 CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r61 \
 		-I../lib/uthash-2.3.0 -I../lib/sds -I../lib
-ifeq ($(detected_OS),MSYS)
-CFLAGS += -D_WIN32 
-#LDFLAGS += 
-LDLIBS = -lzmq
-else
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE 
-#LDFLAGS += 
-LDLIBS = -lpthread -ldl -lzmq 
-endif
 
-# CFLAGS += -fprofile-arcs -ftest-coverage
-# LDFLAGS += -lgcov --coverage
+ifeq ($(detected_OS),MSYS)
+	CFLAGS += -D_WIN32 
+	#LDFLAGS += 
+	LDLIBS = -lzmq
+
+else # detected_OS = Linux
+	CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE 
+	CFLAGS += -I../deps/ck/include
+
+	# add depends libs
+	ifneq ($(LIBZMQ_INCLUDE),)
+		CFLAGS += -I$(LIBZMQ_INCLUDE)
+	endif
+	ifneq ($(LIBZMQ_LIB),)
+		LDFLAGS += -L$(LIBZMQ_LIB)
+	endif
+
+	#LDFLAGS += 
+	LDLIBS = -lpthread -ldl -lzmq 
+	# CFLAGS += -fprofile-arcs -ftest-coverage
+	# LDFLAGS += -lgcov --coverage
+endif # endof detected_OS = Linux
+
 
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 OBJDIR = obj
@@ -68,7 +86,7 @@ testpidstat_objs = $(testpidstat_srcs:%.c=$(OBJDIR)/%.o)
 
 
 all: sndmsg teststr testut testklib testpool testcre2 \
-	testint 
+	testint testck testlockfreequeue
 
 
 sndmsg: $(sndmsg_objs)
@@ -122,12 +140,18 @@ testcre2: testcre2.c ../lib/cre2/cre2.cpp
 testint: testint.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
+testck: testck.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -lpthread $^ -o $@
+
+testlockfreequeue: testlockfreequeue.c ../lib/lfqueue-1.2.2/lfqueue.c
+	$(CC) $(CFLAGS) -I../lib/lfqueue-1.2.2 $(LDFLAGS) -lpthread $^ -o $@
+
 
 clean:
 	rm -f $(sndmsg_objs) $(teststr_objs) obj/testut.o obj/testklib.o \
 		$(testpidstat_objs)
 	rm -f sndmsg teststr testut testklib testpool testpidstat procstat
-	rm -f testcre2 cre2.o testint 
+	rm -f testcre2 cre2.o testint testck testlockfreequeue
 
 
 install:

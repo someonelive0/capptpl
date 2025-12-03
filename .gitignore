@@ -22,6 +22,8 @@ test/testac
 test/testre2
 test/testcre2
 test/testint
+test/testck
+test/testlockfreequeue
 
 apptpl/word_policy.txt
 apptpl/regex_policy.txt

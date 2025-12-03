@@ -30,6 +30,7 @@ Include in my project with source code in subpath ./lib.
 - uthash-2.3.0        https://troydhanson.github.io/uthash/
 - cJSON-1.7.18        https://github.com/DaveGamble/cJSON
 - nanoid-2.0.0        https://github.com/lukateras/nanoid.h
+- lfqueu-1.2.2        https://github.com/Taymindis/lfqueue
 
 Depend OS env.
 - gcc/clang with -std=c11
