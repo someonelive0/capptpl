@@ -31,28 +31,7 @@ char* log_backtrace(const int max_frames, int fd) {
     backtrace_symbols_fd(callstack, n_frames, 1); // STDOUT
 
     // then output to fd if fd > 1(STDOUT)
-    // FILE* fp = NULL;
-    // if (fd > 1) fp = fdopen(fd, "w");
-    // if (fp != NULL) {
-    //     fflush(fp);
-    //     fprintf(fp, "backtrace() returned %d addresses\n", n_frames);
-
-    //     char **symbols = backtrace_symbols(callstack, n_frames);
-    //     for (int i = 0; i < n_frames; i++) {
-    //         Dl_info info;
-    //         if (dladdr(callstack[i], &info) && info.dli_sname != NULL) {
-    //             fprintf(fp, "%-2d: %p\t%s\n", i, callstack[i], info.dli_sname);
-    //         } else {
-    //             fprintf(fp, "%-2d: %p\t%s\n", i, callstack[i], symbols[i]);
-    //         }
-    //     }
-    //     free(symbols);
-    //     if (n_frames >= max_frames)
-    //         fprintf(fp, "[truncated]\n");
-    //     fflush(fp);
-    // }
-
-    if (fd > 1) { // bigger than STDOUT 
+    if (fd > 1) {
         char tmp[256] = {0};
         int rc = snprintf(tmp, sizeof(tmp)-1, "backtrace() returned %d addresses\n", n_frames);
         write(fd, tmp, rc);
@@ -79,16 +58,9 @@ char* log_backtrace(const int max_frames, int fd) {
 
 
 /*
- * for register catch SIGSEGV
- */
-// static jmp_buf catch_segfault; // For potential recovery
-
-/*
  * param sig should be SIGSEGV
  */
-// #define UNUSED(x) (void)(x)
 static void segfault_handler(int sig, siginfo_t *info, void *ucontext) {
-    // UNUSED(ucontext);
     LOG_FATAL("Crashed by signal: %d, si_code: %d", sig, info->si_code);
     if (sig == SIGSEGV || sig == SIGBUS) {
         LOG_FATAL("Caught segmentation fault (SIGSEGV | SIGBUS) %d !!!", sig);
@@ -100,8 +72,8 @@ static void segfault_handler(int sig, siginfo_t *info, void *ucontext) {
     }
     logger_flush();
 
-    #ifdef __x86_64__
     /* dump registers, x64 CPU specific */
+    #ifdef __x86_64__
     ucontext_t *context = (ucontext_t *)ucontext;
     LOG_FATAL( "Signal = %d  Memory location = %p\n"
             "RIP = %016llx  RSP = %016llx  RBP = %016llx\n"
@@ -129,18 +101,33 @@ static void segfault_handler(int sig, siginfo_t *info, void *ucontext) {
             context->uc_mcontext.gregs[REG_R14],
             context->uc_mcontext.gregs[REG_R15],
             context->uc_mcontext.gregs[REG_EFL]);
+
+    /* dump registers, aarch64 CPU specific */
     #elif defined __aarch64__
     ucontext_t *context = (ucontext_t *)ucontext;
     LOG_FATAL( "Signal = %d  Memory location = %p\n"
             "PC: 0x%llx\n"
             "SP: 0x%llx\n"
-            "REGS = %016llx, %016llx\n",
+            "PSTATE: 0x%llx\n"
+            "REGS = %016llx, %016llx, %016llx, %016llx\n"
+            " X18 = %016llx, %016llx, %016llx, %016llx\n"
+            " X29 = %016llx, %016llx\n",
             sig, info->si_addr,
-            context->uc_mcontext.pc,
-            context->uc_mcontext.sp,
-            context->uc_mcontext.regs[0],
-            context->uc_mcontext.regs[1]);
-    #endif
+            context->uc_mcontext.pc,      // Program Counter, PC
+            context->uc_mcontext.sp,      // Stack Pointer, SP
+            context->uc_mcontext.pstate,  // Processor State register, PSTATE
+            context->uc_mcontext.regs[0], // 31 general-purpose registers (X0-X30)
+            context->uc_mcontext.regs[1],
+            context->uc_mcontext.regs[2],
+            context->uc_mcontext.regs[3],
+            context->uc_mcontext.regs[18],
+            context->uc_mcontext.regs[19],
+            context->uc_mcontext.regs[20],
+            context->uc_mcontext.regs[21],
+            context->uc_mcontext.regs[29],
+            context->uc_mcontext.regs[30]);
+    #endif // __aarch64__
+
     logger_flush();
 
     // now print backtrce
@@ -155,20 +142,9 @@ static void segfault_handler(int sig, siginfo_t *info, void *ucontext) {
     // char cmd[256]= {0};
     // snprintf(cmd, sizeof(cmd)-1, "sudo gdb --pid=%d -ex bt -q", getpid());
     // system(cmd);
-
-    // Perform cleanup, log information, etc.
-    // It's generally not safe to continue execution after a segfault.
-    // However, for specific scenarios, you might attempt recovery using longjmp.
-    // longjmp(catch_segfault, 1); // Jump back to a safe point
 }
 
 int set_sigsegv_handler() {
-    // this is too simple, always printf code after wrong line of code
-    // if (signal(SIGSEGV, segfault_handler) == SIG_ERR) {
-    //     LOG_ERROR("Failed to register signal handler for SIGSEGV");
-    //     return 1;
-    // }
-
     struct sigaction act;
     sigemptyset(&act.sa_mask);
     // SA_RESETHAND: Restore the signal action to the default upon entry to the signal handler
@@ -181,25 +157,15 @@ int set_sigsegv_handler() {
     if (rc == -1) {
         return -1;
     }
-    // sigaction(SIGBUS, &act, NULL);
-    // sigaction(SIGFPE, &act, NULL);
-    // sigaction(SIGILL, &act, NULL);
-    // sigaction(SIGABRT, &act, NULL);
-
-    // if (setjmp(catch_segfault) == 0) {
-    //     LOG_DEBUG("set_sigsegv_handler ok.");
-    //     // Code that might cause a segfault for test
-    //     // int *ptr = NULL;
-    //     // *ptr = 10; // This will cause a segfault
-    // } else {
-    //     LOG_INFO("Recovered from segmentation fault (or attempted recovery).");
-    //     // Handle the aftermath of the potential segfault
-    // }
+    sigaction(SIGBUS, &act, NULL);
+    sigaction(SIGFPE, &act, NULL);
+    sigaction(SIGILL, &act, NULL);
+    sigaction(SIGABRT, &act, NULL);
 
     return 0;
 }
 
-#else
+#else // not __linux__
 
 int set_sigsegv_handler() { return 0; }
 
