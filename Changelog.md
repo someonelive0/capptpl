@@ -12,4 +12,5 @@
 | 1.4.0 | 2024-10-15 | Add cpp app template 'cpptl' for c++. <br> apptpl add word policy and regex policy|
 | 1.5.0 | 2025-07-01 | Add param -T to test config file|
 | 1.6.0 | 2025-08-21 | Add submodule mimalloc|
+| 1.7.0 | 2025-12-04 | Add SIGSEGV handler and print backtrace. <br> Add submodule ck, and localfree queue - lfqueue-1.2.2|
 

@@ -9,6 +9,7 @@
 #include "logger.h"
 #include "init_log.h"
 #include "load_config.h"
+#include "backtrace.h"
 
 #include "apptpl2_init.h"
 #include "magt.h"
@@ -26,6 +27,12 @@ int main(int argc, char** argv)
     if (NULL == config_filename) config_filename = DEFAULT_CONFIG_FILE;
 
     if (0 != init_log("apptpl2.log", debug, 1024*1024, 5)) {
+        exit(1);
+    }
+
+    // catch SIGSEGV after init_log
+    if (0 != set_sigsegv_handler()) {
+        LOG_FATAL("set_sigsegv_handler failed, errno=%d: %s", errno, strerror(errno));
         exit(1);
     }
 

@@ -8,9 +8,9 @@ extern "C" {
 
 #include "cchan_pthread.h"
 #include "logger.h"
-
 #include "init_log.h"
 #include "load_config.h"
+#include "backtrace.h"
 }
 
 #include "cpptpl_init.h"
@@ -31,6 +31,12 @@ int main(int argc, char* argv[])
     if (NULL == config_filename) config_filename = DEFAULT_CONFIG_FILE;
 
     if (0 != init_log("cpptpl.log", debug, 1024*1024, 5)) { // call logger_close() to free
+        exit(1);
+    }
+
+    // catch SIGSEGV after init_log
+    if (0 != set_sigsegv_handler()) {
+        LOG_FATAL("set_sigsegv_handler failed, errno=%d: %s", errno, strerror(errno));
         exit(1);
     }
 

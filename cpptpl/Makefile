@@ -21,14 +21,14 @@ $(info detected_OS is $(detected_OS))
 # make DEBUG=1
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
-CFLAGS = -Wall -ggdb -std=c11
-CXXFLAGS = -Wall -ggdb -std=c++11
-LDFLAGS = -ggdb -std=c11
+	CFLAGS = -Wall -ggdb -std=c11
+	CXXFLAGS = -Wall -ggdb -std=c++11
+	LDFLAGS = -ggdb -std=c11
 else
 $(info compile mode is release)
-CFLAGS = -W -Wall -O2 -std=c11
-CXXFLAGS = -W -Wall -O2 -std=c++11
-LDFLAGS = -O2 -std=c11
+	CFLAGS = -W -Wall -O2 -std=c11
+	CXXFLAGS = -W -Wall -O2 -std=c++11
+	LDFLAGS = -O2 -std=c11
 endif
 
 #CC     = clang
@@ -42,35 +42,34 @@ CXXFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r61 \
 		-I../lib/aho-corasick -I../lib
 
 ifeq ($(detected_OS),MSYS)
-CFLAGS += -D_WIN32 \
-		-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
-CXXFLAGS += -D_WIN32
-LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
-LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl -lstdc++
+	CFLAGS += -D_WIN32 \
+			-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
+	CXXFLAGS += -D_WIN32
+	LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
+	LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl -lstdc++
 
 else # detected_OS = Linux
+	CFLAGS += -D_BSD_SOURCE -D_GNU_SOURCE -D_DEFAULT_SOURCE 
 
 # make STATIC=1
 ifeq ($(STATIC), 1) # static link
 $(info link mode is static)
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
-		-I/usr/local/libevent-2.1.12/include 
-CXXFLAGS += -I/usr/local/libevent-2.1.12/include 
-LDFLAGS += -static \
-		-L/usr/local/libevent-2.1.12/lib 
-LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl \
-		-Wl,-Bstatic -lstdc++ -lz \
-		-Wl,-Bstatic -lpthread -ldl 
+	CFLAGS += -I/usr/local/libevent-2.1.12/include 
+	CXXFLAGS += -I/usr/local/libevent-2.1.12/include 
+	LDFLAGS += -static \
+			-L/usr/local/libevent-2.1.12/lib 
+	LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl \
+			-Wl,-Bstatic -lstdc++ -lz \
+			-Wl,-Bstatic -lpthread -ldl 
 
 else # dynamic link
 $(info link mode is dynamic)
-CFLAGS += -D_BSD_SOURCE -D_DEFAULT_SOURCE \
-		-I/usr/local/libevent-2.1.12/include 
-CXXFLAGS += -I/usr/local/libevent-2.1.12/include 
-LDFLAGS += -Wl,-rpath=/usr/local/lib64
-LDLIBS = -Wl,-Bdynamic -lssl -lcrypto -levent -levent_openssl \
-		-lstdc++ -lz \
-		-lpthread -ldl
+	CFLAGS += -I/usr/local/libevent-2.1.12/include 
+	CXXFLAGS += -I/usr/local/libevent-2.1.12/include 
+	LDFLAGS += -Wl,-rpath=/usr/local/lib64
+	LDLIBS = -Wl,-Bdynamic -lssl -lcrypto -levent -levent_openssl \
+			-lstdc++ -lz \
+			-lpthread -ldl
 
 endif # endof dynamic link
 
@@ -89,7 +88,7 @@ cpptpl_srcs_c = init_log.c load_config.c \
 	logger.c \
 	cJSON.c \
 	sds.c \
-	ini.c argparse.c hex.c
+	ini.c argparse.c hex.c backtrace.c 
 cpptpl_objs = $(cpptpl_srcs:%.cpp=$(OBJDIR)/%.o)
 cpptpl_objs_c = $(cpptpl_srcs_c:%.c=$(OBJDIR)/%.o)
 cpptpl_libs = $(LDLIBS)

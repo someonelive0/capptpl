@@ -9,6 +9,7 @@
 #include "logger.h"
 #include "load_config.h"
 #include "version.h"
+#include "backtrace.h"
 
 #include "apptpl_init.h"
 #include "myconfig.h"
@@ -18,7 +19,6 @@
 #include "worker.h"
 #include "capture.h"
 #include "parser.h"
-#include "backtrace.h"
 
 
 int main(int argc, char** argv)

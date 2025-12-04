@@ -79,7 +79,7 @@ else # dynamic link
 $(info link mode is dynamic)
 	LDFLAGS += -Wl,-rpath=/usr/local/lib64
 	LDLIBS = -Wl,-Bdynamic -lssl -lcrypto -levent -levent_openssl \
-			-Wl,-Bdynamic -lhiredis 
+			-Wl,-Bdynamic -lhiredis -ldl
 
 			#-lpthread -ldl -lunwind -lz
 
@@ -97,7 +97,7 @@ apptpl2_srcs = main.c apptpl2_init.c magt.c api_handler.c doredis.c \
 	cchan_pthread.c \
 	logger.c \
 	ini.c argparse.c \
-	cJSON.c
+	cJSON.c backtrace.c 
 apptpl2_objs = $(apptpl2_srcs:%.c=$(OBJDIR)/%.o)
 
 

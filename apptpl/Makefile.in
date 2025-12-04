@@ -32,8 +32,9 @@ CXX    = g++
 # make DEBUG=1
 ifeq ($(DEBUG), 1)
 $(info compile mode is debug)
-	CFLAGS = -Wall -ggdb -std=c11
-	LDFLAGS = -ggdb -std=c11
+	CFLAGS = -Wall -ggdb -std=c11 
+	LDFLAGS = -ggdb -std=c11 
+	#-rdynamic -fsanitize=address
 else
 $(info compile mode is release)
 	CFLAGS = -W -Wall -O2 -std=c11
@@ -119,7 +120,7 @@ apptpl_srcs = main.c apptpl_init.c magt.c api_handler.c \
 	logger.c \
 	cJSON.c \
 	sds.c \
-	ini.c argparse.c hex.c
+	ini.c argparse.c hex.c backtrace.c
 apptpl_objs = $(apptpl_srcs:%.c=$(OBJDIR)/%.o)
 
 
