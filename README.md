@@ -28,7 +28,7 @@ Include in my project with source code in subpath ./lib.
 - cchan-0.1           http://repo.hu/projects/cchan/
 - inih-r61            https://github.com/benhoyt/inih  https://github.com/cofyc/argparse
 - uthash-2.3.0        https://troydhanson.github.io/uthash/
-- cJSON-1.7.18        https://github.com/DaveGamble/cJSON
+- cJSON-1.7.19        https://github.com/DaveGamble/cJSON
 - nanoid-2.0.0        https://github.com/lukateras/nanoid.h
 - lfqueu-1.2.2        https://github.com/Taymindis/lfqueue
 

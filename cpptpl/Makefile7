@@ -31,10 +31,10 @@ endif
 CC     = gcc
 CXX    = g++
 CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r61 \
-		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.18 -I../lib/sds \
+		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.19 -I../lib/sds \
 		-I../lib/aho-corasick -I../lib
 CXXFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r61 \
-		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.18 -I../lib/sds \
+		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.19 -I../lib/sds \
 		-I../lib/aho-corasick -I../lib
 
 ifeq ($(detected_OS),MSYS)
@@ -68,7 +68,7 @@ endif
 # c 和 cpp 文件分别编译成 .o 文件，分别使用不同的编译器 gcc 和 g++
 OBJDIR = obj
 vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r61 \
-	../lib/cJSON-1.7.18 ../lib/sds ../lib
+	../lib/cJSON-1.7.19 ../lib/sds ../lib
 cpptpl_srcs = main.cpp cpptpl_init.cpp magt.cpp api_handler.cpp
 cpptpl_srcs_c = init_log.c load_config.c \
 	cchan_pthread.c \
