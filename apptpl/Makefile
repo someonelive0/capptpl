@@ -41,7 +41,7 @@ $(info compile mode is release)
 	LDFLAGS = -O2 -std=c11
 endif
 
-CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r61 \
+CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r62 \
 		-I../lib/uthash-2.3.0 -I../lib/cJSON-1.7.19 -I../lib/sds \
 		-I../lib/aho-corasick -I../lib/cre2 -I../lib
 
@@ -110,7 +110,7 @@ endif # endof detected_OS = Linux
 
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 OBJDIR = obj
-vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r61 \
+vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r62 \
 	../lib/cJSON-1.7.19 ../lib/sds ../lib
 apptpl_srcs = main.c apptpl_init.c magt.c api_handler.c \
 	inputer.c worker.c capture.c myconfig.c parser.c pkt.c \

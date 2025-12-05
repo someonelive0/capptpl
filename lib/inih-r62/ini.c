@@ -2,7 +2,7 @@
 
 SPDX-License-Identifier: BSD-3-Clause
 
-Copyright (C) 2009-2020, Ben Hoyt
+Copyright (C) 2009-2025, Ben Hoyt
 
 inih is released under the New BSD license (see LICENSE.txt). Go to the project
 home page for more info:
@@ -140,7 +140,8 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
         offset = strlen(line);
 
 #if INI_ALLOW_REALLOC && !INI_USE_STACK
-        while (offset == max_line - 1 && line[offset - 1] != '\n') {
+        while (max_line < INI_MAX_LINE &&
+               offset == max_line - 1 && line[offset - 1] != '\n') {
             max_line *= 2;
             if (max_line > INI_MAX_LINE)
                 max_line = INI_MAX_LINE;
@@ -153,8 +154,6 @@ int ini_parse_stream(ini_reader reader, void* stream, ini_handler handler,
             if (reader(line + offset, (int)(max_line - offset), stream) == NULL)
                 break;
             offset += strlen(line + offset);
-            if (max_line >= INI_MAX_LINE)
-                break;
         }
 #endif
 

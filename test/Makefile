@@ -39,7 +39,7 @@ endif
 #CC     = clang
 #CC     = /usr/local/musl-1.2.5/bin/musl-gcc
 CC     = gcc
-CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r61 \
+CFLAGS += -I../lib/cchan-0.1 -I../lib/c-logger-0.4.1 -I../lib/inih-r62 \
 		-I../lib/uthash-2.3.0 -I../lib/sds -I../lib
 
 ifeq ($(detected_OS),MSYS)
@@ -68,7 +68,7 @@ endif # endof detected_OS = Linux
 
 # obj 是输出obj目录，vpath 告之如果c不足当前文件夹，就在vpath指定的其他文件夹下找
 OBJDIR = obj
-vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r61 \
+vpath %.c ../lib/cchan-0.1 ../lib/c-logger-0.4.1 ../lib/inih-r62 \
 	../lib/sds ../lib
 sndmsg_srcs = sndmsg.c \
 	logger.c \

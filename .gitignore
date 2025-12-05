@@ -5,6 +5,7 @@
 *.ini
 */obj
 .vscode
+build
 bin
 lib/aho-corasick/libacism.a
 apptpl/apptpl
@@ -31,3 +32,4 @@ apptpl/config.h
 apptpl/config.status
 apptpl/config.log
 apptpl/autom4te.cache/
+
