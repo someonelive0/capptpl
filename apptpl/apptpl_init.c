@@ -39,6 +39,9 @@ int parse_args(int argc, const char** argv, int* debug, const char** config_file
 
     if (version != 0) {
         SHOW_VERSION_LOCAL();
+#ifdef DEBUG
+        printf("compiled DEBUG\n");
+#endif
         return 1;
     }
     if (list != 0) {

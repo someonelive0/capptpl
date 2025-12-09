@@ -22,7 +22,7 @@ else
     detected_OS := $(patsubst MSYS%,MSYS,$(detected_OS))
     detected_OS := $(patsubst MINGW%,MSYS,$(detected_OS))
 endif
-$(info detected_OS is $(detected_OS))
+$(info # detected_OS is $(detected_OS))
 
 
 #CC     = clang
@@ -31,12 +31,12 @@ CXX    = g++
 
 # make DEBUG=1
 ifeq ($(DEBUG), 1)
-$(info compile mode is debug)
-	CFLAGS = -Wall -ggdb -std=c11 
+$(info # compile mode is debug)
+	CFLAGS = -Wall -ggdb -std=c11 -DDEBUG
 	LDFLAGS = -ggdb -std=c11 
 	#-rdynamic -fsanitize=address
 else
-$(info compile mode is release)
+$(info # compile mode is release)
 	CFLAGS = -W -Wall -O2 -std=c11
 	LDFLAGS = -O2 -std=c11
 endif
@@ -91,13 +91,13 @@ else # detected_OS = Linux
 
 # make STATIC=1
 ifeq ($(STATIC), 1) # static link
-$(info link mode is static)
+$(info # link mode is static)
 	LDFLAGS += -static 
 	LDLIBS = -Wl,-Bstatic -lssl -lcrypto -levent -levent_openssl -lzmq -lre2 -lpcap \
 			-Wl,-Bstatic -lstdc++ -lpthread -ldl -lz 
 
 else # dynamic link
-$(info link mode is dynamic)
+$(info # link mode is dynamic)
 	LDFLAGS += -Wl,-rpath=/usr/local/lib64 
 	LDLIBS = -lssl -lcrypto -levent -levent_openssl -lzmq -lre2 -lpcap \
 			-lstdc++ -lpthread -ldl -lz 

@@ -33,3 +33,5 @@ apptpl/config.status
 apptpl/config.log
 apptpl/autom4te.cache/
 
+callgrind.out.*
+
