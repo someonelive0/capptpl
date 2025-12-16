@@ -7,6 +7,7 @@
 
 
 struct inputer {
+    int      shutdown;
     int      port;
     cchan_t  *chan_msg;
     void     *zmq_context;

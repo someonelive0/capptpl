@@ -55,14 +55,15 @@ done:
 
 int inputer_stop(struct inputer* inptr)
 {
-    if (inptr->puller) {
-        zmq_close (inptr->puller);
-        inptr->puller = NULL;
-    }
-    if (inptr->zmq_context) {
-        zmq_ctx_term (inptr->zmq_context);
-        inptr->zmq_context = NULL;
-    }
+    inptr->shutdown = 1;
+    // if (inptr->puller) {
+    //     zmq_close (inptr->puller);
+    //     inptr->puller = NULL;
+    // }
+    // if (inptr->zmq_context) {
+    //     zmq_ctx_term (inptr->zmq_context); // cause SIGABRT(6) in main thread to call inputer_stop(), so use inputer.shutdown to async stop
+    //     inptr->zmq_context = NULL;
+    // }
     return 0;
 }
 
@@ -70,14 +71,24 @@ int inputer_stop(struct inputer* inptr)
 void* inputer_loop(void *arg)
 {
     int rc;
-    // char buffer [100];
+    int timeout = 500; // ms
+    zmq_msg_t *msg = NULL;
 
     struct inputer* inptr = arg;
+    inptr->shutdown = 0;
+    inptr->count = 0;
+
+    // set timeout for zmq_msg_recv()
+    rc = zmq_setsockopt(inptr->puller, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
+    if (rc == -1) {
+        LOG_WARN("zmq_setsockopt set timeout %d ms failed: %d, %s",
+            timeout, zmq_errno(), zmq_strerror(zmq_errno()));
+    }
+
     LOG_INFO ("inputer listen port %d, start zmq loop, zmq_msg_t size %zu",
               inptr->port, sizeof(zmq_msg_t));
 
-    zmq_msg_t *msg = NULL;
-    while (1) {
+    while (!inptr->shutdown) {
         if (NULL == (msg = (zmq_msg_t *)malloc(sizeof(zmq_msg_t)))) {
             LOG_ERROR ("inputer malloc zmq_msg_t failed, break");
             break;
@@ -91,6 +102,11 @@ void* inputer_loop(void *arg)
         // rc = zmq_recv (puller, buffer, sizeof(buffer), 0);
         rc = zmq_msg_recv (msg, inptr->puller, 0);
         if (rc == -1) {
+            if (EAGAIN == zmq_errno()) { // timeout
+                LOG_TRACE("inputer timeout %d ms, and continue recv");
+                free(msg);
+                continue;
+            }
             if (ETERM == zmq_errno()) // ETERM = 156384765, Context was terminated
                 LOG_INFO ("inputer recv ETERM(%d), %s", zmq_errno(), zmq_strerror(zmq_errno()));
             else
@@ -109,6 +125,9 @@ void* inputer_loop(void *arg)
             usleep(100);
         }
     }
+
+    zmq_close(inptr->puller);
+    zmq_ctx_destroy(inptr->zmq_context);
     LOG_INFO ("END inputer loop, inputer count %zu", inptr->count);
 
     return ((void*)0);
