@@ -114,6 +114,8 @@ int test_queue() {
 	qsize = lfqueue_size(&myqueue);
     printf("myqueue left size should be zero: %ld\n", qsize);
 	assert(0 == qsize);
-	
+
+	lfqueue_destroy(&myqueue);
+
     return 0;
 }
