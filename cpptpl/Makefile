@@ -46,7 +46,7 @@ ifeq ($(detected_OS),MSYS)
 			-I/c/Users/tom/Downloads/npcap-sdk-1.13/Include
 	CXXFLAGS += -D_WIN32
 	LDFLAGS += -L/c/Users/tom/Downloads/npcap-sdk-1.13/Lib/x64
-	LDLIBS = -levent -levent_openssl -lzmq -lwsock32 -lws2_32 -lwpcap -lcrypto -lssl -lstdc++
+	LDLIBS = -levent -levent_openssl -lwsock32 -lws2_32 -lcrypto -lssl -lstdc++
 
 else # detected_OS = Linux
 	CFLAGS += -D_BSD_SOURCE -D_GNU_SOURCE -D_DEFAULT_SOURCE 
