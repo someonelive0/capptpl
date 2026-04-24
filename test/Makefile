@@ -86,7 +86,7 @@ testpidstat_objs = $(testpidstat_srcs:%.c=$(OBJDIR)/%.o)
 
 
 all: sndmsg teststr testut testklib testpool testcre2 \
-	testint testck testlockfreequeue
+	testint testck testlockfreequeue test_stats_os
 
 
 sndmsg: $(sndmsg_objs)
@@ -146,12 +146,15 @@ testck: testck.c
 testlockfreequeue: testlockfreequeue.c ../lib/lfqueue-1.2.2/lfqueue.c
 	$(CC) $(CFLAGS) -I../lib/lfqueue-1.2.2 $(LDFLAGS) -lpthread $^ -o $@
 
+test_stats_os: test_stats_os.c ../lib/stats_os.c
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
 
 clean:
 	rm -f $(sndmsg_objs) $(teststr_objs) obj/testut.o obj/testklib.o \
 		$(testpidstat_objs)
 	rm -f sndmsg teststr testut testklib testpool testpidstat procstat
-	rm -f testcre2 cre2.o testint testck testlockfreequeue
+	rm -f testcre2 cre2.o testint testck testlockfreequeue test_stats_os
 
 
 install:
