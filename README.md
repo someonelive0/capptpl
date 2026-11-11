@@ -33,6 +33,7 @@ Include in my project with source code in subpath ./lib.
 - sds-2.0.0           https://github.com/antirez/sds
 - lfqueu-1.2.2        https://github.com/Taymindis/lfqueue
 - miniz-3.1.2         https://github.com/richgel999/miniz
+- minimd5             https://github.com/uname/minimd5
 
 Depend OS env.
 - gcc/clang with -std=c11
